@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Nexus - Klinische Supervision | CDSE Luxembourg</title>
+    <style>
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2c5282;
+            --secondary: #2d3748;
+            --accent: #3182ce;
+            --success: #38a169;
+            --warning: #d69e2e;
+            --danger: #e53e3e;
+            --bg-light: #f7fafc;
+            --bg-dark: #edf2f7;
+            --text-dark: #1a202c;
+            --text-light: #718096;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: normal;
+        }
+
+        .header-info {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* Main Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            height: calc(100vh - 70px);
+            gap: 0;
+        }
+
+        /* Sidebar - Progress & Data */
+        .sidebar {
+            background: white;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .sidebar h2 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* Phase Progress */
+        .phase-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .phase-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            background: var(--bg-light);
+            transition: all 0.3s ease;
+        }
+
+        .phase-item.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .phase-item.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .phase-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .phase-item.active .phase-number,
+        .phase-item.completed .phase-number {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Domain Checklist */
+        .domain-list {
+            list-style: none;
+        }
+
+        .domain-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .domain-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .domain-status.partial {
+            background: var(--warning);
+        }
+
+        .domain-status.complete {
+            background: var(--success);
+        }
+
+        .domain-status.missing {
+            background: var(--danger);
+        }
+
+        /* Chat Area */
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-dark);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .message.dr-nexus .message-avatar {
+            background: var(--primary);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: var(--accent);
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+            background: white;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .message.dr-nexus .message-content {
+            border-left: 3px solid var(--primary);
+        }
+
+        .message.user .message-content {
+            border-left: 3px solid var(--accent);
+        }
+
+        .message-header {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .message-text {
+            font-size: 0.95rem;
+        }
+
+        .message-text p {
+            margin-bottom: 0.5rem;
+        }
+
+        .message-text ul {
+            margin-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-text strong {
+            color: var(--primary);
+        }
+
+        /* Input Area */
+        .input-area {
+            background: white;
+            border-top: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+            resize: none;
+            font-family: inherit;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .input-hint {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+        }
+
+        /* Synthesis Panel */
+        .synthesis-panel {
+            background: white;
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .synthesis-panel h2 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--success);
+        }
+
+        .data-card {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .data-card h3 {
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .data-card p, .data-card ul {
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        .data-card ul {
+            margin-left: 1rem;
+        }
+
+        .data-card .empty {
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        /* Synthesis Report */
+        .synthesis-report {
+            display: none;
+        }
+
+        .synthesis-report.visible {
+            display: block;
+        }
+
+        .report-section {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .report-section h3 {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .report-section h4 {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .diagnosis-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .diagnosis-badge.high {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .diagnosis-badge.medium {
+            background: #fefcbf;
+            color: #b7791f;
+        }
+
+        .diagnosis-badge.low {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .quick-action-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            padding: 1rem;
+        }
+
+        .typing-indicator.visible {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-light);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+
+        /* Export Button */
+        .export-section {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 250px 1fr 300px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar, .synthesis-panel {
+                display: none;
+            }
+        }
+
+        /* Risk Alert */
+        .risk-alert {
+            background: #fff5f5;
+            border: 1px solid #fc8181;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .risk-alert h4 {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ICD Code Styling */
+        .icd-code {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-dark);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>
+            <span>Dr. Nexus</span>
+            <span class="header-badge">Klinische Supervision</span>
+        </h1>
+        <div class="header-info">
+            CDSE Luxembourg | ICD-11 & Biopsychosoziales Modell
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Left Sidebar - Progress -->
+        <aside class="sidebar">
+            <h2>Protokoll-Phasen</h2>
+            <ul class="phase-list">
+                <li class="phase-item active" id="phase-1">
+                    <span class="phase-number">1</span>
+                    <span>Intake & Triage</span>
+                </li>
+                <li class="phase-item" id="phase-2">
+                    <span class="phase-number">2</span>
+                    <span>Checkliste</span>
+                </li>
+                <li class="phase-item" id="phase-3">
+                    <span class="phase-number">3</span>
+                    <span>Synthese</span>
+                </li>
+                <li class="phase-item" id="phase-4">
+                    <span class="phase-number">4</span>
+                    <span>Aktionsplan</span>
+                </li>
+            </ul>
+
+            <h2>Domänen-Status</h2>
+            <ul class="domain-list">
+                <li class="domain-item">
+                    <span class="domain-status" id="domain-a-status"></span>
+                    <span><strong>A:</strong> Somatik & Entwicklung</span>
+                </li>
+                <li class="domain-item">
+                    <span class="domain-status" id="domain-b-status"></span>
+                    <span><strong>B:</strong> Schulkontext</span>
+                </li>
+                <li class="domain-item">
+                    <span class="domain-status" id="domain-c-status"></span>
+                    <span><strong>C:</strong> Familie & Zuhause</span>
+                </li>
+                <li class="domain-item">
+                    <span class="domain-status" id="domain-d-status"></span>
+                    <span><strong>D:</strong> Symptomatologie</span>
+                </li>
+                <li class="domain-item">
+                    <span class="domain-status" id="domain-e-status"></span>
+                    <span><strong>E:</strong> Psychometrie</span>
+                </li>
+            </ul>
+
+            <div class="quick-actions">
+                <button class="quick-action-btn" onclick="triggerAnalysis()">ANALYSE</button>
+                <button class="quick-action-btn" onclick="resetSession()">Neu starten</button>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be inserted here -->
+            </div>
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="message dr-nexus">
+                    <div class="message-avatar">DN</div>
+                    <div class="message-content">
+                        <div class="typing-dots">
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea
+                        class="input-field"
+                        id="userInput"
+                        placeholder="Ihre Antwort eingeben..."
+                        rows="2"
+                        onkeydown="handleKeyDown(event)"
+                    ></textarea>
+                    <button class="btn btn-primary" onclick="sendMessage()">Senden</button>
+                </div>
+                <div class="input-hint">
+                    Drücken Sie Enter zum Senden | Tippen Sie "ANALYSE" für die Synthese
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Panel - Collected Data & Synthesis -->
+        <aside class="synthesis-panel">
+            <h2>Gesammelte Daten</h2>
+
+            <div class="data-card" id="demographicsCard">
+                <h3>📋 Stammdaten</h3>
+                <div id="demographicsContent" class="empty">Noch keine Daten</div>
+            </div>
+
+            <div class="data-card" id="presentingCard">
+                <h3>🎯 Vorstellungsgrund</h3>
+                <div id="presentingContent" class="empty">Noch keine Daten</div>
+            </div>
+
+            <div class="data-card" id="somaticCard">
+                <h3>🏥 Somatik</h3>
+                <div id="somaticContent" class="empty">Noch keine Daten</div>
+            </div>
+
+            <div class="data-card" id="schoolCard">
+                <h3>🏫 Schulkontext</h3>
+                <div id="schoolContent" class="empty">Noch keine Daten</div>
+            </div>
+
+            <div class="data-card" id="familyCard">
+                <h3>👨‍👩‍👧 Familie</h3>
+                <div id="familyContent" class="empty">Noch keine Daten</div>
+            </div>
+
+            <div class="data-card" id="symptomsCard">
+                <h3>⚠️ Symptome</h3>
+                <div id="symptomsContent" class="empty">Noch keine Daten</div>
+            </div>
+
+            <div class="data-card" id="testingCard">
+                <h3>📊 Testdiagnostik</h3>
+                <div id="testingContent" class="empty">Noch keine Daten</div>
+            </div>
+
+            <!-- Synthesis Report (Hidden until generated) -->
+            <div class="synthesis-report" id="synthesisReport">
+                <h2>Klinische Fallformulierung</h2>
+                <div id="synthesisContent"></div>
+            </div>
+
+            <div class="export-section">
+                <button class="btn btn-success" onclick="exportReport()" style="width: 100%;">
+                    📄 Bericht exportieren
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // ========== STATE MANAGEMENT ==========
+        const state = {
+            currentPhase: 1,
+            currentDomainFocus: null,
+            conversationHistory: [],
+            collectedData: {
+                demographics: {},
+                presentingProblem: '',
+                domainA: { // Somatic & Development
+                    sleep: null,
+                    vision: null,
+                    hearing: null,
+                    milestones: null,
+                    medication: null,
+                    seizures: null,
+                    otherMedical: null
+                },
+                domainB: { // School Context
+                    grades: null,
+                    peerRelations: null,
+                    teacherRelation: null,
+                    specificSubjects: null,
+                    bullying: null,
+                    attendance: null
+                },
+                domainC: { // Home & Family
+                    trauma: null,
+                    divorce: null,
+                    parentalMentalHealth: null,
+                    socioeconomic: null,
+                    screenTime: null,
+                    siblings: null
+                },
+                domainD: { // Symptomatology
+                    duration: null,
+                    intensity: null,
+                    triggers: null,
+                    pervasiveness: null,
+                    onset: null
+                },
+                domainE: { // Psychometrics
+                    wisc: null,
+                    cft: null,
+                    cbcl: null,
+                    trf: null,
+                    otherTests: null
+                }
+            },
+            domainQuestionIndex: {
+                A: 0, B: 0, C: 0, D: 0, E: 0
+            },
+            synthesis: null
+        };
+
+        // ========== DOMAIN QUESTIONS ==========
+        const domainQuestions = {
+            A: [
+                {
+                    question: "Wie ist das Schlafverhalten des Kindes? (Einschlafprobleme, Durchschlafstörungen, Schlafmenge?)",
+                    dataKey: 'sleep',
+                    followUp: "Wurden Schlafstudien durchgeführt?"
+                },
+                {
+                    question: "Wann wurde zuletzt ein Seh- und Hörtest durchgeführt? Gab es Auffälligkeiten?",
+                    dataKey: 'vision',
+                    dataKey2: 'hearing'
+                },
+                {
+                    question: "Wie verlief die frühe Entwicklung? Wurden Meilensteine (Laufen, Sprechen) zeitgerecht erreicht?",
+                    dataKey: 'milestones'
+                },
+                {
+                    question: "Nimmt das Kind aktuell Medikamente? Gab es früher Medikation?",
+                    dataKey: 'medication'
+                },
+                {
+                    question: "Gab es jemals Krampfanfälle, Bewusstlosigkeit oder neurologische Auffälligkeiten?",
+                    dataKey: 'seizures'
+                }
+            ],
+            B: [
+                {
+                    question: "Wie sind die aktuellen schulischen Leistungen? In welchen Fächern gibt es Stärken/Schwächen?",
+                    dataKey: 'grades',
+                    dataKey2: 'specificSubjects'
+                },
+                {
+                    question: "Wie gestalten sich die Beziehungen zu Gleichaltrigen? Hat das Kind Freunde?",
+                    dataKey: 'peerRelations'
+                },
+                {
+                    question: "Wie ist die Beziehung zu den Lehrern? Gibt es Konflikte oder besonders positive Bindungen?",
+                    dataKey: 'teacherRelation'
+                },
+                {
+                    question: "Gibt es Hinweise auf Mobbing oder soziale Ausgrenzung in der Schule?",
+                    dataKey: 'bullying'
+                },
+                {
+                    question: "Wie ist die Schulanwesenheit? Gibt es Fehlzeiten oder Schulvermeidung?",
+                    dataKey: 'attendance'
+                }
+            ],
+            C: [
+                {
+                    question: "Gibt es bekannte traumatische Erfahrungen in der Vorgeschichte des Kindes?",
+                    dataKey: 'trauma'
+                },
+                {
+                    question: "Wie ist die familiäre Situation? (Zusammenlebend, getrennt, Patchwork?)",
+                    dataKey: 'divorce'
+                },
+                {
+                    question: "Gibt es psychische Erkrankungen bei den Eltern oder in der erweiterten Familie?",
+                    dataKey: 'parentalMentalHealth'
+                },
+                {
+                    question: "Wie ist die sozioökonomische Situation der Familie? Gibt es finanzielle Belastungen?",
+                    dataKey: 'socioeconomic'
+                },
+                {
+                    question: "Wie hoch ist der Medienkonsum/Bildschirmzeit des Kindes täglich?",
+                    dataKey: 'screenTime'
+                }
+            ],
+            D: [
+                {
+                    question: "Seit wann bestehen die Symptome? (Wochen, Monate, Jahre?)",
+                    dataKey: 'duration'
+                },
+                {
+                    question: "Wie stark beeinträchtigen die Symptome den Alltag? (leicht, mittel, schwer?)",
+                    dataKey: 'intensity'
+                },
+                {
+                    question: "Gibt es identifizierbare Auslöser oder Situationen, die die Symptome verschlimmern?",
+                    dataKey: 'triggers'
+                },
+                {
+                    question: "Treten die Symptome nur in einem Kontext auf (z.B. nur Schule) oder übergreifend?",
+                    dataKey: 'pervasiveness'
+                },
+                {
+                    question: "Gab es einen spezifischen Beginn/Auslöser oder war es ein schleichender Prozess?",
+                    dataKey: 'onset'
+                }
+            ],
+            E: [
+                {
+                    question: "Wurde eine Intelligenzdiagnostik durchgeführt (WISC, CFT, SON-R)? Wenn ja, welche Ergebnisse?",
+                    dataKey: 'wisc',
+                    dataKey2: 'cft'
+                },
+                {
+                    question: "Liegen Verhaltensfragebögen vor? (CBCL von Eltern, TRF von Lehrern?)",
+                    dataKey: 'cbcl',
+                    dataKey2: 'trf'
+                },
+                {
+                    question: "Wurden weitere spezifische Tests durchgeführt? (z.B. BRIEF, Conners, projektive Verfahren?)",
+                    dataKey: 'otherTests'
+                }
+            ]
+        };
+
+        // ========== ICD-11 DIAGNOSTIC CRITERIA ==========
+        const diagnosticCriteria = {
+            'ADHD': {
+                code: '6A05',
+                name: 'Aufmerksamkeitsdefizit-Hyperaktivitätsstörung',
+                requiredSymptoms: ['attention', 'hyperactivity', 'impulsivity'],
+                durationRequired: '6 Monate',
+                pervasivenessRequired: true,
+                onsetBefore: 12,
+                exclusions: ['autism', 'intellectual disability', 'psychosis']
+            },
+            'Anxiety': {
+                code: '6B00',
+                name: 'Generalisierte Angststörung',
+                requiredSymptoms: ['excessive worry', 'physical symptoms', 'avoidance'],
+                durationRequired: '6 Monate',
+                exclusions: ['specific phobia', 'social anxiety']
+            },
+            'Depression': {
+                code: '6A70',
+                name: 'Depressive Episode',
+                requiredSymptoms: ['depressed mood', 'anhedonia', 'fatigue'],
+                durationRequired: '2 Wochen',
+                exclusions: ['bipolar', 'bereavement']
+            },
+            'ASD': {
+                code: '6A02',
+                name: 'Autismus-Spektrum-Störung',
+                requiredSymptoms: ['social communication', 'restricted interests', 'sensory'],
+                durationRequired: 'seit früher Kindheit',
+                exclusions: ['intellectual disability alone', 'language disorder']
+            },
+            'ODD': {
+                code: '6C90',
+                name: 'Störung mit oppositionellem Trotzverhalten',
+                requiredSymptoms: ['angry mood', 'defiant behavior', 'vindictiveness'],
+                durationRequired: '6 Monate',
+                exclusions: ['conduct disorder', 'mood disorder']
+            },
+            'LearningDisorder': {
+                code: '6A03',
+                name: 'Entwicklungsstörung des Lernens',
+                requiredSymptoms: ['academic skills below expected', 'interference with daily life'],
+                durationRequired: '6 Monate',
+                exclusions: ['intellectual disability', 'sensory impairment', 'inadequate instruction']
+            }
+        };
+
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSession();
+        });
+
+        function initializeSession() {
+            // Clear any existing messages
+            document.getElementById('chatMessages').innerHTML = '';
+
+            // Add welcome message
+            setTimeout(() => {
+                addMessage('dr-nexus', `
+                    <p><strong>Willkommen zur klinischen Supervision.</strong></p>
+                    <p>Ich bin Dr. Nexus, leitender Kinder- und Jugendpsychiater am CDSE Luxemburg. Ich werde Sie durch eine systematische Fallformulierung nach ICD-11 und dem biopsychosozialen Modell führen.</p>
+                    <p><strong>Wichtige Hinweise:</strong></p>
+                    <ul>
+                        <li>Wir werden somatische Ursachen rigoros ausschließen</li>
+                        <li>Ich werde voreilige "Labels" hinterfragen</li>
+                        <li>Bitte antworten Sie so detailliert wie möglich</li>
+                    </ul>
+                    <p>Tippen Sie <strong>"ANALYSE"</strong> jederzeit, um die Synthese zu starten.</p>
+                `);
+            }, 300);
+
+            setTimeout(() => {
+                addMessage('dr-nexus', `
+                    <p><strong>PHASE 1: INTAKE & TRIAGE</strong></p>
+                    <p>Bitte schildern Sie mir zunächst:</p>
+                    <ul>
+                        <li><strong>Vorstellungsgrund:</strong> Warum wird das Kind vorgestellt?</li>
+                        <li><strong>Alter</strong> des Kindes</li>
+                        <li><strong>Geschlecht</strong></li>
+                        <li><strong>Schultyp</strong> (Grundschule, Förderschule, Gymnasium, etc.)</li>
+                    </ul>
+                `);
+            }, 800);
+        }
+
+        // ========== MESSAGE HANDLING ==========
+        function addMessage(type, content) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const avatar = type === 'dr-nexus' ? 'DN' : 'SP';
+            const header = type === 'dr-nexus' ? 'Dr. Nexus - Klinische Supervision' : 'Schulpsychologe/in';
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-header">${header}</div>
+                    <div class="message-text">${content}</div>
+                </div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Store in history
+            state.conversationHistory.push({ type, content, timestamp: new Date() });
+        }
+
+        function showTyping() {
+            document.getElementById('typingIndicator').classList.add('visible');
+            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+        }
+
+        function hideTyping() {
+            document.getElementById('typingIndicator').classList.remove('visible');
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            // Add user message
+            addMessage('user', `<p>${escapeHtml(text)}</p>`);
+            input.value = '';
+
+            // Check for ANALYSE command
+            if (text.toUpperCase() === 'ANALYSE') {
+                triggerAnalysis();
+                return;
+            }
+
+            // Process based on current phase
+            showTyping();
+            setTimeout(() => {
+                hideTyping();
+                processUserInput(text);
+            }, 1000 + Math.random() * 500);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ========== INPUT PROCESSING ==========
+        function processUserInput(text) {
+            const lowerText = text.toLowerCase();
+
+            if (state.currentPhase === 1) {
+                processPhase1(text, lowerText);
+            } else if (state.currentPhase === 2) {
+                processPhase2(text, lowerText);
+            }
+        }
+
+        function processPhase1(text, lowerText) {
+            // Extract demographics
+            const ageMatch = text.match(/(\d+)\s*(jahre?|j\.?|years?)/i);
+            if (ageMatch) {
+                state.collectedData.demographics.age = parseInt(ageMatch[1]);
+            }
+
+            // Gender detection
+            if (lowerText.includes('junge') || lowerText.includes('männlich') || lowerText.includes('er ')) {
+                state.collectedData.demographics.gender = 'männlich';
+            } else if (lowerText.includes('mädchen') || lowerText.includes('weiblich') || lowerText.includes('sie ')) {
+                state.collectedData.demographics.gender = 'weiblich';
+            }
+
+            // School type
+            const schoolTypes = ['grundschule', 'förderschule', 'gymnasium', 'realschule', 'hauptschule', 'gesamtschule', 'vorschule', 'kindergarten', 'maternelle', 'primaire', 'secondaire', 'fondamental'];
+            for (const school of schoolTypes) {
+                if (lowerText.includes(school)) {
+                    state.collectedData.demographics.schoolType = school.charAt(0).toUpperCase() + school.slice(1);
+                    break;
+                }
+            }
+
+            // Store presenting problem
+            state.collectedData.presentingProblem = text;
+
+            // Update UI
+            updateDataCards();
+
+            // Check for premature labels and challenge them
+            const labels = detectLabels(lowerText);
+            if (labels.length > 0) {
+                challengeLabels(labels);
+                return;
+            }
+
+            // Move to Phase 2
+            transitionToPhase2();
+        }
+
+        function detectLabels(text) {
+            const labels = [];
+            const labelPatterns = [
+                { pattern: /adhs|adhd|aufmerksamkeitsdefizit|hyperaktiv/i, label: 'ADHS' },
+                { pattern: /autis|asperger|asd/i, label: 'Autismus' },
+                { pattern: /depress/i, label: 'Depression' },
+                { pattern: /angst|anxiety|ängst/i, label: 'Angststörung' },
+                { pattern: /lernstörung|legasthenie|dyskalkulie|dyslexie/i, label: 'Lernstörung' },
+                { pattern: /oppositionell|trotz|odd/i, label: 'Trotzstörung' }
+            ];
+
+            for (const { pattern, label } of labelPatterns) {
+                if (pattern.test(text)) {
+                    labels.push(label);
+                }
+            }
+
+            return labels;
+        }
+
+        function challengeLabels(labels) {
+            const challenges = {
+                'ADHS': `
+                    <p><strong>⚠️ Sie erwähnen ADHS.</strong></p>
+                    <p>Bevor wir dieses Label akzeptieren, muss ich nachfragen:</p>
+                    <ul>
+                        <li>Auf welcher Grundlage wurde diese Einschätzung getroffen?</li>
+                        <li>Liegen standardisierte Aufmerksamkeitstests vor? (z.B. D2, TEA-Ch, Conners)</li>
+                        <li>Wurden Verhaltensbeobachtungen in <em>mehreren</em> Settings durchgeführt?</li>
+                        <li>Wurde ein Seh-/Hörtest gemacht? Wie ist der Schlaf?</li>
+                    </ul>
+                    <p>Bitte erläutern Sie die diagnostische Basis.</p>
+                `,
+                'Autismus': `
+                    <p><strong>⚠️ Sie erwähnen Autismus-Spektrum.</strong></p>
+                    <p>Kritische Rückfragen:</p>
+                    <ul>
+                        <li>Wurde eine standardisierte Diagnostik durchgeführt? (ADOS-2, ADI-R?)</li>
+                        <li>Gab es auffällige soziale Kommunikation <em>bereits in der frühen Kindheit</em>?</li>
+                        <li>Liegen sensorische Besonderheiten vor?</li>
+                        <li>Könnte es sich auch um soziale Ängstlichkeit oder Sprachentwicklungsstörung handeln?</li>
+                    </ul>
+                `,
+                'Depression': `
+                    <p><strong>⚠️ Sie erwähnen depressive Symptomatik.</strong></p>
+                    <p>Wichtige Klärung:</p>
+                    <ul>
+                        <li>Seit wann bestehen die Symptome? (mind. 2 Wochen für Episode)</li>
+                        <li>Liegt eine Anhedonie vor (Freudlosigkeit)?</li>
+                        <li>Wurden somatische Ursachen ausgeschlossen? (Schilddrüse, Anämie)</li>
+                        <li><strong>Suizidalitätsabklärung erfolgt?</strong></li>
+                    </ul>
+                `,
+                'Angststörung': `
+                    <p><strong>⚠️ Sie erwähnen Ängste.</strong></p>
+                    <p>Differenzierung nötig:</p>
+                    <ul>
+                        <li>Handelt es sich um situationsspezifische oder generalisierte Ängste?</li>
+                        <li>Gibt es Vermeidungsverhalten?</li>
+                        <li>Körperliche Symptome? (Bauchschmerzen, Kopfschmerzen)</li>
+                        <li>Wurden reale Bedrohungen (Mobbing, häusliche Gewalt) ausgeschlossen?</li>
+                    </ul>
+                `,
+                'Lernstörung': `
+                    <p><strong>⚠️ Sie erwähnen eine Lernstörung.</strong></p>
+                    <p>Wichtige Ausschlüsse:</p>
+                    <ul>
+                        <li>Wurde die Intelligenz getestet? (IQ im Normbereich?)</li>
+                        <li>Seh- und Hörtest aktuell?</li>
+                        <li>Wurde die Beschulung adäquat durchgeführt? (Schulwechsel, Fehlzeiten?)</li>
+                        <li>Welche spezifischen Testverfahren wurden eingesetzt?</li>
+                    </ul>
+                `,
+                'Trotzstörung': `
+                    <p><strong>⚠️ Sie erwähnen oppositionelles Verhalten.</strong></p>
+                    <p>Differentialdiagnostische Überlegungen:</p>
+                    <ul>
+                        <li>Besteht das Verhalten seit mehr als 6 Monaten?</li>
+                        <li>Tritt es nur bei bestimmten Personen/Situationen auf?</li>
+                        <li>Könnte eine zugrundeliegende ADHS, Depression oder Trauma vorliegen?</li>
+                        <li>Wie ist die Erziehungssituation zu Hause?</li>
+                    </ul>
+                `
+            };
+
+            let response = '';
+            for (const label of labels) {
+                if (challenges[label]) {
+                    response += challenges[label];
+                }
+            }
+
+            addMessage('dr-nexus', response);
+
+            // Still transition but mark that we need to verify
+            setTimeout(() => {
+                transitionToPhase2();
+            }, 500);
+        }
+
+        function transitionToPhase2() {
+            state.currentPhase = 2;
+            updatePhaseDisplay();
+
+            addMessage('dr-nexus', `
+                <p><strong>PHASE 2: SYSTEMATISCHE DATENERHEBUNG</strong></p>
+                <p>Gut. Ich werde nun systematisch die fünf Domänen abfragen. Wir beginnen mit der <strong>somatischen Anamnese</strong> - dies ist essentiell, um körperliche Ursachen auszuschließen.</p>
+            `);
+
+            setTimeout(() => {
+                askNextDomainQuestion('A');
+            }, 600);
+        }
+
+        function processPhase2(text, lowerText) {
+            // Store the response in the current domain
+            const currentDomain = state.currentDomainFocus;
+            if (currentDomain && domainQuestions[currentDomain]) {
+                const questionIndex = state.domainQuestionIndex[currentDomain];
+                const question = domainQuestions[currentDomain][questionIndex];
+
+                if (question) {
+                    // Store the response
+                    const domainKey = 'domain' + currentDomain;
+                    if (state.collectedData[domainKey] && question.dataKey) {
+                        state.collectedData[domainKey][question.dataKey] = text;
+                        if (question.dataKey2) {
+                            state.collectedData[domainKey][question.dataKey2] = text;
+                        }
+                    }
+                }
+
+                // Move to next question
+                state.domainQuestionIndex[currentDomain]++;
+            }
+
+            // Update UI
+            updateDataCards();
+            updateDomainStatus();
+
+            // Check for concerning content
+            const concerns = detectConcerns(lowerText);
+            if (concerns.length > 0) {
+                addressConcerns(concerns, () => {
+                    continueQuestioning();
+                });
+                return;
+            }
+
+            continueQuestioning();
+        }
+
+        function detectConcerns(text) {
+            const concerns = [];
+
+            if (/suizid|umbringen|sterben|selbstverletz|ritzen|nicht mehr leben/i.test(text)) {
+                concerns.push('suicidality');
+            }
+            if (/missbrauch|misshandl|gewalt|schläge/i.test(text)) {
+                concerns.push('abuse');
+            }
+            if (/anfall|krampf|epilep|ohnmacht|bewusstlos/i.test(text)) {
+                concerns.push('neurological');
+            }
+
+            return concerns;
+        }
+
+        function addressConcerns(concerns, callback) {
+            let response = '';
+
+            if (concerns.includes('suicidality')) {
+                response += `
+                    <p><strong>🚨 WICHTIG: Suizidalitätsabklärung</strong></p>
+                    <p>Sie haben Hinweise auf Suizidalität/Selbstverletzung erwähnt. Dies erfordert <strong>sofortige Abklärung</strong>:</p>
+                    <ul>
+                        <li>Wurde eine strukturierte Suizidalitätseinschätzung durchgeführt?</li>
+                        <li>Besteht ein akutes Risiko?</li>
+                        <li>Ist die Familie informiert?</li>
+                        <li>Ist eine Krisenintervention/Notaufnahme notwendig?</li>
+                    </ul>
+                `;
+            }
+
+            if (concerns.includes('abuse')) {
+                response += `
+                    <p><strong>🚨 WICHTIG: Kindeswohlgefährdung</strong></p>
+                    <p>Sie haben Hinweise auf mögliche Misshandlung/Missbrauch erwähnt.</p>
+                    <ul>
+                        <li>Wurde eine Meldung an die zuständige Behörde erwogen?</li>
+                        <li>Ist das Kind aktuell in Sicherheit?</li>
+                        <li>Bitte dokumentieren Sie alle Beobachtungen sorgfältig.</li>
+                    </ul>
+                `;
+            }
+
+            if (concerns.includes('neurological')) {
+                response += `
+                    <p><strong>⚠️ Neurologische Abklärung erforderlich</strong></p>
+                    <p>Bei Hinweisen auf Krampfanfälle/Bewusstlosigkeit ist eine <strong>neurologische/neuropädiatrische Untersuchung</strong> zwingend erforderlich, bevor wir eine psychiatrische Diagnose stellen.</p>
+                `;
+            }
+
+            addMessage('dr-nexus', response);
+
+            setTimeout(callback, 1000);
+        }
+
+        function continueQuestioning() {
+            const domains = ['A', 'B', 'C', 'D', 'E'];
+
+            // Find next incomplete domain
+            for (const domain of domains) {
+                const questionIndex = state.domainQuestionIndex[domain];
+                if (questionIndex < domainQuestions[domain].length) {
+                    askNextDomainQuestion(domain);
+                    return;
+                }
+            }
+
+            // All domains complete
+            promptForAnalysis();
+        }
+
+        function askNextDomainQuestion(domain) {
+            const questionIndex = state.domainQuestionIndex[domain];
+            const questions = domainQuestions[domain];
+
+            if (questionIndex >= questions.length) {
+                // Move to next domain
+                const domains = ['A', 'B', 'C', 'D', 'E'];
+                const currentIndex = domains.indexOf(domain);
+                if (currentIndex < domains.length - 1) {
+                    const nextDomain = domains[currentIndex + 1];
+                    announceNewDomain(nextDomain);
+                } else {
+                    promptForAnalysis();
+                }
+                return;
+            }
+
+            state.currentDomainFocus = domain;
+            const question = questions[questionIndex];
+
+            const domainNames = {
+                'A': 'Somatik & Entwicklung',
+                'B': 'Schulkontext',
+                'C': 'Familie & Zuhause',
+                'D': 'Symptomatologie',
+                'E': 'Psychometrie'
+            };
+
+            addMessage('dr-nexus', `
+                <p><strong>Domäne ${domain} - ${domainNames[domain]}:</strong></p>
+                <p>${question.question}</p>
+            `);
+        }
+
+        function announceNewDomain(domain) {
+            const domainIntros = {
+                'B': `
+                    <p><strong>Gut. Weiter zu Domäne B: SCHULKONTEXT</strong></p>
+                    <p>Nun möchte ich mehr über die schulische Situation erfahren.</p>
+                `,
+                'C': `
+                    <p><strong>Weiter zu Domäne C: FAMILIE & ZUHAUSE</strong></p>
+                    <p>Lassen Sie uns die familiäre Situation betrachten.</p>
+                `,
+                'D': `
+                    <p><strong>Weiter zu Domäne D: SYMPTOMATOLOGIE</strong></p>
+                    <p>Nun zur genauen Charakterisierung der Symptome.</p>
+                `,
+                'E': `
+                    <p><strong>Weiter zu Domäne E: PSYCHOMETRIE</strong></p>
+                    <p>Abschließend zur testdiagnostischen Datenlage.</p>
+                `
+            };
+
+            addMessage('dr-nexus', domainIntros[domain]);
+
+            setTimeout(() => {
+                askNextDomainQuestion(domain);
+            }, 500);
+        }
+
+        function promptForAnalysis() {
+            state.currentPhase = 2.5; // Between 2 and 3
+
+            addMessage('dr-nexus', `
+                <p><strong>Datenerhebung abgeschlossen.</strong></p>
+                <p>Ich habe nun Informationen zu allen fünf Domänen gesammelt. Sie können:</p>
+                <ul>
+                    <li>Zusätzliche Informationen ergänzen</li>
+                    <li><strong>"ANALYSE"</strong> eingeben, um die klinische Synthese zu starten</li>
+                </ul>
+            `);
+        }
+
+        // ========== ANALYSIS & SYNTHESIS ==========
+        function triggerAnalysis() {
+            state.currentPhase = 3;
+            updatePhaseDisplay();
+
+            addMessage('dr-nexus', `
+                <p><strong>PHASE 3: KLINISCHE SYNTHESE</strong></p>
+                <p>Ich analysiere nun die gesammelten Daten und erstelle die Fallformulierung...</p>
+            `);
+
+            showTyping();
+
+            setTimeout(() => {
+                hideTyping();
+                generateSynthesis();
+            }, 2000);
+        }
+
+        function generateSynthesis() {
+            const data = state.collectedData;
+            const synthesis = analyzeCaseData(data);
+            state.synthesis = synthesis;
+
+            // Generate the diagnostic assessment
+            let reportHtml = `
+                <div class="report-section">
+                    <h3>A. Diagnostische Einschätzung (ICD-11)</h3>
+                    <h4>Hauptverdachtsdiagnose</h4>
+                    <p>
+                        <strong>${synthesis.primaryDiagnosis.name}</strong>
+                        <span class="icd-code">${synthesis.primaryDiagnosis.code}</span>
+                        <span class="diagnosis-badge ${synthesis.primaryDiagnosis.confidence.toLowerCase()}">${synthesis.primaryDiagnosis.confidence}</span>
+                    </p>
+                    <p><strong>Begründung:</strong> ${synthesis.primaryDiagnosis.rationale}</p>
+
+                    <h4>Differentialdiagnosen</h4>
+                    <ul>
+                        ${synthesis.differentials.map(d => `<li>${d.name} <span class="icd-code">${d.code}</span> - ${d.reason}</li>`).join('')}
+                    </ul>
+
+                    <h4>Ausschlusskriterien</h4>
+                    <ul>
+                        ${synthesis.exclusions.map(e => `<li><strong>${e.diagnosis}:</strong> ${e.reason}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="report-section">
+                    <h3>B. Biopsychosoziales Modell</h3>
+                    <h4>Prädisponierende Faktoren</h4>
+                    <ul>
+                        ${synthesis.biopsychosocial.predisposing.map(p => `<li>${p}</li>`).join('')}
+                    </ul>
+
+                    <h4>Auslösende Faktoren</h4>
+                    <ul>
+                        ${synthesis.biopsychosocial.precipitating.map(p => `<li>${p}</li>`).join('')}
+                    </ul>
+
+                    <h4>Aufrechterhaltende Faktoren</h4>
+                    <ul>
+                        ${synthesis.biopsychosocial.perpetuating.map(p => `<li>${p}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="report-section">
+                    <h3>C. Lücken & Risiken</h3>
+                    ${synthesis.risks.length > 0 ? `
+                        <div class="risk-alert">
+                            <h4>⚠️ Identifizierte Risiken</h4>
+                            <ul>
+                                ${synthesis.risks.map(r => `<li>${r}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+
+                    <h4>Fehlende Daten</h4>
+                    <ul>
+                        ${synthesis.missingData.map(m => `<li>${m}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+
+            addMessage('dr-nexus', reportHtml);
+
+            // Move to Phase 4
+            setTimeout(() => {
+                generateActionPlan(synthesis);
+            }, 1000);
+        }
+
+        function analyzeCaseData(data) {
+            // This is a simplified diagnostic reasoning engine
+            const synthesis = {
+                primaryDiagnosis: {
+                    name: 'Weitere Abklärung erforderlich',
+                    code: 'Z03.89',
+                    confidence: 'Mittel',
+                    rationale: 'Basierend auf den vorliegenden Daten.'
+                },
+                differentials: [],
+                exclusions: [],
+                biopsychosocial: {
+                    predisposing: [],
+                    precipitating: [],
+                    perpetuating: []
+                },
+                risks: [],
+                missingData: []
+            };
+
+            const presentingProblem = (data.presentingProblem || '').toLowerCase();
+
+            // Analyze symptoms and generate diagnosis
+            if (/aufmerksamkeit|konzentration|unruhig|hyperaktiv|impulsiv|adhs|adhd/i.test(presentingProblem)) {
+                synthesis.primaryDiagnosis = {
+                    name: 'Aufmerksamkeitsdefizit-Hyperaktivitätsstörung',
+                    code: '6A05',
+                    confidence: 'Mittel',
+                    rationale: 'Beschriebene Aufmerksamkeits- und/oder Hyperaktivitätsprobleme. Vollständige diagnostische Kriterien müssen noch verifiziert werden.'
+                };
+                synthesis.differentials.push(
+                    { name: 'Angststörung', code: '6B00', reason: 'Kann ähnliche Konzentrationsprobleme verursachen' },
+                    { name: 'Schlafstörung', code: '7A00', reason: 'Schlafmangel imitiert ADHS-Symptome' }
+                );
+            } else if (/angst|ängst|sorgen|panik|vermeid/i.test(presentingProblem)) {
+                synthesis.primaryDiagnosis = {
+                    name: 'Angststörung im Kindesalter',
+                    code: '6B00',
+                    confidence: 'Mittel',
+                    rationale: 'Beschriebene Angstsymptomatik. Spezifischer Subtyp muss noch differenziert werden.'
+                };
+                synthesis.differentials.push(
+                    { name: 'Depressive Episode', code: '6A70', reason: 'Hohe Komorbidität mit Angst' },
+                    { name: 'Anpassungsstörung', code: '6B43', reason: 'Bei reaktiver Genese' }
+                );
+            } else if (/traurig|niedergeschlagen|lustlos|rückzug|depres/i.test(presentingProblem)) {
+                synthesis.primaryDiagnosis = {
+                    name: 'Depressive Episode',
+                    code: '6A70',
+                    confidence: 'Mittel',
+                    rationale: 'Beschriebene depressive Symptomatik. Schweregradeinschätzung ausstehend.'
+                };
+                synthesis.risks.push('Suizidalitätsscreening zwingend erforderlich');
+            } else if (/sozial|kommunikation|stereotyp|routine|autis/i.test(presentingProblem)) {
+                synthesis.primaryDiagnosis = {
+                    name: 'Autismus-Spektrum-Störung (V.a.)',
+                    code: '6A02',
+                    confidence: 'Niedrig',
+                    rationale: 'Hinweise auf soziale Kommunikationsschwierigkeiten. Standardisierte Diagnostik (ADOS-2) erforderlich.'
+                };
+            } else if (/lern|lesen|schreiben|rechnen|schule.*schwierig/i.test(presentingProblem)) {
+                synthesis.primaryDiagnosis = {
+                    name: 'Entwicklungsstörung schulischer Fertigkeiten (V.a.)',
+                    code: '6A03',
+                    confidence: 'Mittel',
+                    rationale: 'Beschriebene schulische Leistungsprobleme. Spezifische Leistungsdiagnostik erforderlich.'
+                };
+                synthesis.exclusions.push(
+                    { diagnosis: 'Intelligenzminderung', reason: 'Muss durch IQ-Test ausgeschlossen werden' }
+                );
+            } else if (/aggress|wütend|trotz|oppositionell|regel.*verletz/i.test(presentingProblem)) {
+                synthesis.primaryDiagnosis = {
+                    name: 'Störung mit oppositionellem Trotzverhalten',
+                    code: '6C90',
+                    confidence: 'Mittel',
+                    rationale: 'Beschriebenes oppositionelles/aggressives Verhaltensmuster.'
+                };
+                synthesis.differentials.push(
+                    { name: 'ADHS', code: '6A05', reason: 'Impulsivität kann als Opposition erscheinen' },
+                    { name: 'Bindungsstörung', code: '6B44', reason: 'Bei Vernachlässigung/Trauma' }
+                );
+            }
+
+            // Add standard exclusions
+            synthesis.exclusions.push(
+                { diagnosis: 'Organische Ursache', reason: 'Somatische Abklärung (Neurologie, Seh-/Hörtest) muss abgeschlossen sein' }
+            );
+
+            // Biopsychosocial model
+            if (data.domainC.parentalMentalHealth) {
+                synthesis.biopsychosocial.predisposing.push('Familiäre Belastung: ' + data.domainC.parentalMentalHealth);
+            }
+            if (data.domainC.trauma) {
+                synthesis.biopsychosocial.precipitating.push('Traumatische Erfahrungen: ' + data.domainC.trauma);
+            }
+            if (data.domainB.bullying) {
+                synthesis.biopsychosocial.perpetuating.push('Schulische Faktoren: ' + data.domainB.bullying);
+            }
+
+            // Add defaults if empty
+            if (synthesis.biopsychosocial.predisposing.length === 0) {
+                synthesis.biopsychosocial.predisposing.push('Weitere anamnestische Erhebung erforderlich');
+            }
+            if (synthesis.biopsychosocial.precipitating.length === 0) {
+                synthesis.biopsychosocial.precipitating.push('Auslöser noch nicht eindeutig identifiziert');
+            }
+            if (synthesis.biopsychosocial.perpetuating.length === 0) {
+                synthesis.biopsychosocial.perpetuating.push('Aufrechterhaltende Faktoren bedürfen weiterer Analyse');
+            }
+
+            // Check for missing data
+            if (!data.domainA.vision || data.domainA.vision === null) {
+                synthesis.missingData.push('Sehtest-Ergebnisse ausstehend');
+            }
+            if (!data.domainA.hearing || data.domainA.hearing === null) {
+                synthesis.missingData.push('Hörtest-Ergebnisse ausstehend');
+            }
+            if (!data.domainE.wisc || data.domainE.wisc === null) {
+                synthesis.missingData.push('Intelligenzdiagnostik (WISC/CFT) nicht vorliegend');
+            }
+            if (!data.domainE.cbcl || data.domainE.cbcl === null) {
+                synthesis.missingData.push('Standardisierte Verhaltensfragebögen (CBCL/TRF) ausstehend');
+            }
+            if (synthesis.missingData.length === 0) {
+                synthesis.missingData.push('Keine kritischen Datenlücken identifiziert');
+            }
+
+            return synthesis;
+        }
+
+        function generateActionPlan(synthesis) {
+            state.currentPhase = 4;
+            updatePhaseDisplay();
+
+            let actionPlanHtml = `
+                <div class="report-section">
+                    <h3>PHASE 4: AKTIONSPLAN</h3>
+
+                    <h4>1. Nächste Schritte (Diagnostik)</h4>
+                    <ul>
+                        ${synthesis.missingData.includes('Sehtest') || synthesis.missingData.includes('Hörtest') ?
+                            '<li><strong>Somatisch:</strong> Aktuellen Seh- und Hörtest anfordern</li>' : ''}
+                        ${synthesis.missingData.some(m => m.includes('WISC') || m.includes('Intelligenz')) ?
+                            '<li><strong>Kognitiv:</strong> Intelligenzdiagnostik durchführen (WISC-V empfohlen)</li>' : ''}
+                        ${synthesis.missingData.some(m => m.includes('CBCL') || m.includes('Verhaltens')) ?
+                            '<li><strong>Verhaltensdiagnostik:</strong> CBCL (Eltern) und TRF (Lehrer) einsetzen</li>' : ''}
+                        ${synthesis.primaryDiagnosis.code === '6A02' ?
+                            '<li><strong>Autismus-Abklärung:</strong> ADOS-2 Durchführung planen</li>' : ''}
+                        ${synthesis.primaryDiagnosis.code === '6A05' ?
+                            '<li><strong>ADHS-Diagnostik:</strong> Conners-3, Verhaltensbeobachtung in mehreren Settings</li>' : ''}
+                    </ul>
+
+                    <h4>2. Sofortmaßnahmen (Schule)</h4>
+                    <ul>
+                        <li><strong>Nachteilsausgleich:</strong> Prüfen, ob formaler Antrag gestellt werden sollte</li>
+                        <li><strong>Sitzplatz:</strong> Vorne, reizarm, nahe bei der Lehrkraft</li>
+                        <li><strong>Strukturierung:</strong> Klare Arbeitsanweisungen, Aufgaben in Teilschritte gliedern</li>
+                        <li><strong>Rückmeldung:</strong> Häufiges, positives Feedback bei erwünschtem Verhalten</li>
+                    </ul>
+
+                    <h4>3. Langfristige Strategie (CDSE)</h4>
+                    <ul>
+                        ${synthesis.primaryDiagnosis.confidence === 'Hoch' ?
+                            '<li><strong>CDSE-Ambulanz:</strong> Aufnahme zur regelmäßigen Begleitung empfohlen</li>' :
+                            '<li><strong>Diagnostische Phase:</strong> Zunächst Abschluss der Diagnostik, dann Reevaluation</li>'}
+                        <li><strong>Intervention sur place:</strong> Schulbegleitung durch CDSE-Team prüfen</li>
+                        ${synthesis.risks.length > 0 ?
+                            '<li><strong>Priorisierung:</strong> Risikofaktoren vorrangig adressieren</li>' : ''}
+                    </ul>
+                </div>
+            `;
+
+            addMessage('dr-nexus', actionPlanHtml);
+
+            // Show synthesis panel
+            document.getElementById('synthesisReport').classList.add('visible');
+            document.getElementById('synthesisContent').innerHTML = `
+                <p><strong>Hauptdiagnose:</strong> ${synthesis.primaryDiagnosis.name}</p>
+                <p><strong>ICD-11:</strong> ${synthesis.primaryDiagnosis.code}</p>
+                <p><strong>Konfidenz:</strong> ${synthesis.primaryDiagnosis.confidence}</p>
+            `;
+
+            // Final message
+            setTimeout(() => {
+                addMessage('dr-nexus', `
+                    <p><strong>Supervision abgeschlossen.</strong></p>
+                    <p>Die klinische Fallformulierung wurde erstellt. Sie können:</p>
+                    <ul>
+                        <li>Den Bericht über den Button rechts exportieren</li>
+                        <li>Weitere Fragen stellen</li>
+                        <li>Mit "Neu starten" eine neue Supervision beginnen</li>
+                    </ul>
+                    <p><em>Hinweis: Diese Einschätzung ersetzt keine vollständige fachärztliche Diagnostik und dient ausschließlich der Supervision.</em></p>
+                `);
+            }, 500);
+        }
+
+        // ========== UI UPDATES ==========
+        function updatePhaseDisplay() {
+            for (let i = 1; i <= 4; i++) {
+                const phaseEl = document.getElementById(`phase-${i}`);
+                phaseEl.classList.remove('active', 'completed');
+
+                if (i < state.currentPhase) {
+                    phaseEl.classList.add('completed');
+                } else if (i === Math.floor(state.currentPhase)) {
+                    phaseEl.classList.add('active');
+                }
+            }
+        }
+
+        function updateDataCards() {
+            const data = state.collectedData;
+
+            // Demographics
+            if (data.demographics.age || data.demographics.gender || data.demographics.schoolType) {
+                let demoHtml = '<ul>';
+                if (data.demographics.age) demoHtml += `<li>Alter: ${data.demographics.age} Jahre</li>`;
+                if (data.demographics.gender) demoHtml += `<li>Geschlecht: ${data.demographics.gender}</li>`;
+                if (data.demographics.schoolType) demoHtml += `<li>Schultyp: ${data.demographics.schoolType}</li>`;
+                demoHtml += '</ul>';
+                document.getElementById('demographicsContent').innerHTML = demoHtml;
+                document.getElementById('demographicsContent').classList.remove('empty');
+            }
+
+            // Presenting problem
+            if (data.presentingProblem) {
+                document.getElementById('presentingContent').innerHTML = `<p>${data.presentingProblem.substring(0, 200)}${data.presentingProblem.length > 200 ? '...' : ''}</p>`;
+                document.getElementById('presentingContent').classList.remove('empty');
+            }
+
+            // Domain cards
+            updateDomainCard('somatic', data.domainA, ['sleep', 'vision', 'hearing', 'milestones', 'medication']);
+            updateDomainCard('school', data.domainB, ['grades', 'peerRelations', 'teacherRelation', 'bullying']);
+            updateDomainCard('family', data.domainC, ['trauma', 'divorce', 'parentalMentalHealth', 'screenTime']);
+            updateDomainCard('symptoms', data.domainD, ['duration', 'intensity', 'triggers', 'pervasiveness']);
+            updateDomainCard('testing', data.domainE, ['wisc', 'cft', 'cbcl', 'trf']);
+        }
+
+        function updateDomainCard(cardId, domainData, keys) {
+            const hasData = keys.some(key => domainData[key] !== null && domainData[key] !== undefined);
+
+            if (hasData) {
+                let html = '<ul>';
+                for (const key of keys) {
+                    if (domainData[key]) {
+                        const label = key.charAt(0).toUpperCase() + key.slice(1);
+                        const value = domainData[key].substring(0, 100) + (domainData[key].length > 100 ? '...' : '');
+                        html += `<li><strong>${label}:</strong> ${value}</li>`;
+                    }
+                }
+                html += '</ul>';
+                document.getElementById(`${cardId}Content`).innerHTML = html;
+                document.getElementById(`${cardId}Content`).classList.remove('empty');
+            }
+        }
+
+        function updateDomainStatus() {
+            const domains = {
+                'A': { el: 'domain-a-status', data: state.collectedData.domainA, total: 5 },
+                'B': { el: 'domain-b-status', data: state.collectedData.domainB, total: 5 },
+                'C': { el: 'domain-c-status', data: state.collectedData.domainC, total: 5 },
+                'D': { el: 'domain-d-status', data: state.collectedData.domainD, total: 5 },
+                'E': { el: 'domain-e-status', data: state.collectedData.domainE, total: 3 }
+            };
+
+            for (const [key, domain] of Object.entries(domains)) {
+                const filled = Object.values(domain.data).filter(v => v !== null && v !== undefined).length;
+                const el = document.getElementById(domain.el);
+
+                el.classList.remove('missing', 'partial', 'complete');
+
+                if (filled === 0) {
+                    el.classList.add('missing');
+                } else if (filled < domain.total) {
+                    el.classList.add('partial');
+                } else {
+                    el.classList.add('complete');
+                }
+            }
+        }
+
+        // ========== EXPORT ==========
+        function exportReport() {
+            if (!state.synthesis) {
+                alert('Bitte führen Sie zuerst die Analyse durch.');
+                return;
+            }
+
+            const synthesis = state.synthesis;
+            const data = state.collectedData;
+            const date = new Date().toLocaleDateString('de-DE');
+
+            let report = `
+KLINISCHE FALLFORMULIERUNG - CDSE Luxembourg
+============================================
+Datum: ${date}
+Erstellt durch: Dr. Nexus Supervision System
+
+STAMMDATEN
+----------
+Alter: ${data.demographics.age || 'Nicht angegeben'} Jahre
+Geschlecht: ${data.demographics.gender || 'Nicht angegeben'}
+Schultyp: ${data.demographics.schoolType || 'Nicht angegeben'}
+
+VORSTELLUNGSGRUND
+-----------------
+${data.presentingProblem || 'Nicht dokumentiert'}
+
+A. DIAGNOSTISCHE EINSCHÄTZUNG (ICD-11)
+--------------------------------------
+Hauptverdachtsdiagnose: ${synthesis.primaryDiagnosis.name} [${synthesis.primaryDiagnosis.code}]
+Konfidenz: ${synthesis.primaryDiagnosis.confidence}
+Begründung: ${synthesis.primaryDiagnosis.rationale}
+
+Differentialdiagnosen:
+${synthesis.differentials.map(d => `- ${d.name} [${d.code}]: ${d.reason}`).join('\n')}
+
+Ausschlusskriterien:
+${synthesis.exclusions.map(e => `- ${e.diagnosis}: ${e.reason}`).join('\n')}
+
+B. BIOPSYCHOSOZIALES MODELL
+---------------------------
+Prädisponierend:
+${synthesis.biopsychosocial.predisposing.map(p => `- ${p}`).join('\n')}
+
+Auslösend:
+${synthesis.biopsychosocial.precipitating.map(p => `- ${p}`).join('\n')}
+
+Aufrechterhaltend:
+${synthesis.biopsychosocial.perpetuating.map(p => `- ${p}`).join('\n')}
+
+C. LÜCKEN & RISIKEN
+-------------------
+Risiken:
+${synthesis.risks.length > 0 ? synthesis.risks.map(r => `- ${r}`).join('\n') : '- Keine akuten Risiken identifiziert'}
+
+Fehlende Daten:
+${synthesis.missingData.map(m => `- ${m}`).join('\n')}
+
+============================================
+Dieses Dokument wurde automatisch generiert.
+Es ersetzt keine vollständige fachärztliche Diagnostik.
+            `.trim();
+
+            // Create and download file
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Fallformulierung_${date.replace(/\./g, '-')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ========== RESET ==========
+        function resetSession() {
+            if (confirm('Möchten Sie wirklich eine neue Supervision starten? Alle Daten werden gelöscht.')) {
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
