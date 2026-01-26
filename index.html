@@ -6139,363 +6139,481 @@ function generateAktuelleSituationText(dsData, stammdaten) {
 }
 
 function generateSichtweiseSchuleText(dsData) {
-    const paragraphs = [];
+    // Hole alle relevanten Daten
+    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
+    const verhalten = dsData.ds_schule_verhalten;
+    const leistung = dsData.ds_schule_leistung;
+    const positiv = dsData.checkboxes?.ds_schule_positiv || [];
+    const negativ = dsData.checkboxes?.ds_schule_negativ || [];
+    const aufmerksamkeit = dsData.checkboxes?.ds_schule_aufmerksamkeit || [];
+    const arbeit = dsData.checkboxes?.ds_schule_arbeit || [];
+    const emotion = dsData.checkboxes?.ds_schule_emotion || [];
+    const konflikt = dsData.checkboxes?.ds_schule_konflikt || [];
+    const hilft = dsData.checkboxes?.ds_schule_hilft || [];
+    const mitschueler = dsData.ds_schule_mitschueler;
+    const lehrer = dsData.ds_schule_lehrer;
+    const erwartungen = dsData.checkboxes?.ds_schule_erwartung || [];
 
-    // Einleitung mit Gesamtbild
-    let einleitung = '';
+    // Text-Mappings für natürliche Sprache
+    const M = {
+        positiv: { 'kooperativ': 'kooperativem Verhalten', 'hilfsbereit': 'Hilfsbereitschaft', 'motiviert': 'Lernmotivation', 'respektvoll': 'respektvollem Auftreten', 'kreativ': 'Kreativität', 'selbststaendig': 'Selbstständigkeit', 'frustrationstoleranz': 'einer guten Frustrationstoleranz', 'empathisch': 'Empathiefähigkeit' },
+        negativ: { 'unaufmerksam': 'Unaufmerksamkeit', 'impulsiv': 'Impulsivität', 'motorisch_unruhig': 'motorischer Unruhe', 'verweigert': 'Arbeitsverweigerung', 'verbal_aggressiv': 'verbaler Aggression', 'koerperlich_aggressiv': 'körperlicher Aggression', 'rueckzug': 'Rückzugstendenzen', 'stoert': 'Unterrichtsstörungen', 'regelverletzend': 'Schwierigkeiten bei der Regeleinhaltung', 'luegt': 'Unehrlichkeit', 'aengstlich': 'Ängstlichkeit', 'weinerlich': 'emotionaler Empfindlichkeit', 'niedrige_frustration': 'niedriger Frustrationstoleranz' },
+        aufmerksamkeit: { 'konzentriert_gut': 'sich insgesamt gut konzentrieren kann', 'kurze_spanne': 'eine kurze Aufmerksamkeitsspanne zeigt', 'leicht_ablenkbar': 'leicht ablenkbar ist', 'strukturhilfe': 'Strukturierungshilfen benötigt', 'einzelbegleitung': 'von Einzelbegleitung profitiert', 'beginnt_nicht': 'Schwierigkeiten hat, Aufgaben selbstständig zu beginnen', 'beendet_nicht': 'Aufgaben häufig nicht zu Ende bringt', 'tagtraeumer': 'zu Tagträumerei neigt' },
+        arbeit: { 'sorgfaeltig': 'sorgfältig arbeitet', 'chaotisch': 'ein unstrukturiertes Arbeitsverhalten zeigt', 'schnell_fertig': 'zu schnell und flüchtig arbeitet', 'sehr_langsam': 'ein langsames Arbeitstempo hat', 'perfektionistisch': 'perfektionistische Tendenzen zeigt', 'gibt_auf': 'bei Schwierigkeiten schnell aufgibt', 'material_vergessen': 'häufig Materialien vergisst', 'hausaufgaben_fehlen': 'die Hausaufgaben oft nicht hat' },
+        emotion: { 'emotional_stabil': 'emotional stabil', 'stimmungsschwankungen': 'Stimmungsschwankungen', 'weint_leicht': 'emotionale Empfindlichkeit', 'wutausbrueche': 'Wutausbrüche', 'angst_versagen': 'Versagensängste', 'trennungsangst': 'Trennungsängste', 'somatische_beschwerden': 'somatische Beschwerden', 'selbstwert_niedrig': 'ein niedriges Selbstwertgefühl' },
+        konflikt: { 'uebergaenge': 'Übergängen', 'freies_spiel': 'freiem Spiel', 'gruppenarbeit': 'Gruppenarbeit', 'einzelarbeit': 'Einzelarbeit', 'warten': 'Wartesituationen', 'kritik': 'Kritik', 'ungerechtigkeit': 'empfundener Ungerechtigkeit', 'verlieren': 'Niederlagen', 'unerwartetes': 'unvorhergesehenen Situationen', 'leistungsdruck': 'Leistungsdruck' },
+        hilft: { 'klare_ansagen': 'klare kurze Ansagen', 'wiederholungen': 'Wiederholungen', 'visualisierungen': 'visuelle Unterstützung', 'bewegungspausen': 'Bewegungspausen', 'ruhige_ecke': 'eine Rückzugsmöglichkeit', 'einzelansprache': 'persönliche Ansprache', 'lob': 'Lob und positive Verstärkung', 'vorwarnung': 'Vorankündigungen', 'kleingruppe': 'Kleingruppenarbeit', 'naehe_lehrer': 'räumliche Nähe zur Lehrperson' },
+        mitschueler: { 'gut_integriert': 'gut in die Klassengemeinschaft integriert und pflegt positive Kontakte zu Gleichaltrigen', 'einige_freunde': 'hat einige Freundschaften geschlossen, auch wenn der Kontakt zu Peers nicht immer reibungslos verläuft', 'isoliert': 'eher am Rand der Klassengemeinschaft und findet schwer Anschluss zu Gleichaltrigen', 'konflikthaft': 'häufig in Konflikte mit Gleichaltrigen verwickelt, was die soziale Integration erschwert', 'gemobbt': 'Opfer von Mobbing durch Mitschüler, was eine erhebliche Belastung darstellt', 'mobbt': 'zeigt selbst Mobbingverhalten gegenüber anderen Kindern' },
+        lehrer: { 'positiv': 'positiv und vertrauensvoll', 'neutral': 'sachlich und neutral', 'angespannt': 'teilweise angespannt', 'konflikthaft': 'von Konflikten geprägt' },
+        erwartung: { 'verhalten_verbessern': 'Verhaltensverbesserung', 'konzentration_verbessern': 'bessere Konzentrationsfähigkeit', 'soziale_integration': 'verbesserte soziale Integration', 'emotionale_stabilitaet': 'emotionale Stabilisierung', 'leistung_verbessern': 'Leistungssteigerung', 'strategien_schule': 'konkrete Handlungsstrategien', 'externe_unterstuetzung': 'externe therapeutische Unterstützung', 'elternarbeit': 'intensivere Elternzusammenarbeit', 'foerderort_pruefung': 'Prüfung des Förderorts', 'abklaerung': 'diagnostische Abklärung' }
+    };
+
+    // Hilfsfunktion für natürliche Aufzählungen
+    const liste = (arr, map) => {
+        const items = arr.map(i => map[i] || i);
+        if (items.length === 0) return '';
+        if (items.length === 1) return items[0];
+        return items.slice(0, -1).join(', ') + ' und ' + items[items.length - 1];
+    };
+
+    // ===== KOHÄRENTER FLIESSTEXT =====
+    let text = '';
+
+    // EINLEITUNG
     if (dsData.ds_schule_info_von) {
         const datum = dsData.ds_schule_info_datum ? ` am ${new Date(dsData.ds_schule_info_datum).toLocaleDateString('de-DE')}` : '';
-        einleitung = `Die folgenden Informationen wurden im Gespräch mit ${dsData.ds_schule_info_von}${datum} erhoben. `;
+        text += `Die folgenden Informationen wurden${datum} im Austausch mit ${dsData.ds_schule_info_von} erhoben. `;
     }
 
-    // Allgemeine Einschätzung
-    if (dsData.ds_schule_verhalten || dsData.ds_schule_leistung) {
-        const verhaltenTexte = { 'unauffaellig': 'unauffällig', 'teilweise': 'teilweise auffällig', 'stark': 'stark auffällig' };
-        const leistungTexte = { 'ueberdurchschnittlich': 'überdurchschnittlich', 'durchschnittlich': 'durchschnittlich', 'unterdurchschnittlich': 'unterdurchschnittlich', 'stark_unter': 'stark unterdurchschnittlich' };
+    // ABSATZ 1: Gesamtbild - Verhalten, Leistung, Stärken in einem Fluss
+    const hatVerhalten = verhalten && verhalten !== '';
+    const hatLeistung = leistung && leistung !== '';
+    const hatPositiv = positiv.length > 0;
+    const hatNegativ = negativ.length > 0;
 
-        if (dsData.ds_schule_verhalten && dsData.ds_schule_leistung) {
-            einleitung += `Das allgemeine Verhalten in der Schule wird als ${verhaltenTexte[dsData.ds_schule_verhalten]} beschrieben, während das schulische Leistungsniveau als ${leistungTexte[dsData.ds_schule_leistung]} eingeschätzt wird.`;
-        } else if (dsData.ds_schule_verhalten) {
-            einleitung += `Das allgemeine Verhalten in der Schule wird als ${verhaltenTexte[dsData.ds_schule_verhalten]} beschrieben.`;
-        } else if (dsData.ds_schule_leistung) {
-            einleitung += `Das schulische Leistungsniveau wird als ${leistungTexte[dsData.ds_schule_leistung]} eingeschätzt.`;
-        }
-    }
-    if (einleitung) paragraphs.push(einleitung);
+    if (hatVerhalten || hatLeistung || hatPositiv || hatNegativ) {
+        text += `${name} zeigt im schulischen Kontext ein differenziertes Profil`;
 
-    // Stärken und positive Verhaltensweisen
-    const positiv = dsData.checkboxes?.ds_schule_positiv || [];
-    if (positiv.length > 0) {
-        const positivTexte = { 'kooperativ': 'kooperatives Verhalten', 'hilfsbereit': 'Hilfsbereitschaft', 'motiviert': 'Motivation', 'respektvoll': 'respektvolles Auftreten', 'kreativ': 'Kreativität', 'selbststaendig': 'Selbstständigkeit', 'frustrationstoleranz': 'gute Frustrationstoleranz', 'empathisch': 'Empathiefähigkeit' };
-        const items = positiv.map(p => positivTexte[p] || p);
-        let staerkenText = 'Als Stärken werden ';
-        if (items.length === 1) {
-            staerkenText += items[0] + ' hervorgehoben.';
+        if (hatVerhalten || hatLeistung) {
+            text += ': ';
+            if (hatVerhalten) {
+                const vText = { 'unauffaellig': 'Das Verhalten wird insgesamt als unauffällig eingeschätzt', 'teilweise': 'Das Verhalten wird als teilweise auffällig beschrieben', 'stark': 'Das Verhalten wird als deutlich auffällig beschrieben' };
+                text += vText[verhalten] || '';
+            }
+            if (hatVerhalten && hatLeistung) text += ', wobei ';
+            if (hatLeistung) {
+                const lText = { 'ueberdurchschnittlich': 'das Leistungsniveau überdurchschnittlich ist', 'durchschnittlich': 'das Leistungsniveau im Durchschnitt liegt', 'unterdurchschnittlich': 'das Leistungsniveau unterdurchschnittlich ist', 'stark_unter': 'das Leistungsniveau deutlich unter dem Durchschnitt liegt' };
+                text += hatVerhalten ? (lText[leistung] || '') : (lText[leistung]?.charAt(0).toUpperCase() + lText[leistung]?.slice(1) || '');
+            }
+            text += '. ';
         } else {
-            staerkenText += items.slice(0, -1).join(', ') + ' sowie ' + items[items.length - 1] + ' hervorgehoben.';
+            text += '. ';
         }
-        paragraphs.push(staerkenText);
-    }
 
-    // Herausfordernde Verhaltensweisen
-    const negativ = dsData.checkboxes?.ds_schule_negativ || [];
-    if (negativ.length > 0) {
-        const negativTexte = { 'unaufmerksam': 'Unaufmerksamkeit', 'impulsiv': 'impulsives Verhalten', 'motorisch_unruhig': 'motorische Unruhe', 'verweigert': 'Arbeitsverweigerung', 'verbal_aggressiv': 'verbale Aggression', 'koerperlich_aggressiv': 'körperliche Aggression', 'rueckzug': 'Rückzugsverhalten', 'stoert': 'Unterrichtsstörungen', 'regelverletzend': 'regelverletzende Verhaltensweisen', 'luegt': 'Lügen oder Täuschen', 'aengstlich': 'ängstliches Verhalten', 'weinerlich': 'Weinerlichkeit', 'niedrige_frustration': 'niedrige Frustrationstoleranz' };
-        const items = negativ.map(n => negativTexte[n] || n);
-        let herausforderndText = 'Als herausfordernd werden ';
-        if (items.length === 1) {
-            herausforderndText += items[0] + ' beschrieben.';
-        } else {
-            herausforderndText += items.slice(0, -1).join(', ') + ' und ' + items[items.length - 1] + ' beschrieben.';
+        // Stärken und Schwächen in einem Satz verbinden
+        if (hatPositiv && hatNegativ) {
+            text += `Einerseits fallen ${liste(positiv, M.positiv)} positiv auf, andererseits stellen ${liste(negativ, M.negativ)} eine Herausforderung dar. `;
+        } else if (hatPositiv) {
+            text += `Dabei fallen insbesondere ${liste(positiv, M.positiv)} positiv auf. `;
+        } else if (hatNegativ) {
+            text += `Herausforderungen zeigen sich vor allem im Bereich ${liste(negativ, M.negativ)}. `;
         }
-        paragraphs.push(herausforderndText);
     }
 
-    // Aufmerksamkeit & Konzentration
-    const aufmerksamkeit = dsData.checkboxes?.ds_schule_aufmerksamkeit || [];
-    if (aufmerksamkeit.length > 0) {
-        const aufmTexte = { 'konzentriert_gut': 'kann sich insgesamt gut konzentrieren', 'kurze_spanne': 'zeigt eine kurze Aufmerksamkeitsspanne', 'leicht_ablenkbar': 'ist leicht ablenkbar', 'strukturhilfe': 'benötigt Strukturierungshilfen', 'einzelbegleitung': 'profitiert von Einzelbegleitung', 'beginnt_nicht': 'beginnt Aufgaben nicht selbstständig', 'beendet_nicht': 'beendet Aufgaben oft nicht', 'tagtraeumer': 'zeigt tagträumerisches Verhalten' };
-        const items = aufmerksamkeit.map(a => aufmTexte[a] || a);
-        paragraphs.push('Im Bereich Aufmerksamkeit und Konzentration wird berichtet, dass der/die Schüler:in ' + items.join(', ') + '.');
-    }
+    // ABSATZ 2: Aufmerksamkeit, Arbeitsverhalten, Emotionen - verbunden
+    const hatAufm = aufmerksamkeit.length > 0;
+    const hatArbeit = arbeit.length > 0;
+    const hatEmotion = emotion.length > 0;
 
-    // Arbeitsverhalten
-    const arbeit = dsData.checkboxes?.ds_schule_arbeit || [];
-    if (arbeit.length > 0) {
-        const arbeitTexte = { 'sorgfaeltig': 'arbeitet sorgfältig', 'chaotisch': 'zeigt ein eher chaotisches Arbeitsverhalten', 'schnell_fertig': 'arbeitet zu schnell und flüchtig', 'sehr_langsam': 'arbeitet sehr langsam', 'perfektionistisch': 'zeigt perfektionistische Tendenzen', 'gibt_auf': 'gibt bei Schwierigkeiten schnell auf', 'material_vergessen': 'vergisst häufig Materialien', 'hausaufgaben_fehlen': 'hat oft keine Hausaufgaben' };
-        const items = arbeit.map(a => arbeitTexte[a] || a);
-        paragraphs.push('Bezüglich des Arbeitsverhaltens wird beschrieben, dass der/die Schüler:in ' + items.join(', ') + '.');
-    }
+    if (hatAufm || hatArbeit || hatEmotion) {
+        text += '\n\nIm Unterrichtsalltag ';
+        const teile = [];
 
-    // Emotionale Reaktionen
-    const emotion = dsData.checkboxes?.ds_schule_emotion || [];
-    if (emotion.length > 0) {
-        const emotionTexte = { 'emotional_stabil': 'emotional stabil wirkt', 'stimmungsschwankungen': 'Stimmungsschwankungen zeigt', 'weint_leicht': 'leicht weint', 'wutausbrueche': 'Wutausbrüche zeigt', 'angst_versagen': 'Versagensängste hat', 'trennungsangst': 'Trennungsängste zeigt', 'somatische_beschwerden': 'somatische Beschwerden äußert', 'selbstwert_niedrig': 'ein niedriges Selbstwertgefühl zeigt' };
-        const items = emotion.map(e => emotionTexte[e] || e);
-        paragraphs.push('In emotionaler Hinsicht wird beobachtet, dass der/die Schüler:in ' + items.join(', ') + '.');
-    }
-
-    // Konfliktsituationen
-    const konflikt = dsData.checkboxes?.ds_schule_konflikt || [];
-    if (konflikt.length > 0) {
-        const konfliktTexte = { 'uebergaenge': 'bei Übergängen und Wechseln', 'freies_spiel': 'im freien Spiel und in der Pause', 'gruppenarbeit': 'bei Gruppenarbeit', 'einzelarbeit': 'bei Einzelarbeit', 'warten': 'wenn er/sie warten muss', 'kritik': 'bei Kritik oder Korrektur', 'ungerechtigkeit': 'bei empfundener Ungerechtigkeit', 'verlieren': 'beim Verlieren', 'unerwartetes': 'bei Unvorhergesehenem', 'leistungsdruck': 'in Leistungssituationen' };
-        const items = konflikt.map(k => konfliktTexte[k] || k);
-        paragraphs.push('Schwierige Situationen entstehen typischerweise ' + items.join(', ') + '.');
-    }
-
-    // Was hilft
-    const hilft = dsData.checkboxes?.ds_schule_hilft || [];
-    if (hilft.length > 0) {
-        const hilftTexte = { 'klare_ansagen': 'klare, kurze Ansagen', 'wiederholungen': 'Wiederholungen', 'visualisierungen': 'Visualisierungen', 'bewegungspausen': 'Bewegungspausen', 'ruhige_ecke': 'eine Rückzugsmöglichkeit', 'einzelansprache': 'persönliche Einzelansprache', 'lob': 'Lob und positive Verstärkung', 'vorwarnung': 'Vorwarnung bei Wechseln', 'kleingruppe': 'Arbeit in der Kleingruppe', 'naehe_lehrer': 'Nähe zur Lehrperson' };
-        const items = hilft.map(h => hilftTexte[h] || h);
-        paragraphs.push('Als hilfreiche Strategien haben sich erwiesen: ' + items.join(', ') + '.');
-    }
-
-    // Ergänzende Details
-    if (dsData.ds_schule_verhalten_details) {
-        paragraphs.push(dsData.ds_schule_verhalten_details);
-    }
-
-    // Beziehungen
-    let beziehungsText = '';
-    if (dsData.ds_schule_mitschueler) {
-        const mitschuelerTexte = { 'gut_integriert': 'gut in die Klassengemeinschaft integriert', 'einige_freunde': 'hat einige Freundschaften', 'isoliert': 'eher isoliert', 'konflikthaft': 'oft in Konflikte mit Peers verwickelt', 'gemobbt': 'wird von Mitschülern gemobbt', 'mobbt': 'zeigt Mobbingverhalten gegenüber anderen' };
-        beziehungsText = 'Im sozialen Bereich ist der/die Schüler:in ' + (mitschuelerTexte[dsData.ds_schule_mitschueler] || dsData.ds_schule_mitschueler);
-    }
-    if (dsData.ds_schule_lehrer) {
-        const lehrerTexte = { 'positiv': 'positiv', 'neutral': 'neutral', 'angespannt': 'angespannt', 'konflikthaft': 'konflikthaft' };
-        if (beziehungsText) {
-            beziehungsText += '. Die Beziehung zu den Lehrpersonen wird als ' + (lehrerTexte[dsData.ds_schule_lehrer] || dsData.ds_schule_lehrer) + ' beschrieben.';
-        } else {
-            beziehungsText = 'Die Beziehung zu den Lehrpersonen wird als ' + (lehrerTexte[dsData.ds_schule_lehrer] || dsData.ds_schule_lehrer) + ' beschrieben.';
+        if (hatAufm) {
+            teile.push(`zeigt sich im Bereich Aufmerksamkeit und Konzentration, dass ${name} ${liste(aufmerksamkeit, M.aufmerksamkeit)}`);
         }
-    } else if (beziehungsText) {
-        beziehungsText += '.';
-    }
-    if (beziehungsText) paragraphs.push(beziehungsText);
-
-    // Erwartungen der Schule
-    const erwartung = dsData.checkboxes?.ds_schule_erwartung || [];
-    if (erwartung.length > 0 || dsData.ds_schule_erwartungen) {
-        const erwartungTexte = { 'verhalten_verbessern': 'eine Verbesserung des Verhaltens', 'konzentration_verbessern': 'eine Verbesserung der Konzentration', 'soziale_integration': 'eine bessere soziale Integration', 'emotionale_stabilitaet': 'mehr emotionale Stabilität', 'leistung_verbessern': 'eine Verbesserung der schulischen Leistungen', 'strategien_schule': 'konkrete Strategien für den Unterricht', 'externe_unterstuetzung': 'externe therapeutische Unterstützung', 'elternarbeit': 'eine bessere Zusammenarbeit mit den Eltern', 'foerderort_pruefung': 'die Prüfung eines anderen Förderorts', 'abklaerung': 'eine diagnostische Abklärung' };
-        let erwartungsText = 'Die Schule erhofft sich von der Intervention ';
-        if (erwartung.length > 0) {
-            const items = erwartung.map(e => erwartungTexte[e] || e);
-            if (items.length === 1) {
-                erwartungsText += items[0];
+        if (hatArbeit) {
+            teile.push(`${hatAufm ? 'bezüglich des Arbeitsverhaltens' : 'zeigt sich, dass ' + name} ${liste(arbeit, M.arbeit)}`);
+        }
+        if (hatEmotion) {
+            const emotionItems = emotion.map(e => M.emotion[e] || e);
+            if (emotion.includes('emotional_stabil')) {
+                teile.push(`${name} wirkt emotional stabil`);
             } else {
-                erwartungsText += items.slice(0, -1).join(', ') + ' sowie ' + items[items.length - 1];
+                teile.push(`zeigen sich emotional ${liste(emotion.filter(e => e !== 'emotional_stabil'), M.emotion)}`);
             }
         }
-        if (dsData.ds_schule_erwartungen) {
-            erwartungsText += erwartung.length > 0 ? '. Zusätzlich: ' + dsData.ds_schule_erwartungen : dsData.ds_schule_erwartungen;
-        }
-        erwartungsText += erwartungsText.endsWith('.') ? '' : '.';
-        paragraphs.push(erwartungsText);
+
+        text += teile.join('; ') + '. ';
     }
 
-    return paragraphs.join('\n\n') || '(Sichtweise der Schule wird hier eingefügt)';
+    // ABSATZ 3: Konflikte und Strategien - als Einheit
+    const hatKonflikt = konflikt.length > 0;
+    const hatHilft = hilft.length > 0;
+
+    if (hatKonflikt || hatHilft) {
+        if (hatKonflikt && hatHilft) {
+            text += `\n\nSchwierige Situationen entstehen besonders bei ${liste(konflikt, M.konflikt)}, wobei sich ${liste(hilft, M.hilft)} als hilfreiche Strategien erwiesen haben. `;
+        } else if (hatKonflikt) {
+            text += `\n\nSchwierige Situationen entstehen besonders bei ${liste(konflikt, M.konflikt)}. `;
+        } else if (hatHilft) {
+            text += `\n\nAls hilfreiche Unterstützungsstrategien haben sich ${liste(hilft, M.hilft)} bewährt. `;
+        }
+    }
+
+    // Ergänzende Details einfügen
+    if (dsData.ds_schule_verhalten_details) {
+        text += dsData.ds_schule_verhalten_details + ' ';
+    }
+
+    // ABSATZ 4: Soziale Beziehungen - als Narrativ
+    const hatMitschueler = mitschueler && mitschueler !== '';
+    const hatLehrer = lehrer && lehrer !== '';
+
+    if (hatMitschueler || hatLehrer) {
+        text += '\n\nIm sozialen Bereich ';
+        if (hatMitschueler) {
+            text += `ist ${name} ${M.mitschueler[mitschueler] || mitschueler}`;
+        }
+        if (hatMitschueler && hatLehrer) {
+            text += `. Die Beziehung zu den Lehrpersonen gestaltet sich ${M.lehrer[lehrer] || lehrer}`;
+        } else if (hatLehrer) {
+            text += `gestaltet sich die Beziehung zu den Lehrpersonen ${M.lehrer[lehrer] || lehrer}`;
+        }
+        text += '. ';
+    }
+
+    // ABSCHLUSS: Erwartungen
+    const hatErwartung = erwartungen.length > 0;
+    if (hatErwartung || dsData.ds_schule_erwartungen) {
+        text += `\n\nVon der Maßnahme erhofft sich die Schule insbesondere ${hatErwartung ? liste(erwartungen, M.erwartung) : ''}`;
+        if (dsData.ds_schule_erwartungen) {
+            text += hatErwartung ? ` sowie ${dsData.ds_schule_erwartungen}` : dsData.ds_schule_erwartungen;
+        }
+        text += '.';
+    }
+
+    return text.trim() || '(Sichtweise der Schule)';
 }
 
 function generateSichtweiseSchuelerText(dsData, stammdaten) {
-    const paragraphs = [];
-    const studentName = stammdaten.schueler_name?.split(',')[0]?.trim() || 'Das Kind';
+    // Hole alle relevanten Daten
+    const name = stammdaten?.schueler_name?.split(',')[0]?.trim() || document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
+    const wohlbefinden = dsData.ds_schueler_wohlbefinden;
+    const leidensdruck = dsData.ds_schueler_leidensdruck;
+    const belastungen = dsData.checkboxes?.ds_schueler_belastung || [];
+    const wichtig = dsData.checkboxes?.ds_schueler_wichtig || [];
+    const selbst = dsData.checkboxes?.ds_schueler_selbst || [];
+    const reaktion = dsData.checkboxes?.ds_schueler_reaktion || [];
+    const hobbys = dsData.checkboxes?.ds_schueler_hobbys || [];
+    const wuensche = dsData.checkboxes?.ds_schueler_wunsch || [];
 
-    // Einleitung mit Gespräch und Wohlbefinden
-    let einleitung = '';
+    // Text-Mappings für natürliche Sprache
+    const M = {
+        wohlbefinden: { 'sehr_wohl': 'sehr wohl', 'meistens_wohl': 'meistens wohl', 'mal_so': 'mal wohl, mal weniger wohl', 'eher_unwohl': 'eher unwohl', 'sehr_unwohl': 'sehr unwohl' },
+        leidensdruck: { 'nein': '', 'leicht': 'ein leichter Leidensdruck', 'mittel': 'ein deutlicher Leidensdruck', 'stark': 'ein erheblicher Leidensdruck' },
+        belastung: { 'schulische_anforderungen': 'die schulischen Anforderungen', 'konflikte_mitschueler': 'Konflikte mit Mitschülern', 'konflikte_lehrer': 'Konflikte mit Lehrern', 'situation_zuhause': 'die Situation zu Hause', 'traurigkeit_aengste': 'Traurigkeit und Ängste', 'wutausbrueche': 'die eigenen Wutausbrüche', 'nichts': '' },
+        wichtig: { 'freunde': 'Freundschaften', 'gute_noten': 'gute Noten', 'gerecht': 'faire Behandlung', 'ruhe': 'Ruhe', 'nicht_auffallen': 'nicht aufzufallen', 'spass': 'Spaß', 'respektiert': 'Respekt', 'pause': 'die Pausen' },
+        selbst: { 'bin_gut_schule': 'schätzt sich als gut in der Schule ein', 'bin_schlecht_schule': 'sieht sich als schlecht in der Schule', 'bin_lieb': 'beschreibt sich selbst als "lieb"', 'bin_boese': 'bezeichnet sich selbst als "böse" oder problematisch', 'haben_mich_gern': 'fühlt sich von anderen gemocht', 'keiner_mag_mich': 'glaubt, dass andere es nicht mögen', 'strafe_verdient': 'akzeptiert Strafen als verdient', 'ungerechtigkeit': 'empfindet häufig Ungerechtigkeit', 'problembewusstsein': 'zeigt ein gewisses Problembewusstsein', 'kein_problembewusstsein': 'zeigt kein Problembewusstsein' },
+        reaktion: { 'hilfe_holen': 'Hilfe zu holen', 'zurueckziehen': 'sich zurückzuziehen', 'weinen': 'zu weinen', 'schreien': 'zu schreien oder laut zu werden', 'hauen': 'zu schlagen oder zu treten', 'weglaufen': 'wegzulaufen', 'ignorieren': 'das Problem zu ignorieren', 'schuld_anderen': 'anderen die Schuld zu geben' },
+        hobbys: { 'sport': 'Sport', 'gaming': 'Videospiele', 'musik': 'Musik', 'lesen': 'Lesen', 'kreativ': 'kreative Aktivitäten', 'freunde': 'Zeit mit Freunden', 'tiere': 'Tiere', 'natur': 'Natur' },
+        wunsch: { 'bessere_noten': 'bessere schulische Leistungen', 'mehr_freunde': 'mehr Freundschaften', 'weniger_streit': 'weniger Konflikte', 'ruhe_zuhause': 'mehr Harmonie zu Hause', 'eltern_zusammen': 'dass die Eltern wieder zusammenkommen', 'weniger_druck': 'weniger Leistungsdruck', 'andere_klasse': 'einen Klassenwechsel', 'andere_schule': 'einen Schulwechsel', 'normal_sein': 'so zu sein wie die anderen', 'in_ruhe_lassen': 'in Ruhe gelassen zu werden', 'verstanden_werden': 'besser verstanden zu werden', 'hilfe_bekommen': 'Unterstützung zu erhalten' },
+        beziehung: { 'sehr_gut': 'sehr gut', 'gut': 'gut', 'okay': 'okay', 'schwierig': 'schwierig', 'ka': '' },
+        freunde: { 'viele': 'über einen großen Freundeskreis', 'einige': 'über einige Freunde', 'bester_freund': 'über einen besten Freund bzw. eine beste Freundin', 'wenige': 'über wenige bis keine Freundschaften' }
+    };
+
+    // Hilfsfunktion für natürliche Aufzählungen
+    const liste = (arr, map) => {
+        const items = arr.filter(i => i && map[i]).map(i => map[i]);
+        if (items.length === 0) return '';
+        if (items.length === 1) return items[0];
+        return items.slice(0, -1).join(', ') + ' und ' + items[items.length - 1];
+    };
+
+    // ===== KOHÄRENTER FLIESSTEXT =====
+    let text = '';
+
+    // EINLEITUNG: Gesprächskontext und emotionales Befinden
     if (dsData.ds_schueler_gespraech_datum) {
-        einleitung = `Im Gespräch am ${new Date(dsData.ds_schueler_gespraech_datum).toLocaleDateString('de-DE')} äußerte sich ${studentName} zu seiner/ihrer Situation. `;
+        const datum = new Date(dsData.ds_schueler_gespraech_datum).toLocaleDateString('de-DE');
+        text += `Im Gespräch am ${datum} wurde die persönliche Perspektive von ${name} erhoben. `;
     }
 
-    if (dsData.ds_schueler_wohlbefinden) {
-        const wohlbefindenTexte = { 'sehr_wohl': 'sehr wohl', 'meistens_wohl': 'meistens wohl', 'mal_so': 'mal wohl, mal weniger wohl', 'eher_unwohl': 'eher unwohl', 'sehr_unwohl': 'sehr unwohl' };
-        einleitung += `${studentName} fühlt sich in der Schule ${wohlbefindenTexte[dsData.ds_schueler_wohlbefinden]}.`;
+    // ABSATZ 1: Wohlbefinden, Leidensdruck und Belastungen als zusammenhängendes Narrativ
+    const hatWohl = wohlbefinden && wohlbefinden !== '';
+    const hatLeiden = leidensdruck && leidensdruck !== '' && leidensdruck !== 'nein';
+    const hatBelast = belastungen.length > 0 && !belastungen.includes('nichts');
 
-        if (dsData.ds_schueler_leidensdruck && dsData.ds_schueler_leidensdruck !== 'nein') {
-            const leidensdruckTexte = { 'leicht': 'Ein leichter', 'mittel': 'Ein deutlicher', 'stark': 'Ein erheblicher' };
-            einleitung += ` ${leidensdruckTexte[dsData.ds_schueler_leidensdruck]} Leidensdruck ist erkennbar.`;
+    if (hatWohl || hatLeiden || hatBelast) {
+        if (hatWohl) {
+            text += `${name} fühlt sich in der Schule ${M.wohlbefinden[wohlbefinden]}`;
+            if (hatLeiden) {
+                text += `, wobei ${M.leidensdruck[leidensdruck]} erkennbar ist`;
+            }
+            text += '. ';
+        }
+
+        if (hatBelast) {
+            const belastListe = liste(belastungen, M.belastung);
+            if (hatWohl) {
+                text += `Als belastend empfindet ${name} insbesondere ${belastListe}. `;
+            } else {
+                text += `${name} beschreibt ${belastListe} als belastend. `;
+            }
         }
     }
-    if (einleitung) paragraphs.push(einleitung);
 
-    // Belastungen
-    const belastungen = dsData.checkboxes?.ds_schueler_belastung || [];
-    if (belastungen.length > 0 && !belastungen.includes('nichts')) {
-        const belastungTexte = { 'schulische_anforderungen': 'die schulischen Anforderungen', 'konflikte_mitschueler': 'Konflikte mit Mitschülern', 'konflikte_lehrer': 'Konflikte mit Lehrern', 'situation_zuhause': 'die Situation zu Hause', 'traurigkeit_aengste': 'Traurigkeit und Ängste', 'wutausbrueche': 'die eigenen Wutausbrüche' };
-        const items = belastungen.map(b => belastungTexte[b] || b);
-        paragraphs.push('Als belastend beschreibt das Kind ' + items.join(', ') + '.');
+    // ABSATZ 2: Was dem Kind wichtig ist und Selbstwahrnehmung - verbunden
+    const hatWichtig = wichtig.length > 0;
+    const hatSelbst = selbst.length > 0;
+
+    if (hatWichtig || hatSelbst) {
+        text += '\n\n';
+        if (hatWichtig) {
+            text += `In der Schule sind ${name} vor allem ${liste(wichtig, M.wichtig)} wichtig`;
+            if (hatSelbst) {
+                text += '. ';
+            } else {
+                text += '. ';
+            }
+        }
+
+        if (hatSelbst) {
+            // Gruppiere positive und negative Selbstwahrnehmung
+            const positivesSelbst = selbst.filter(s => ['bin_gut_schule', 'bin_lieb', 'haben_mich_gern', 'strafe_verdient', 'problembewusstsein'].includes(s));
+            const negativesSelbst = selbst.filter(s => ['bin_schlecht_schule', 'bin_boese', 'keiner_mag_mich', 'ungerechtigkeit', 'kein_problembewusstsein'].includes(s));
+
+            if (positivesSelbst.length > 0 && negativesSelbst.length > 0) {
+                text += `Bezüglich der Selbstwahrnehmung zeigt sich ein differenziertes Bild: ${name} ${positivesSelbst.map(s => M.selbst[s]).join(' und ')}, jedoch ${negativesSelbst.map(s => M.selbst[s]).join(' und ')}. `;
+            } else if (positivesSelbst.length > 0) {
+                text += `Die Selbstwahrnehmung ist überwiegend positiv: ${name} ${positivesSelbst.map(s => M.selbst[s]).join(' und ')}. `;
+            } else if (negativesSelbst.length > 0) {
+                text += `Die Selbstwahrnehmung zeigt Belastungen: ${name} ${negativesSelbst.map(s => M.selbst[s]).join(' und ')}. `;
+            }
+        }
     }
 
-    // Was ist dem Kind wichtig
-    const wichtig = dsData.checkboxes?.ds_schueler_wichtig || [];
-    if (wichtig.length > 0) {
-        const wichtigTexte = { 'freunde': 'Freunde zu haben', 'gute_noten': 'gute Noten', 'gerecht': 'gerecht behandelt zu werden', 'ruhe': 'Ruhe zu haben', 'nicht_auffallen': 'nicht aufzufallen', 'spass': 'Spaß zu haben', 'respektiert': 'respektiert zu werden', 'pause': 'die Pause und das Spielen' };
-        const items = wichtig.map(w => wichtigTexte[w] || w);
-        paragraphs.push('In der Schule ist dem Kind besonders wichtig: ' + items.join(', ') + '.');
-    }
+    // ABSATZ 3: Problemverhalten und Beziehungen als zusammenhängendes Bild
+    const hatReaktion = reaktion.length > 0;
+    const hatBezMutter = dsData.ds_schueler_beziehung_mutter && dsData.ds_schueler_beziehung_mutter !== 'ka';
+    const hatBezVater = dsData.ds_schueler_beziehung_vater && dsData.ds_schueler_beziehung_vater !== 'ka';
+    const hatFreunde = dsData.ds_schueler_freunde && dsData.ds_schueler_freunde !== '';
 
-    // Selbstwahrnehmung
-    const selbst = dsData.checkboxes?.ds_schueler_selbst || [];
-    if (selbst.length > 0) {
-        let selbstText = 'Bezüglich der Selbstwahrnehmung zeigt sich, dass ';
-        const selbstTexte = { 'bin_gut_schule': 'das Kind sich als gut in der Schule einschätzt', 'bin_schlecht_schule': 'das Kind sich als schlecht in der Schule einschätzt', 'bin_lieb': 'es sich als "lieb" sieht', 'bin_boese': 'es sich als "böse" oder problematisch sieht', 'haben_mich_gern': 'es sich von anderen gemocht fühlt', 'keiner_mag_mich': 'es sich von anderen abgelehnt fühlt', 'strafe_verdient': 'es Strafen als verdient akzeptiert', 'ungerechtigkeit': 'es sich oft ungerecht behandelt fühlt', 'problembewusstsein': 'ein gewisses Problembewusstsein vorhanden ist', 'kein_problembewusstsein': 'kein Problembewusstsein erkennbar ist' };
-        const items = selbst.map(s => selbstTexte[s] || s);
-        selbstText += items.join('; ') + '.';
-        paragraphs.push(selbstText);
-    }
+    if (hatReaktion || hatBezMutter || hatBezVater || hatFreunde) {
+        text += '\n\n';
 
-    // Reaktion auf Probleme
-    const reaktion = dsData.checkboxes?.ds_schueler_reaktion || [];
-    if (reaktion.length > 0) {
-        const reaktionTexte = { 'hilfe_holen': 'holt sich Hilfe', 'zurueckziehen': 'zieht sich zurück', 'weinen': 'weint', 'schreien': 'schreit oder wird laut', 'hauen': 'schlägt oder tritt', 'weglaufen': 'läuft weg', 'ignorieren': 'ignoriert das Problem', 'schuld_anderen': 'gibt anderen die Schuld' };
-        const items = reaktion.map(r => reaktionTexte[r] || r);
-        paragraphs.push('Bei Problemen reagiert das Kind typischerweise, indem es ' + items.join(', ') + '.');
+        if (hatReaktion) {
+            text += `Bei Problemen oder Konflikten neigt ${name} dazu, ${liste(reaktion, M.reaktion)}. `;
+        }
+
+        // Beziehungen als kohärenter Text
+        if (hatBezMutter || hatBezVater || hatFreunde) {
+            let bezText = 'Im Bereich der Beziehungen ';
+            const bezTeile = [];
+
+            if (hatBezMutter && hatBezVater) {
+                bezTeile.push(`beschreibt ${name} die Beziehung zur Mutter als ${M.beziehung[dsData.ds_schueler_beziehung_mutter]} und die zum Vater als ${M.beziehung[dsData.ds_schueler_beziehung_vater]}`);
+            } else if (hatBezMutter) {
+                bezTeile.push(`beschreibt ${name} die Beziehung zur Mutter als ${M.beziehung[dsData.ds_schueler_beziehung_mutter]}`);
+            } else if (hatBezVater) {
+                bezTeile.push(`beschreibt ${name} die Beziehung zum Vater als ${M.beziehung[dsData.ds_schueler_beziehung_vater]}`);
+            }
+
+            if (hatFreunde) {
+                if (bezTeile.length > 0) {
+                    bezTeile.push(`verfügt ${M.freunde[dsData.ds_schueler_freunde]}`);
+                } else {
+                    bezTeile.push(`verfügt ${name} ${M.freunde[dsData.ds_schueler_freunde]}`);
+                }
+            }
+
+            text += bezTeile.join(' und ') + '. ';
+
+            if (dsData.ds_schueler_vertrauensperson) {
+                text += `Als wichtige Vertrauensperson in der Schule benennt ${name} ${dsData.ds_schueler_vertrauensperson}. `;
+            }
+        }
     }
 
     // Ergänzende Beschreibung
     if (dsData.ds_schueler_beschreibung) {
-        paragraphs.push(dsData.ds_schueler_beschreibung);
+        text += '\n\n' + dsData.ds_schueler_beschreibung + ' ';
     }
 
-    // Beziehungen
-    let beziehungText = '';
-    if (dsData.ds_schueler_beziehung_mutter && dsData.ds_schueler_beziehung_mutter !== 'ka') {
-        const bez = { 'sehr_gut': 'sehr gut', 'gut': 'gut', 'okay': 'okay', 'schwierig': 'schwierig' };
-        beziehungText = 'Die Beziehung zur Mutter beschreibt das Kind als ' + (bez[dsData.ds_schueler_beziehung_mutter] || dsData.ds_schueler_beziehung_mutter);
-    }
-    if (dsData.ds_schueler_beziehung_vater && dsData.ds_schueler_beziehung_vater !== 'ka') {
-        const bez = { 'sehr_gut': 'sehr gut', 'gut': 'gut', 'okay': 'okay', 'schwierig': 'schwierig' };
-        if (beziehungText) {
-            beziehungText += ', die zum Vater als ' + (bez[dsData.ds_schueler_beziehung_vater] || dsData.ds_schueler_beziehung_vater);
-        } else {
-            beziehungText = 'Die Beziehung zum Vater beschreibt das Kind als ' + (bez[dsData.ds_schueler_beziehung_vater] || dsData.ds_schueler_beziehung_vater);
+    // ABSATZ 4: Interessen und Wünsche - als Abschluss
+    const hatHobbys = hobbys.length > 0;
+    const hatWuensche = wuensche.length > 0 || dsData.ds_schueler_wuensche;
+
+    if (hatHobbys || hatWuensche) {
+        text += '\n\n';
+
+        if (hatHobbys) {
+            text += `In der Freizeit interessiert sich ${name} besonders für ${liste(hobbys, M.hobbys)}`;
+            if (dsData.ds_schueler_hobbys_details) {
+                text += `, insbesondere ${dsData.ds_schueler_hobbys_details}`;
+            }
+            text += '. ';
+        }
+
+        if (hatWuensche) {
+            const wunschListe = liste(wuensche, M.wunsch);
+            if (wunschListe) {
+                text += `Für die Zukunft wünscht sich ${name} vor allem ${wunschListe}`;
+                if (dsData.ds_schueler_wuensche) {
+                    text += ` sowie ${dsData.ds_schueler_wuensche}`;
+                }
+                text += '.';
+            } else if (dsData.ds_schueler_wuensche) {
+                text += `Für die Zukunft wünscht sich ${name} ${dsData.ds_schueler_wuensche}.`;
+            }
         }
     }
-    if (dsData.ds_schueler_freunde) {
-        const freundeTexte = { 'viele': 'viele Freunde', 'einige': 'einige Freunde', 'bester_freund': 'einen besten Freund/eine beste Freundin', 'wenige': 'wenige oder keine Freunde' };
-        if (beziehungText) {
-            beziehungText += `. Das Kind gibt an, ${freundeTexte[dsData.ds_schueler_freunde]} zu haben`;
-        } else {
-            beziehungText = `Das Kind gibt an, ${freundeTexte[dsData.ds_schueler_freunde]} zu haben`;
-        }
-    }
-    if (dsData.ds_schueler_vertrauensperson) {
-        beziehungText += beziehungText ? `, und ${dsData.ds_schueler_vertrauensperson} als Vertrauensperson in der Schule` : `Als Vertrauensperson in der Schule nennt das Kind ${dsData.ds_schueler_vertrauensperson}`;
-    }
-    if (beziehungText) paragraphs.push(beziehungText + '.');
 
-    // Hobbys und Interessen
-    const hobbys = dsData.checkboxes?.ds_schueler_hobbys || [];
-    if (hobbys.length > 0) {
-        const hobbyTexte = { 'sport': 'Sport', 'gaming': 'Gaming und Computer', 'musik': 'Musik', 'lesen': 'Lesen', 'kreativ': 'kreative Aktivitäten', 'freunde': 'Zeit mit Freunden verbringen', 'tiere': 'Tiere', 'natur': 'Zeit in der Natur' };
-        let hobbyText = 'In seiner Freizeit interessiert sich das Kind für ' + hobbys.map(h => hobbyTexte[h] || h).join(', ');
-        if (dsData.ds_schueler_hobbys_details) hobbyText += ` (${dsData.ds_schueler_hobbys_details})`;
-        paragraphs.push(hobbyText + '.');
-    }
-
-    // Wünsche
-    const wuensche = dsData.checkboxes?.ds_schueler_wunsch || [];
-    if (wuensche.length > 0 || dsData.ds_schueler_wuensche) {
-        const wunschTexte = { 'bessere_noten': 'bessere Noten', 'mehr_freunde': 'mehr Freunde', 'weniger_streit': 'weniger Streit', 'ruhe_zuhause': 'mehr Ruhe zu Hause', 'eltern_zusammen': 'dass die Eltern wieder zusammenkommen', 'weniger_druck': 'weniger Druck', 'andere_klasse': 'in eine andere Klasse zu kommen', 'andere_schule': 'die Schule zu wechseln', 'normal_sein': '"normal" zu sein', 'in_ruhe_lassen': 'in Ruhe gelassen zu werden', 'verstanden_werden': 'verstanden zu werden', 'hilfe_bekommen': 'Hilfe zu bekommen' };
-        let wunschText = 'Das Kind wünscht sich ';
-        const items = wuensche.map(w => wunschTexte[w] || w);
-        if (items.length > 0) {
-            wunschText += items.join(', ');
-            if (dsData.ds_schueler_wuensche) wunschText += '. Zudem: ' + dsData.ds_schueler_wuensche;
-        } else {
-            wunschText += dsData.ds_schueler_wuensche;
-        }
-        paragraphs.push(wunschText + (wunschText.endsWith('.') ? '' : '.'));
-    }
-
-    return paragraphs.join('\n\n') || '(Sichtweise des/der Schüler:in wird hier eingefügt)';
+    return text.trim() || '(Sichtweise des Kindes wird hier eingefügt)';
 }
 
 function generateSichtweiseElternText(dsData) {
-    const paragraphs = [];
+    // Hole alle relevanten Daten
+    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
+    const verhalten = dsData.ds_eltern_verhalten;
+    const beziehung = dsData.ds_eltern_beziehung;
+    const zusammenarbeit = dsData.ds_eltern_zusammenarbeit;
+    const positiv = dsData.checkboxes?.ds_eltern_positiv || [];
+    const negativ = dsData.checkboxes?.ds_eltern_negativ || [];
+    const konflikt = dsData.checkboxes?.ds_eltern_konflikt || [];
+    const stil = dsData.checkboxes?.ds_eltern_stil || [];
+    const belastung = dsData.checkboxes?.ds_eltern_belastung_cb || [];
+    const erwartung = dsData.checkboxes?.ds_eltern_erwartung || [];
+    const mitWem = dsData.checkboxes?.ds_eltern_gespraech_mit || [];
 
-    // Einleitung mit Gespräch
-    let einleitung = '';
+    // Text-Mappings für natürliche Sprache
+    const M = {
+        verhalten: { 'unauffaellig': 'überwiegend unauffällig und altersentsprechend', 'teilweise': 'teilweise auffällig', 'stark': 'deutlich auffällig und herausfordernd' },
+        beziehung: { 'sehr_gut': 'sehr eng und liebevoll', 'gut': 'gut und tragfähig', 'ambivalent': 'ambivalent, geprägt von Nähe und Konflikten gleichermaßen', 'angespannt': 'angespannt', 'schwierig': 'aktuell schwierig und belastet' },
+        positiv: { 'hilfsbereit': 'Hilfsbereitschaft im Haushalt', 'liebevoll': 'liebevolles Verhalten gegenüber Familienmitgliedern', 'selbststaendig': 'Selbstständigkeit', 'regeln': 'grundsätzliche Regelakzeptanz', 'tagesstruktur': 'eine gute Tagesstruktur' },
+        negativ: { 'wutausbrueche': 'Wutausbrüchen', 'geschwisterkonflikte': 'häufigen Geschwisterkonflikten', 'verweigert_regeln': 'Regelverweigerung', 'schlafprobleme': 'Schlafproblemen', 'essprobleme': 'Essproblemen', 'aengste': 'Ängsten', 'rueckzug': 'Rückzugsverhalten', 'medienkonsum': 'exzessivem Medienkonsum', 'einnaessen': 'Einnässen oder Einkoten', 'selbstverletzung': 'selbstverletzendem Verhalten', 'hausaufgaben': 'Konflikten bei den Hausaufgaben' },
+        konflikt: { 'morgens': 'morgens beim Aufstehen', 'hausaufgaben': 'bei den Hausaufgaben', 'essen': 'beim Essen', 'schlafengehen': 'beim Schlafengehen', 'bildschirmzeit': 'rund um die Medienzeit', 'pflichten': 'bei häuslichen Pflichten', 'geschwister': 'zwischen den Geschwistern', 'nein_akzeptieren': 'wenn ein "Nein" akzeptiert werden soll' },
+        stil: { 'konsequent': 'konsequent', 'inkonsequent': 'manchmal inkonsequent', 'streng': 'eher streng', 'nachgiebig': 'eher nachgiebig', 'uneinig': 'bezüglich der Erziehung nicht immer einig', 'ueberfordert': 'zeitweise überfordert', 'strukturiert': 'mit gut strukturiertem Alltag', 'wenig_struktur': 'mit wenig fester Tagesstruktur' },
+        belastung: { 'staendige_konflikte': 'die ständigen Konflikte', 'sorge_zukunft': 'Sorgen um die Zukunft des Kindes', 'schule_beschwerden': 'die regelmäßigen Beschwerden aus der Schule', 'hilflosigkeit': 'Gefühle der Hilflosigkeit', 'aggressives_verhalten': 'das aggressive Verhalten', 'keine_besserung': 'ausbleibende Verbesserungen trotz Bemühungen', 'erschoepfung': 'Erschöpfung', 'partnerkonflikt': 'Partnerschaftskonflikte wegen des Kindes', 'schuldgefuehle': 'Schuldgefühle', 'soziale_isolation': 'soziale Isolation' },
+        erwartung: { 'verhalten_verbessern': 'Verhaltensverbesserung', 'entspannung_zuhause': 'eine entspanntere häusliche Situation', 'strategien_eltern': 'konkrete Erziehungsstrategien', 'schule_verbessern': 'bessere schulische Leistungen', 'abklaerung': 'eine diagnostische Abklärung', 'therapie': 'therapeutische Unterstützung', 'elternberatung': 'Beratung für sich selbst', 'anderer_foerderort': 'Prüfung eines anderen Förderorts', 'verstehen': 'das Kind besser zu verstehen', 'bestätigung': 'Bestätigung ihrer Erziehungsbemühungen' },
+        zusammenarbeit: { 'sehr_hoch': 'sehr hoch, die Eltern zeigen sich motiviert und engagiert', 'hoch': 'hoch', 'mittel': 'mittelmäßig', 'zurueckhaltend': 'eher zurückhaltend', 'ablehnend': 'ablehnend' }
+    };
+
+    // Hilfsfunktion für natürliche Aufzählungen
+    const liste = (arr, map) => {
+        const items = arr.filter(i => i && map[i]).map(i => map[i]);
+        if (items.length === 0) return '';
+        if (items.length === 1) return items[0];
+        return items.slice(0, -1).join(', ') + ' und ' + items[items.length - 1];
+    };
+
+    // ===== KOHÄRENTER FLIESSTEXT =====
+    let text = '';
+
+    // EINLEITUNG: Gesprächskontext
     if (dsData.ds_eltern_gespraech_datum) {
         const datum = new Date(dsData.ds_eltern_gespraech_datum).toLocaleDateString('de-DE');
-        const mitWem = dsData.checkboxes?.ds_eltern_gespraech_mit || [];
         let mitText = '';
-        if (mitWem.includes('beide')) mitText = 'beiden Eltern';
-        else if (mitWem.includes('mutter') && mitWem.includes('vater')) mitText = 'beiden Eltern';
+        if (mitWem.includes('beide')) mitText = 'beiden Elternteilen';
+        else if (mitWem.includes('mutter') && mitWem.includes('vater')) mitText = 'beiden Elternteilen';
         else if (mitWem.includes('mutter')) mitText = 'der Mutter';
         else if (mitWem.includes('vater')) mitText = 'dem Vater';
         else if (mitWem.includes('andere')) mitText = 'dem/der Erziehungsberechtigten';
 
-        einleitung = `Das Elterngespräch fand am ${datum}${mitText ? ' mit ' + mitText : ''} statt. `;
+        text += `Im Elterngespräch am ${datum}${mitText ? ' mit ' + mitText : ''} wurde die familiäre Perspektive erhoben. `;
     }
 
-    // Verhalten zu Hause
-    if (dsData.ds_eltern_verhalten) {
-        const verhaltenTexte = { 'unauffaellig': 'überwiegend unauffällig', 'teilweise': 'teilweise auffällig', 'stark': 'deutlich auffällig' };
-        einleitung += `Das Verhalten des Kindes zu Hause wird als ${verhaltenTexte[dsData.ds_eltern_verhalten]} beschrieben.`;
-    }
-    if (einleitung) paragraphs.push(einleitung);
+    // ABSATZ 1: Verhalten zu Hause und Beziehungsqualität
+    const hatVerhalten = verhalten && verhalten !== '';
+    const hatBeziehung = beziehung && beziehung !== '';
+    const hatPositiv = positiv.length > 0;
+    const hatNegativ = negativ.length > 0;
 
-    // Positive Verhaltensweisen
-    const positiv = dsData.checkboxes?.ds_eltern_positiv || [];
-    if (positiv.length > 0) {
-        const positivTexte = { 'hilfsbereit': 'hilft im Haushalt mit', 'liebevoll': 'zeigt liebevolles Verhalten gegenüber Familienmitgliedern', 'selbststaendig': 'ist selbstständig', 'regeln': 'hält sich im Allgemeinen an Regeln', 'tagesstruktur': 'hat eine gute Tagesstruktur' };
-        const items = positiv.map(p => positivTexte[p] || p);
-        paragraphs.push('Positiv heben die Eltern hervor, dass das Kind ' + items.join(', ') + '.');
-    }
+    if (hatVerhalten || hatBeziehung || hatPositiv || hatNegativ) {
+        if (hatVerhalten) {
+            text += `Das Verhalten von ${name} zu Hause wird von den Eltern als ${M.verhalten[verhalten]} beschrieben`;
+            if (hatBeziehung) {
+                text += `, wobei die Eltern-Kind-Beziehung als ${M.beziehung[beziehung]} charakterisiert wird`;
+            }
+            text += '. ';
+        } else if (hatBeziehung) {
+            text += `Die Beziehung zu ${name} beschreiben die Eltern als ${M.beziehung[beziehung]}. `;
+        }
 
-    // Herausfordernde Verhaltensweisen
-    const negativ = dsData.checkboxes?.ds_eltern_negativ || [];
-    if (negativ.length > 0) {
-        const negativTexte = { 'wutausbrueche': 'Wutausbrüche', 'geschwisterkonflikte': 'häufige Geschwisterkonflikte', 'verweigert_regeln': 'Verweigerung von Regeln', 'schlafprobleme': 'Schlafprobleme', 'essprobleme': 'Essprobleme', 'aengste': 'Ängste', 'rueckzug': 'Rückzug ins eigene Zimmer', 'medienkonsum': 'exzessiver Medienkonsum', 'einnaessen': 'Einnässen/Einkoten', 'selbstverletzung': 'selbstverletzendes Verhalten', 'hausaufgaben': 'Konflikte bei Hausaufgaben' };
-        const items = negativ.map(n => negativTexte[n] || n);
-        paragraphs.push('Als herausfordernd beschreiben die Eltern: ' + items.join(', ') + '.');
-    }
-
-    // Konfliktsituationen
-    const konflikt = dsData.checkboxes?.ds_eltern_konflikt || [];
-    if (konflikt.length > 0) {
-        const konfliktTexte = { 'morgens': 'morgens beim Aufstehen', 'hausaufgaben': 'bei den Hausaufgaben', 'essen': 'beim Essen', 'schlafengehen': 'beim Schlafengehen', 'bildschirmzeit': 'um die Bildschirmzeit', 'pflichten': 'um häusliche Pflichten', 'geschwister': 'zwischen den Geschwistern', 'nein_akzeptieren': 'wenn das Kind ein "Nein" akzeptieren soll' };
-        const items = konflikt.map(k => konfliktTexte[k] || k);
-        paragraphs.push('Typische Konfliktsituationen entstehen ' + items.join(', ') + '.');
+        // Stärken und Herausforderungen verbinden
+        if (hatPositiv && hatNegativ) {
+            text += `Im häuslichen Umfeld zeigt ${name} einerseits ${liste(positiv, M.positiv)}, andererseits berichten die Eltern von ${liste(negativ, M.negativ)}. `;
+        } else if (hatPositiv) {
+            text += `Positiv heben die Eltern ${liste(positiv, M.positiv)} hervor. `;
+        } else if (hatNegativ) {
+            text += `Als herausfordernd erleben die Eltern insbesondere die Situationen mit ${liste(negativ, M.negativ)}. `;
+        }
     }
 
-    // Erziehungsstil
-    const stil = dsData.checkboxes?.ds_eltern_stil || [];
-    if (stil.length > 0) {
-        const stilTexte = { 'konsequent': 'als konsequent', 'inkonsequent': 'als manchmal inkonsequent', 'streng': 'als eher streng', 'nachgiebig': 'als eher nachgiebig', 'uneinig': 'nicht immer einer Meinung bezüglich der Erziehung', 'ueberfordert': 'zeitweise überfordert', 'strukturiert': 'mit einem gut strukturierten Alltag', 'wenig_struktur': 'mit wenig Tagesstruktur' };
-        const items = stil.map(s => stilTexte[s] || s);
-        paragraphs.push('Die Eltern beschreiben sich selbst ' + items.join(', ') + '.');
+    // ABSATZ 2: Konfliktsituationen und Erziehungsstil
+    const hatKonflikt = konflikt.length > 0;
+    const hatStil = stil.length > 0;
+
+    if (hatKonflikt || hatStil) {
+        text += '\n\n';
+
+        if (hatKonflikt && hatStil) {
+            text += `Konfliktsituationen entstehen im Alltag besonders ${liste(konflikt, M.konflikt)}. Die Eltern beschreiben ihren eigenen Erziehungsstil als ${liste(stil, M.stil)}. `;
+        } else if (hatKonflikt) {
+            text += `Typische Konfliktsituationen im Familienalltag ergeben sich ${liste(konflikt, M.konflikt)}. `;
+        } else if (hatStil) {
+            text += `Die Eltern reflektieren ihren Erziehungsstil und beschreiben sich als ${liste(stil, M.stil)}. `;
+        }
     }
 
     // Ergänzende Details
     if (dsData.ds_eltern_verhalten_details) {
-        paragraphs.push(dsData.ds_eltern_verhalten_details);
+        text += '\n\n' + dsData.ds_eltern_verhalten_details + ' ';
     }
 
-    // Beziehung
-    if (dsData.ds_eltern_beziehung) {
-        const beziehungTexte = { 'sehr_gut': 'sehr gut und liebevoll', 'gut': 'gut', 'ambivalent': 'ambivalent – sowohl nah als auch konfliktreich', 'angespannt': 'angespannt', 'schwierig': 'schwierig' };
-        paragraphs.push('Die Beziehung zum Kind beschreiben die Eltern als ' + (beziehungTexte[dsData.ds_eltern_beziehung] || dsData.ds_eltern_beziehung) + '.');
-    }
+    // ABSATZ 3: Elterliche Belastungen
+    const hatBelastung = belastung.length > 0 || dsData.ds_eltern_belastung;
 
-    // Belastungen der Eltern
-    const belastung = dsData.checkboxes?.ds_eltern_belastung_cb || [];
-    if (belastung.length > 0 || dsData.ds_eltern_belastung) {
-        const belastungTexte = { 'staendige_konflikte': 'die ständigen Konflikte', 'sorge_zukunft': 'Sorgen um die Zukunft des Kindes', 'schule_beschwerden': 'die regelmäßigen Beschwerden aus der Schule', 'hilflosigkeit': 'ein Gefühl der Hilflosigkeit', 'aggressives_verhalten': 'das aggressive Verhalten des Kindes', 'keine_besserung': 'dass sich trotz aller Bemühungen nichts bessert', 'erschoepfung': 'Erschöpfung', 'partnerkonflikt': 'Konflikte in der Partnerschaft wegen des Kindes', 'schuldgefuehle': 'Schuldgefühle', 'soziale_isolation': 'soziale Isolation' };
-        let belastungText = 'Die Eltern fühlen sich belastet durch ';
-        const items = belastung.map(b => belastungTexte[b] || b);
-        if (items.length > 0) {
-            belastungText += items.join(', ');
-            if (dsData.ds_eltern_belastung) belastungText += '. Zudem: ' + dsData.ds_eltern_belastung;
-        } else {
-            belastungText += dsData.ds_eltern_belastung;
+    if (hatBelastung) {
+        text += '\n\nBezüglich der eigenen Situation ';
+        const belastListe = liste(belastung, M.belastung);
+        if (belastListe) {
+            text += `fühlen sich die Eltern belastet durch ${belastListe}`;
+            if (dsData.ds_eltern_belastung) {
+                text += `. Zudem beschreiben sie: ${dsData.ds_eltern_belastung}`;
+            }
+        } else if (dsData.ds_eltern_belastung) {
+            text += `beschreiben die Eltern: ${dsData.ds_eltern_belastung}`;
         }
-        paragraphs.push(belastungText + (belastungText.endsWith('.') ? '' : '.'));
+        text += '. ';
     }
 
-    // Erwartungen der Eltern
-    const erwartung = dsData.checkboxes?.ds_eltern_erwartung || [];
-    if (erwartung.length > 0 || dsData.ds_eltern_erwartungen) {
-        const erwartungTexte = { 'verhalten_verbessern': 'eine Verbesserung des Verhaltens', 'entspannung_zuhause': 'eine entspanntere Situation zu Hause', 'strategien_eltern': 'konkrete Erziehungsstrategien', 'schule_verbessern': 'bessere schulische Leistungen', 'abklaerung': 'eine diagnostische Abklärung', 'therapie': 'therapeutische Unterstützung für das Kind', 'elternberatung': 'Beratung für sich selbst', 'anderer_foerderort': 'einen anderen Förderort', 'verstehen': 'das Kind besser zu verstehen', 'bestätigung': 'die Bestätigung, dass sie nichts falsch machen' };
-        let erwartungText = 'Die Eltern erhoffen sich von der Unterstützung ';
-        const items = erwartung.map(e => erwartungTexte[e] || e);
-        if (items.length > 0) {
-            erwartungText += items.join(', ');
-            if (dsData.ds_eltern_erwartungen) erwartungText += '. Zudem: ' + dsData.ds_eltern_erwartungen;
-        } else {
-            erwartungText += dsData.ds_eltern_erwartungen;
+    // ABSATZ 4: Erwartungen und Kooperationsbereitschaft
+    const hatErwartung = erwartung.length > 0 || dsData.ds_eltern_erwartungen;
+    const hatZusammenarbeit = zusammenarbeit && zusammenarbeit !== '';
+
+    if (hatErwartung || hatZusammenarbeit) {
+        text += '\n\n';
+
+        if (hatErwartung) {
+            const erwartungListe = liste(erwartung, M.erwartung);
+            if (erwartungListe) {
+                text += `Von der Maßnahme erhoffen sich die Eltern insbesondere ${erwartungListe}`;
+                if (dsData.ds_eltern_erwartungen) {
+                    text += ` sowie ${dsData.ds_eltern_erwartungen}`;
+                }
+            } else if (dsData.ds_eltern_erwartungen) {
+                text += `Von der Maßnahme erhoffen sich die Eltern ${dsData.ds_eltern_erwartungen}`;
+            }
+            text += '. ';
         }
-        paragraphs.push(erwartungText + (erwartungText.endsWith('.') ? '' : '.'));
+
+        if (hatZusammenarbeit) {
+            text += `Die Bereitschaft zur Zusammenarbeit wird als ${M.zusammenarbeit[zusammenarbeit]} eingeschätzt.`;
+        }
     }
 
-    // Zusammenarbeit
-    if (dsData.ds_eltern_zusammenarbeit) {
-        const zusammenarbeitTexte = { 'sehr_hoch': 'sehr hoch – die Eltern sind motiviert und engagiert', 'hoch': 'hoch', 'mittel': 'mittel', 'zurueckhaltend': 'eher zurückhaltend', 'ablehnend': 'ablehnend' };
-        paragraphs.push('Die Bereitschaft zur Zusammenarbeit wird als ' + (zusammenarbeitTexte[dsData.ds_eltern_zusammenarbeit] || dsData.ds_eltern_zusammenarbeit) + ' eingeschätzt.');
-    }
-
-    return paragraphs.join('\n\n') || '(Sichtweise der Eltern wird hier eingefügt)';
+    return text.trim() || '(Sichtweise der Eltern wird hier eingefügt)';
 }
 
 function generateVerhaltensbeobachtungenText(dsData) {
@@ -6503,228 +6621,398 @@ function generateVerhaltensbeobachtungenText(dsData) {
         return '(Objektive, konkrete Verhaltensbeobachtungen)';
     }
 
-    const posTexte = { 'aufgabe_begonnen': 'begann die Aufgabe selbstständig', 'aufgabe_beendet': 'beendete die Aufgabe', 'konzentriert': 'arbeitete konzentriert', 'hilfe_geholt': 'holte sich bei Bedarf Hilfe', 'regeln_eingehalten': 'hielt sich an die Regeln', 'freundlich': 'verhielt sich freundlich', 'kooperativ': 'zeigte kooperatives Verhalten', 'beteiligt': 'beteiligte sich aktiv', 'anweisungen': 'befolgte Anweisungen', 'geduldig': 'wartete geduldig', 'konflikt_geloest': 'löste einen Konflikt friedlich', 'emotionen_reguliert': 'konnte Emotionen regulieren' };
-    const negTexte = { 'abgelenkt': 'war leicht abgelenkt', 'motorisch_unruhig': 'war motorisch unruhig', 'verweigert': 'verweigerte die Aufgabe', 'wutausbruch': 'hatte einen Wutausbruch', 'weinen': 'weinte', 'aggressiv_verbal': 'zeigte verbale Aggression', 'aggressiv_koerperlich': 'zeigte körperliche Aggression', 'regelverletzung': 'verletzte Regeln', 'stoeren': 'störte', 'rueckzug': 'zog sich zurück', 'kontaktvermeidung': 'vermied Kontakt', 'frustration': 'zeigte niedrige Frustrationstoleranz' };
-    const interTexte = { 'blickkontakt_gut': 'guter Blickkontakt', 'blickkontakt_vermeidet': 'vermied Blickkontakt', 'kontakt_sucht': 'suchte Kontakt zu Erwachsenen', 'kontakt_peers': 'guter Kontakt zu Gleichaltrigen', 'isoliert': 'isolierte sich', 'dominiert': 'dominierte andere', 'fuegt_sich': 'fügte sich ein', 'provoziert': 'provozierte andere' };
+    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
 
-    const paragraphs = [];
-    dsData.beobachtungen.forEach((b, idx) => {
-        let beobText = '';
+    // Text-Mappings für natürliche Sprache
+    const M = {
+        setting: { 'einzelsituation': 'in einer Einzelsituation', 'kleingruppe': 'in der Kleingruppe', 'klassenverband': 'im Klassenverband', 'pausenhof': 'auf dem Pausenhof', 'maison_relais': 'in der Maison Relais', 'andere': 'in einem anderen Setting' },
+        positiv: { 'aufgabe_begonnen': 'begann Aufgaben selbstständig', 'aufgabe_beendet': 'brachte begonnene Aufgaben zu Ende', 'konzentriert': 'arbeitete konzentriert', 'hilfe_geholt': 'holte sich bei Bedarf Hilfe', 'regeln_eingehalten': 'hielt sich an die vereinbarten Regeln', 'freundlich': 'verhielt sich freundlich', 'kooperativ': 'zeigte kooperatives Verhalten', 'beteiligt': 'beteiligte sich aktiv', 'anweisungen': 'befolgte Anweisungen', 'geduldig': 'wartete geduldig', 'konflikt_geloest': 'löste einen Konflikt konstruktiv', 'emotionen_reguliert': 'konnte eigene Emotionen regulieren' },
+        negativ: { 'abgelenkt': 'zeigte erhöhte Ablenkbarkeit', 'motorisch_unruhig': 'wirkte motorisch unruhig', 'verweigert': 'verweigerte die gestellte Aufgabe', 'wutausbruch': 'zeigte einen Wutausbruch', 'weinen': 'weinte', 'aggressiv_verbal': 'äußerte verbale Aggression', 'aggressiv_koerperlich': 'zeigte körperlich aggressives Verhalten', 'regelverletzung': 'verletzte geltende Regeln', 'stoeren': 'störte den Ablauf', 'rueckzug': 'zog sich zurück', 'kontaktvermeidung': 'vermied sozialen Kontakt', 'frustration': 'zeigte eine niedrige Frustrationstoleranz' },
+        interaktion: { 'blickkontakt_gut': 'angemessenen Blickkontakt zu halten', 'blickkontakt_vermeidet': 'Blickkontakt zu vermeiden', 'kontakt_sucht': 'aktiv Kontakt zu Erwachsenen zu suchen', 'kontakt_peers': 'guten Kontakt zu Gleichaltrigen aufzubauen', 'isoliert': 'sich von der Gruppe zu isolieren', 'dominiert': 'andere dominieren zu wollen', 'fuegt_sich': 'sich gut in die Gruppe einzufügen', 'provoziert': 'andere zu provozieren' }
+    };
 
-        // Einleitung
+    // Hilfsfunktion für natürliche Aufzählungen
+    const liste = (arr, map) => {
+        const items = arr.filter(i => i && map[i]).map(i => map[i]);
+        if (items.length === 0) return '';
+        if (items.length === 1) return items[0];
+        return items.slice(0, -1).join(', ') + ' und ' + items[items.length - 1];
+    };
+
+    // Generiere Text für jede Beobachtung
+    const beobachtungsTexte = dsData.beobachtungen.map((b, idx) => {
+        let text = '';
+        const hatPositiv = (b.positivChecks && b.positivChecks.length > 0) || b.positiv;
+        const hatNegativ = (b.negativChecks && b.negativChecks.length > 0) || b.negativ;
+        const hatInteraktion = b.interaktionChecks && b.interaktionChecks.length > 0;
+
+        // EINLEITUNG mit Setting-Kontext
         if (b.datum) {
-            beobText = `Am ${new Date(b.datum).toLocaleDateString('de-DE')} wurde der/die Schüler:in`;
+            const datum = new Date(b.datum).toLocaleDateString('de-DE');
+            text += `Am ${datum} wurde ${name} `;
             if (b.setting) {
-                const settingTexte = { 'einzelsituation': 'in einer Einzelsituation', 'kleingruppe': 'in der Kleingruppe', 'klassenverband': 'im Klassenverband', 'pausenhof': 'auf dem Pausenhof', 'maison_relais': 'in der Maison Relais', 'andere': 'in einem anderen Setting' };
-                beobText += ` ${settingTexte[b.setting] || b.setting}`;
+                text += `${M.setting[b.setting] || b.setting} `;
             }
-            if (b.dauer) beobText += ` über ${b.dauer} Minuten`;
-            if (b.beobachter) beobText += ` von ${b.beobachter}`;
-            beobText += ' beobachtet. ';
+            if (b.dauer) {
+                text += `über einen Zeitraum von ${b.dauer} Minuten `;
+            }
+            if (b.beobachter) {
+                text += `von ${b.beobachter} `;
+            }
+            text += 'beobachtet. ';
         }
 
-        // Positive Beobachtungen
-        const posItems = (b.positivChecks || []).map(p => posTexte[p] || p);
-        if (posItems.length > 0 || b.positiv) {
-            beobText += 'Positiv fiel auf, dass der/die Schüler:in ';
-            if (posItems.length > 0) beobText += posItems.join(', ');
-            if (b.positiv) beobText += (posItems.length > 0 ? '. Zudem: ' : '') + b.positiv;
-            beobText += '. ';
+        // HAUPTTEIL: Positives und Herausforderungen als kohärentes Narrativ
+        if (hatPositiv && hatNegativ) {
+            // Beide Seiten verbinden
+            const posListe = liste(b.positivChecks || [], M.positiv);
+            const negListe = liste(b.negativChecks || [], M.negativ);
+
+            text += `Während der Beobachtung zeigte ${name} ein differenziertes Verhaltensprofil: `;
+            if (posListe) {
+                text += `Positiv fiel auf, dass ${name} ${posListe}`;
+                if (b.positiv) text += `, ${b.positiv}`;
+                text += '. ';
+            }
+            if (negListe) {
+                text += `Gleichzeitig ${negListe}`;
+                if (b.negativ) text += `, zudem ${b.negativ}`;
+                text += '. ';
+            }
+        } else if (hatPositiv) {
+            const posListe = liste(b.positivChecks || [], M.positiv);
+            text += `Im Verlauf der Beobachtung zeigte ${name} vorwiegend positives Verhalten: `;
+            if (posListe) text += `${name} ${posListe}`;
+            if (b.positiv) text += (posListe ? `. Zudem ${b.positiv}` : b.positiv);
+            text += '. ';
+        } else if (hatNegativ) {
+            const negListe = liste(b.negativChecks || [], M.negativ);
+            text += `Während der Beobachtung zeigten sich Herausforderungen: `;
+            if (negListe) text += `${name} ${negListe}`;
+            if (b.negativ) text += (negListe ? `. Zudem ${b.negativ}` : b.negativ);
+            text += '. ';
         }
 
-        // Herausfordernde Beobachtungen
-        const negItems = (b.negativChecks || []).map(n => negTexte[n] || n);
-        if (negItems.length > 0 || b.negativ) {
-            beobText += 'Herausfordernd war, dass der/die Schüler:in ';
-            if (negItems.length > 0) beobText += negItems.join(', ');
-            if (b.negativ) beobText += (negItems.length > 0 ? '. Zudem: ' : '') + b.negativ;
-            beobText += '. ';
+        // INTERAKTIONSVERHALTEN als eigenes Element
+        if (hatInteraktion) {
+            const interListe = liste(b.interaktionChecks || [], M.interaktion);
+            if (interListe) {
+                text += `Im Bereich des Interaktionsverhaltens fiel auf, dass ${name} dazu neigte, ${interListe}. `;
+            }
         }
 
-        // Interaktionsverhalten
-        const interItems = (b.interaktionChecks || []).map(i => interTexte[i] || i);
-        if (interItems.length > 0) {
-            beobText += 'Im Interaktionsverhalten zeigte sich: ' + interItems.join(', ') + '. ';
-        }
-
-        // Zusammenfassung
+        // ZUSAMMENFASSUNG als Abschluss
         if (b.zusammenfassung) {
-            beobText += b.zusammenfassung;
+            text += b.zusammenfassung;
         }
 
-        if (beobText.trim()) paragraphs.push(beobText.trim());
-    });
+        return text.trim();
+    }).filter(t => t !== '');
 
-    return paragraphs.join('\n\n') || '(Objektive, konkrete Verhaltensbeobachtungen)';
+    // Übergreifende Einleitung bei mehreren Beobachtungen
+    if (beobachtungsTexte.length > 1) {
+        return `Im Rahmen der Diagnostik wurden mehrere Verhaltensbeobachtungen durchgeführt:\n\n${beobachtungsTexte.join('\n\n')}`;
+    } else if (beobachtungsTexte.length === 1) {
+        return beobachtungsTexte[0];
+    }
+
+    return '(Objektive, konkrete Verhaltensbeobachtungen)';
 }
 
 function generateInterpretationText(dsData) {
-    const paragraphs = [];
+    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
 
-    // Übereinstimmungen
+    // Text-Mappings für natürliche Sprache
+    const M = {
+        uebereinstimmung: { 'alle_verhalten': 'berichten alle befragten Personen von ähnlichen Verhaltensweisen', 'alle_staerken': 'werden die Stärken übereinstimmend beschrieben', 'alle_schwaechen': 'herrscht Einigkeit bezüglich der bestehenden Schwierigkeiten', 'beobachtung_bestaetigt': 'bestätigen die direkten Verhaltensbeobachtungen die Berichte der Bezugspersonen', 'eldib_bestaetigt': 'deckt sich der ELDiB-Befund mit dem klinischen Gesamteindruck', 'kind_einsicht': 'zeigt das Kind selbst ein gewisses Problembewusstsein' },
+        differenz: { 'schule_zuhause': 'das Verhalten je nach Kontext (Schule vs. zu Hause) unterschiedlich beschrieben wird', 'eltern_schule': 'die Perspektiven von Eltern und Schule voneinander abweichen', 'kind_andere': 'die Selbstwahrnehmung des Kindes von der Fremdwahrnehmung abweicht', 'kein_problembewusstsein': 'beim Kind (noch) kein Problembewusstsein erkennbar ist', 'beobachtung_abweichend': 'die direkten Beobachtungen von den Berichten abweichen', 'eltern_bagatellisieren': 'die Eltern die Problematik möglicherweise bagatellisieren', 'schule_dramatisiert': 'die schulische Darstellung möglicherweise überspitzt ist', 'kontextabhaengig': 'das Verhalten stark kontextabhängig variiert' },
+        erklaerung: { 'entwicklungsverzoegerung': 'eine Entwicklungsverzögerung im sozio-emotionalen Bereich', 'belastungsreaktion': 'eine Reaktion auf aktuelle oder vergangene Belastungserfahrungen', 'bindungsunsicherheit': 'eine zugrundeliegende Bindungsunsicherheit', 'reizueberflutung': 'Reizüberflutung oder sensorische Überforderung', 'aufmerksamkeitsproblematik': 'eine Aufmerksamkeitsproblematik', 'emotionale_dysregulation': 'Schwierigkeiten in der Emotionsregulation', 'soziale_unsicherheit': 'grundlegende soziale Unsicherheit', 'trauma_folgen': 'mögliche Traumafolgen', 'familiendynamik': 'die aktuelle Familiendynamik', 'schulische_ueberforderung': 'schulische Überforderung', 'schulische_unterforderung': 'schulische Unterforderung', 'fehlende_strategien': 'ein Mangel an adäquaten Bewältigungsstrategien' },
+        entwicklungsangst: { 'stufe1': 'die Angst vor Verlassenwerden und Alleinsein (Stufe I nach ELDiB-Theorie)', 'stufe2': 'die Angst vor Unzulänglichkeit und Versagen (Stufe II)', 'stufe3': 'die Angst vor Ablehnung durch die Gruppe (Stufe III)', 'stufe4': 'die Angst vor Konflikten mit Gleichaltrigen (Stufe IV)', 'stufe5': 'die Angst vor Identitätsverlust (Stufe V)' },
+        abwehr: { 'rueckzug': 'Rückzug', 'aggression': 'Aggression', 'verweigerung': 'Verweigerung', 'regression': 'Regression (Rückfall in frühere Verhaltensmuster)', 'vermeidung': 'Vermeidung', 'clown': 'Clownsverhalten', 'ueberkontrolle': 'Überkontrolle', 'projektion': 'Projektion' }
+    };
+
+    // Hilfsfunktion für natürliche Aufzählungen
+    const liste = (arr, map) => {
+        const items = arr.filter(i => i && map[i]).map(i => map[i]);
+        if (items.length === 0) return '';
+        if (items.length === 1) return items[0];
+        return items.slice(0, -1).join(', ') + ' und ' + items[items.length - 1];
+    };
+
+    // Daten extrahieren
     const uebereinstimmung = dsData.checkboxes?.ds_uebereinstimmung || [];
-    if (uebereinstimmung.length > 0 || dsData.ds_interpretation_uebereinstimmung) {
-        const ueberTexte = { 'alle_verhalten': 'berichten alle Informationsquellen ähnliche Verhaltensweisen', 'alle_staerken': 'werden von allen Seiten ähnliche Stärken beschrieben', 'alle_schwaechen': 'stimmen die beschriebenen Schwierigkeiten überein', 'beobachtung_bestaetigt': 'bestätigt die direkte Beobachtung die Berichte der Bezugspersonen', 'eldib_bestaetigt': 'stimmt der ELDiB-Befund mit dem klinischen Eindruck überein', 'kind_einsicht': 'zeigt das Kind selbst Einsicht in die eigenen Schwierigkeiten' };
-        let text = 'Bei der Zusammenschau der verschiedenen Informationsquellen zeigen sich Übereinstimmungen: ';
-        const items = uebereinstimmung.map(u => ueberTexte[u] || u);
-        text += items.join('; ');
-        if (dsData.ds_interpretation_uebereinstimmung) text += '. ' + dsData.ds_interpretation_uebereinstimmung;
-        paragraphs.push(text + (text.endsWith('.') ? '' : '.'));
-    }
-
-    // Differenzen
     const differenz = dsData.checkboxes?.ds_differenz || [];
-    if (differenz.length > 0 || dsData.ds_interpretation_differenzen) {
-        const diffTexte = { 'schule_zuhause': 'gibt es deutliche Unterschiede zwischen dem Verhalten in der Schule und zu Hause', 'eltern_schule': 'unterscheiden sich die Eltern- und Schulperspektive', 'kind_andere': 'sieht das Kind die Situation anders als die Erwachsenen', 'kein_problembewusstsein': 'zeigt das Kind (noch) kein Problembewusstsein', 'beobachtung_abweichend': 'weicht die Beobachtung von den Berichten ab', 'eltern_bagatellisieren': 'scheinen die Eltern die Problematik zu bagatellisieren', 'schule_dramatisiert': 'könnte die Schule die Situation dramatisieren', 'kontextabhaengig': 'ist das Verhalten stark kontextabhängig' };
-        let text = 'Folgende Unterschiede zwischen den Informationsquellen fallen auf: ';
-        const items = differenz.map(d => diffTexte[d] || d);
-        text += items.join('; ');
-        if (dsData.ds_interpretation_differenzen) text += '. ' + dsData.ds_interpretation_differenzen;
-        paragraphs.push(text + (text.endsWith('.') ? '' : '.'));
-    }
-
-    // Erklärungen
     const erklaerung = dsData.checkboxes?.ds_erklaerung || [];
-    if (erklaerung.length > 0 || dsData.ds_interpretation_deutung) {
-        const erklTexte = { 'entwicklungsverzoegerung': 'eine Entwicklungsverzögerung im sozio-emotionalen Bereich', 'belastungsreaktion': 'eine Reaktion auf aktuelle oder vergangene Belastungen', 'bindungsunsicherheit': 'eine zugrundeliegende Bindungsunsicherheit', 'reizueberflutung': 'Reizüberflutung und/oder Überforderung', 'aufmerksamkeitsproblematik': 'eine Aufmerksamkeitsproblematik', 'emotionale_dysregulation': 'Schwierigkeiten in der Emotionsregulation', 'soziale_unsicherheit': 'soziale Unsicherheit', 'trauma_folgen': 'mögliche Traumafolgen', 'familiendynamik': 'die aktuelle Familiendynamik', 'schulische_ueberforderung': 'schulische Überforderung', 'schulische_unterforderung': 'schulische Unterforderung', 'fehlende_strategien': 'fehlende Bewältigungsstrategien' };
-        let text = 'Als mögliche Erklärungen für die beobachteten Schwierigkeiten kommen in Betracht: ';
-        const items = erklaerung.map(e => erklTexte[e] || e);
-        text += items.join(', ');
-        if (dsData.ds_interpretation_deutung) text += '. ' + dsData.ds_interpretation_deutung;
-        paragraphs.push(text + (text.endsWith('.') ? '' : '.'));
-    }
-
-    // Entwicklungsängste (nach ELDiB-Theorie)
     const aengste = dsData.checkboxes?.ds_entwicklungsangst || [];
-    if (aengste.length > 0) {
-        const angstTexte = { 'stufe1': 'die Angst vor Verlassenwerden (entsprechend Stufe I)', 'stufe2': 'die Angst vor Unzulänglichkeit und Versagen (entsprechend Stufe II)', 'stufe3': 'die Angst vor Ablehnung durch die Gruppe (entsprechend Stufe III)', 'stufe4': 'die Angst vor Konflikten mit Gleichaltrigen (entsprechend Stufe IV)', 'stufe5': 'die Angst vor Identitätsverlust (entsprechend Stufe V)' };
-        const items = aengste.map(a => angstTexte[a] || a);
-        paragraphs.push('Aus entwicklungstherapeutischer Sicht zeigt sich als vorherrschende Entwicklungsangst ' + items.join(' sowie ') + '.');
-    }
-
-    // Abwehrmechanismen
     const abwehr = dsData.checkboxes?.ds_abwehr || [];
-    if (abwehr.length > 0) {
-        const abwehrTexte = { 'rueckzug': 'Rückzug', 'aggression': 'Aggression', 'verweigerung': 'Verweigerung', 'regression': 'Regression (Rückfall in frühere Entwicklungsstufe)', 'vermeidung': 'Vermeidung', 'clown': 'Clownsverhalten', 'ueberkontrolle': 'Überkontrolle', 'projektion': 'Projektion (Zuschreibung eigener Gefühle auf andere)' };
-        const items = abwehr.map(a => abwehrTexte[a] || a);
-        let text = 'Als Abwehrmechanismen zur Bewältigung der zugrunde liegenden Ängste zeigen sich: ' + items.join(', ');
-        if (dsData.ds_abwehr_konkret) text += '. Konkret zeigt sich dies: ' + dsData.ds_abwehr_konkret;
-        paragraphs.push(text + (text.endsWith('.') ? '' : '.'));
+
+    // ===== KOHÄRENTER FLIESSTEXT =====
+    let text = '';
+
+    // EINLEITUNG
+    text += `Bei der integrativen Zusammenschau aller erhobenen Informationen über ${name} ergibt sich folgendes Bild:\n\n`;
+
+    // ABSATZ 1: Übereinstimmungen und Differenzen als zusammenhängendes Narrativ
+    const hatUeber = uebereinstimmung.length > 0 || dsData.ds_interpretation_uebereinstimmung;
+    const hatDiff = differenz.length > 0 || dsData.ds_interpretation_differenzen;
+
+    if (hatUeber || hatDiff) {
+        if (hatUeber && hatDiff) {
+            // Beide Perspektiven verbinden
+            const ueberListe = liste(uebereinstimmung, M.uebereinstimmung);
+            const diffListe = liste(differenz, M.differenz);
+
+            text += 'Die verschiedenen Informationsquellen zeigen sowohl Übereinstimmungen als auch Unterschiede. ';
+            if (ueberListe) {
+                text += `Konsistent ist, dass ${ueberListe}`;
+                if (dsData.ds_interpretation_uebereinstimmung) text += `. ${dsData.ds_interpretation_uebereinstimmung}`;
+                text += '. ';
+            }
+            if (diffListe) {
+                text += `Gleichzeitig fällt auf, dass ${diffListe}`;
+                if (dsData.ds_interpretation_differenzen) text += `. ${dsData.ds_interpretation_differenzen}`;
+                text += '. ';
+            }
+        } else if (hatUeber) {
+            const ueberListe = liste(uebereinstimmung, M.uebereinstimmung);
+            text += 'Die verschiedenen Informationsquellen zeichnen ein konsistentes Bild: ';
+            if (ueberListe) text += `${ueberListe}`;
+            if (dsData.ds_interpretation_uebereinstimmung) text += `. ${dsData.ds_interpretation_uebereinstimmung}`;
+            text += '. ';
+        } else if (hatDiff) {
+            const diffListe = liste(differenz, M.differenz);
+            text += 'Bei der Analyse fallen Unterschiede zwischen den Perspektiven auf: ';
+            if (diffListe) text += `${diffListe}`;
+            if (dsData.ds_interpretation_differenzen) text += `. ${dsData.ds_interpretation_differenzen}`;
+            text += '. ';
+        }
     }
 
-    // Gesamtinterpretation
+    // ABSATZ 2: Erklärungsansätze
+    const hatErkl = erklaerung.length > 0 || dsData.ds_interpretation_deutung;
+
+    if (hatErkl) {
+        text += '\n\n';
+        const erklListe = liste(erklaerung, M.erklaerung);
+        if (erklListe) {
+            text += `Als mögliche Erklärungen für die beobachteten Verhaltensweisen kommen ${erklListe} in Betracht`;
+            if (dsData.ds_interpretation_deutung) text += `. ${dsData.ds_interpretation_deutung}`;
+            text += '. ';
+        } else if (dsData.ds_interpretation_deutung) {
+            text += dsData.ds_interpretation_deutung + ' ';
+        }
+    }
+
+    // ABSATZ 3: Entwicklungstherapeutische Einordnung (Ängste und Abwehr zusammen)
+    const hatAngst = aengste.length > 0;
+    const hatAbwehr = abwehr.length > 0;
+
+    if (hatAngst || hatAbwehr) {
+        text += '\n\nAus entwicklungstherapeutischer Perspektive ';
+
+        if (hatAngst && hatAbwehr) {
+            const angstListe = liste(aengste, M.entwicklungsangst);
+            const abwehrListe = liste(abwehr, M.abwehr);
+            text += `lässt sich bei ${name} ${angstListe} als zentrale Entwicklungsangst identifizieren. Als Bewältigungsmechanismen zeigen sich ${abwehrListe}`;
+            if (dsData.ds_abwehr_konkret) text += `, was sich konkret darin äußert, dass ${dsData.ds_abwehr_konkret}`;
+            text += '. ';
+        } else if (hatAngst) {
+            const angstListe = liste(aengste, M.entwicklungsangst);
+            text += `zeigt sich bei ${name} ${angstListe} als zentrale Entwicklungsangst. `;
+        } else if (hatAbwehr) {
+            const abwehrListe = liste(abwehr, M.abwehr);
+            text += `zeigen sich bei ${name} ${abwehrListe} als vorherrschende Abwehrmechanismen`;
+            if (dsData.ds_abwehr_konkret) text += `, was sich konkret darin äußert, dass ${dsData.ds_abwehr_konkret}`;
+            text += '. ';
+        }
+    }
+
+    // ABSCHLUSS: Gesamtinterpretation
     if (dsData.ds_gesamtinterpretation) {
-        paragraphs.push('Zusammenfassend lässt sich festhalten: ' + dsData.ds_gesamtinterpretation);
+        text += `\n\nZusammenfassend lässt sich festhalten: ${dsData.ds_gesamtinterpretation}`;
     }
 
-    return paragraphs.join('\n\n') || '(Interpretation der Befunde wird hier eingefügt)';
+    return text.trim() || '(Interpretation der Befunde wird hier eingefügt)';
 }
 
 function generateSpezifischeBeduerfnisseText(dsData) {
-    const paragraphs = [];
+    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
 
-    // Kernbedürfnisse
+    // Text-Mappings für natürliche Sprache
+    const M = {
+        beduerfnis: { 'sichere_beziehungen': 'sichere, stabile Beziehungen zu verlässlichen Bezugspersonen', 'klare_strukturen': 'klare Strukturen und vorhersehbare Routinen', 'erfolgserlebnisse': 'regelmäßige Erfolgserlebnisse und positive Verstärkung', 'individuelle_aufmerksamkeit': 'individuelle Aufmerksamkeit und persönliche Zuwendung', 'emotionsregulation': 'gezielte Unterstützung beim Erlernen der Emotionsregulation', 'soziale_kompetenzen': 'Förderung sozialer Kompetenzen', 'schulische_differenzierung': 'schulische Differenzierung entsprechend dem Leistungsstand', 'therapeutische_begleitung': 'therapeutische Begleitung', 'familienunterstuetzung': 'Unterstützung für das gesamte Familiensystem' },
+        ressource: { 'intelligenz': 'gute kognitive Fähigkeiten', 'kreativitaet': 'Kreativität', 'sportlich': 'sportliche Begabung', 'kuenstlerisch': 'künstlerische oder musische Talente', 'humor': 'Humor', 'empathie': 'Empathiefähigkeit', 'neugier': 'Wissensdurst und Neugier', 'begeisterungsfaehig': 'Begeisterungsfähigkeit', 'hilfsbereit': 'Hilfsbereitschaft', 'verantwortung': 'Verantwortungsbewusstsein', 'einzelbeziehung': 'die Fähigkeit, tragfähige Einzelbeziehungen aufzubauen', 'lernbereit': 'grundsätzliche Lernbereitschaft', 'vertrauensperson': 'eine verfügbare Vertrauensperson', 'familie_unterstuetzt': 'eine unterstützende Familie', 'hobby': 'Interessen und Hobbys', 'reflektiert': 'Ansätze zur Selbstreflexion' }
+    };
+
+    // Hilfsfunktion für natürliche Aufzählungen
+    const liste = (arr, map) => {
+        const items = arr.filter(i => i && map[i]).map(i => map[i]);
+        if (items.length === 0) return '';
+        if (items.length === 1) return items[0];
+        return items.slice(0, -1).join(', ') + ' sowie ' + items[items.length - 1];
+    };
+
+    // Daten extrahieren
     const beduerfnisse = dsData.checkboxes?.ds_beduerfnis || [];
-    if (beduerfnisse.length > 0) {
-        const beduerfnisTexte = { 'sichere_beziehungen': 'sichere, stabile Beziehungen zu Bezugspersonen', 'klare_strukturen': 'klare Strukturen und vorhersehbare Routinen', 'erfolgserlebnisse': 'regelmäßige Erfolgserlebnisse und positive Verstärkung', 'individuelle_aufmerksamkeit': 'individuelle Aufmerksamkeit und Zuwendung', 'emotionsregulation': 'gezielte Unterstützung bei der Emotionsregulation', 'soziale_kompetenzen': 'Förderung sozialer Kompetenzen', 'schulische_differenzierung': 'schulische Differenzierung entsprechend dem Leistungsstand', 'therapeutische_begleitung': 'therapeutische Begleitung', 'familienunterstuetzung': 'Unterstützung für das gesamte Familiensystem' };
-        const items = beduerfnisse.map(b => beduerfnisTexte[b] || b);
-        let text = 'Basierend auf der durchgeführten Diagnostik zeigt sich, dass der/die Schüler:in vor allem ';
-        if (items.length === 1) {
-            text += items[0] + ' benötigt.';
-        } else {
-            text += items.slice(0, -1).join(', ') + ' sowie ' + items[items.length - 1] + ' benötigt.';
+    const ressourcen = dsData.checkboxes?.ds_ressource || [];
+
+    // ===== KOHÄRENTER FLIESSTEXT =====
+    let text = '';
+
+    // ABSATZ 1: Spezifische Bedürfnisse als Narrativ
+    const hatBed = beduerfnisse.length > 0;
+    const hatRes = ressourcen.length > 0 || dsData.ds_ressourcen;
+
+    if (hatBed) {
+        const bedListe = liste(beduerfnisse, M.beduerfnis);
+        text += `Basierend auf der durchgeführten Diagnostik lassen sich die spezifischen Bedürfnisse von ${name} klar benennen. Im Vordergrund steht das Bedürfnis nach ${bedListe}. `;
+
+        // Bedürfnisse kategorisieren für besseren Flow
+        const emotionaleBed = beduerfnisse.filter(b => ['sichere_beziehungen', 'individuelle_aufmerksamkeit', 'emotionsregulation'].includes(b));
+        const strukturelleBed = beduerfnisse.filter(b => ['klare_strukturen', 'erfolgserlebnisse', 'schulische_differenzierung'].includes(b));
+        const unterstuetzungsBed = beduerfnisse.filter(b => ['soziale_kompetenzen', 'therapeutische_begleitung', 'familienunterstuetzung'].includes(b));
+
+        if (emotionaleBed.length > 0 && strukturelleBed.length > 0) {
+            text += `Dabei zeigt sich, dass sowohl emotionale Grundbedürfnisse als auch der Bedarf nach struktureller Unterstützung im Vordergrund stehen. `;
         }
-        paragraphs.push(text);
     }
 
     // Ergänzende Zusammenfassung
     if (dsData.ds_beduerfnisse_zusammenfassung) {
-        paragraphs.push(dsData.ds_beduerfnisse_zusammenfassung);
+        text += dsData.ds_beduerfnisse_zusammenfassung + ' ';
     }
 
-    // Ressourcen
-    const ressourcen = dsData.checkboxes?.ds_ressource || [];
-    if (ressourcen.length > 0 || dsData.ds_ressourcen) {
-        const ressourceTexte = { 'intelligenz': 'gute kognitive Fähigkeiten', 'kreativitaet': 'Kreativität', 'sportlich': 'sportliche Fähigkeiten', 'kuenstlerisch': 'künstlerische oder musische Begabung', 'humor': 'Humor', 'empathie': 'Empathiefähigkeit', 'neugier': 'Wissensdurst und Neugier', 'begeisterungsfaehig': 'Begeisterungsfähigkeit', 'hilfsbereit': 'Hilfsbereitschaft', 'verantwortung': 'die Fähigkeit, Verantwortung zu übernehmen', 'einzelbeziehung': 'die Fähigkeit, Einzelbeziehungen aufzubauen', 'lernbereit': 'grundsätzliche Lernbereitschaft', 'vertrauensperson': 'eine Vertrauensperson im Umfeld', 'familie_unterstuetzt': 'eine unterstützende Familie', 'hobby': 'Interessen und Hobbys', 'reflektiert': 'die Fähigkeit zur Selbstreflexion' };
-        let ressourcenText = 'Als Ressourcen und Stärken lassen sich identifizieren: ';
-        const items = ressourcen.map(r => ressourceTexte[r] || r);
-        if (items.length > 0) {
-            ressourcenText += items.join(', ');
-            if (dsData.ds_ressourcen) ressourcenText += '. Zudem: ' + dsData.ds_ressourcen;
+    // ABSATZ 2: Ressourcen als positiver Gegenpol
+    if (hatRes) {
+        text += '\n\n';
+        const resListe = liste(ressourcen, M.ressource);
+
+        if (hatBed) {
+            // Verbindung zu Bedürfnissen
+            text += `Gleichzeitig verfügt ${name} über wichtige Ressourcen, auf die in der Förderung aufgebaut werden kann: `;
         } else {
-            ressourcenText += dsData.ds_ressourcen;
+            text += `${name} verfügt über bedeutsame Ressourcen und Stärken: `;
         }
-        paragraphs.push(ressourcenText + (ressourcenText.endsWith('.') ? '' : '.'));
+
+        if (resListe) {
+            text += resListe;
+            if (dsData.ds_ressourcen) {
+                text += `. Darüber hinaus ${dsData.ds_ressourcen}`;
+            }
+        } else if (dsData.ds_ressourcen) {
+            text += dsData.ds_ressourcen;
+        }
+        text += '. ';
+
+        // Abschließender integrativer Satz
+        if (hatBed && ressourcen.length >= 2) {
+            text += `Diese vorhandenen Stärken bilden eine wichtige Grundlage für die weitere Entwicklung und sollten in der Förderplanung gezielt genutzt werden.`;
+        }
     }
 
-    return paragraphs.join('\n\n') || '(Spezifische Bedürfnisse und Ressourcen werden hier eingefügt)';
+    return text.trim() || '(Spezifische Bedürfnisse und Ressourcen werden hier eingefügt)';
 }
 
 function generateEmpfehlungenText(dsData) {
-    let text = '';
+    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
 
-    // Familie
+    // Text-Mappings für natürliche Sprache
+    const M = {
+        familie: { 'step': 'die Teilnahme am STEP-Elterntraining (im CDSE)', 'erziehungsberatung': 'eine Erziehungsberatung', 'familientherapie': 'eine Familientherapie', 'strukturen_zuhause': 'die Etablierung klarerer Strukturen im häuslichen Umfeld', 'austausch_schule': 'einen regelmäßigen Austausch zwischen Familie und Schule' },
+        schule: { 'sitzplatz': 'eine Optimierung des Sitzplatzes', 'differenzierung': 'differenzierte Aufgabenstellungen', 'positives_feedback': 'häufiges positives Feedback', 'klare_regeln': 'klare Regeln mit transparenten Konsequenzen', 'auszeit': 'eine Auszeitmöglichkeit', 'verstaerkerplan': 'einen Verstärkerplan', 'iebs': 'die Unterstützung durch eine I-EBS' },
+        regional: { 'eseb_weiter': 'die weiterführende Begleitung durch den ESEB', 'isa': 'eine spezialisierte ambulante Intervention (ISA)', 'conseil': 'Conseil & Guidance', 'lernwerkstatt': 'eine spezialisierte Lernwerkstatt', 'therapeutisch': 'therapeutische Maßnahmen' }
+    };
+
+    // Hilfsfunktion für natürliche Aufzählungen
+    const liste = (arr, map) => {
+        const items = arr.filter(i => i && map[i]).map(i => map[i]);
+        if (items.length === 0) return '';
+        if (items.length === 1) return items[0];
+        return items.slice(0, -1).join(', ') + ' sowie ' + items[items.length - 1];
+    };
+
+    // Daten extrahieren
     const familie = dsData.checkboxes?.ds_empfehlung_familie || [];
-    if (familie.length > 0 || dsData.ds_empfehlung_familie_details) {
-        text += 'Familiärer Kontext:\n';
-        const familieTexte = {
-            'step': 'STEP Elterntraining (im CDSE)',
-            'erziehungsberatung': 'Erziehungsberatung',
-            'familientherapie': 'Familientherapie',
-            'strukturen_zuhause': 'Etablierung klarer Strukturen zu Hause',
-            'austausch_schule': 'Regelmäßiger Austausch mit der Schule'
-        };
-        if (familie.length > 0) {
-            text += '• ' + familie.map(f => familieTexte[f] || f).join('\n• ') + '\n';
-        }
-        if (dsData.ds_empfehlung_familie_details) {
-            text += dsData.ds_empfehlung_familie_details + '\n';
-        }
-        text += '\n';
-    }
-
-    // Schule
     const schule = dsData.checkboxes?.ds_empfehlung_schule || [];
-    if (schule.length > 0 || dsData.ds_empfehlung_schule_details) {
-        text += 'Schulischer Kontext (Lokal):\n';
-        const schuleTexte = {
-            'sitzplatz': 'Sitzplatzanpassung',
-            'differenzierung': 'Differenzierte Aufgabenstellung',
-            'positives_feedback': 'Häufiges positives Feedback',
-            'klare_regeln': 'Klare Regeln und Konsequenzen',
-            'auszeit': 'Auszeitmöglichkeit',
-            'verstaerkerplan': 'Verstärkerplan',
-            'iebs': 'Unterstützung durch I-EBS'
-        };
-        if (schule.length > 0) {
-            text += '• ' + schule.map(s => schuleTexte[s] || s).join('\n• ') + '\n';
-        }
-        if (dsData.ds_empfehlung_schule_details) {
-            text += dsData.ds_empfehlung_schule_details + '\n';
-        }
-        text += '\n';
-    }
-
-    // Regional
     const regional = dsData.checkboxes?.ds_empfehlung_regional || [];
-    if (regional.length > 0 || dsData.ds_empfehlung_regional_details) {
-        text += 'Regionaler Kontext (ESEB/CDSE):\n';
-        const regionalTexte = {
-            'eseb_weiter': 'Weiterführende Begleitung durch ESEB',
-            'isa': 'Spezialisierte ambulante Intervention (ISA)',
-            'conseil': 'Conseil & Guidance',
-            'lernwerkstatt': 'Spezialisierte Lernwerkstatt',
-            'therapeutisch': 'Therapeutische Maßnahmen empfohlen'
-        };
-        if (regional.length > 0) {
-            text += '• ' + regional.map(r => regionalTexte[r] || r).join('\n• ') + '\n';
+
+    // ===== KOHÄRENTER FLIESSTEXT =====
+    let text = '';
+    const hatFamilie = familie.length > 0 || dsData.ds_empfehlung_familie_details;
+    const hatSchule = schule.length > 0 || dsData.ds_empfehlung_schule_details;
+    const hatRegional = regional.length > 0 || dsData.ds_empfehlung_regional_details;
+
+    // Einleitung
+    if (hatFamilie || hatSchule || hatRegional) {
+        text += `Auf Grundlage der diagnostischen Erkenntnisse werden folgende Maßnahmen für ${name} empfohlen:\n\n`;
+    }
+
+    // ABSATZ 1: Familiärer Kontext
+    if (hatFamilie) {
+        const famListe = liste(familie, M.familie);
+        text += 'Im familiären Kontext wird ';
+        if (famListe) {
+            text += famListe + ' empfohlen';
+            if (dsData.ds_empfehlung_familie_details) {
+                text += `. Ergänzend: ${dsData.ds_empfehlung_familie_details}`;
+            }
+        } else if (dsData.ds_empfehlung_familie_details) {
+            text += dsData.ds_empfehlung_familie_details + ' empfohlen';
         }
-        if (dsData.ds_empfehlung_regional_details) {
-            text += dsData.ds_empfehlung_regional_details + '\n';
+        text += '. ';
+
+        // Überleitung zur Schule
+        if (hatSchule || hatRegional) {
+            text += '\n\n';
         }
     }
 
-    return text || '(Maßnahmen für Familie, Schule, außerschulischen Kontext)';
+    // ABSATZ 2: Schulischer Kontext
+    if (hatSchule) {
+        const schulListe = liste(schule, M.schule);
+        text += 'Für den schulischen Bereich (lokale Ebene) werden ';
+        if (schulListe) {
+            text += schulListe + ' empfohlen';
+            if (dsData.ds_empfehlung_schule_details) {
+                text += `. Darüber hinaus: ${dsData.ds_empfehlung_schule_details}`;
+            }
+        } else if (dsData.ds_empfehlung_schule_details) {
+            text += dsData.ds_empfehlung_schule_details + ' empfohlen';
+        }
+        text += '. ';
+
+        // Verbindender Text wenn beides vorhanden
+        if (hatFamilie && schule.includes('austausch_schule')) {
+            text += 'Die enge Zusammenarbeit zwischen Schule und Familie bildet hierbei eine wichtige Grundlage. ';
+        }
+
+        // Überleitung zu regional
+        if (hatRegional) {
+            text += '\n\n';
+        }
+    }
+
+    // ABSATZ 3: Regionaler Kontext (ESEB/CDSE)
+    if (hatRegional) {
+        const regListe = liste(regional, M.regional);
+        text += 'Auf regionaler Ebene (ESEB/CDSE) wird ';
+        if (regListe) {
+            text += regListe + ' empfohlen';
+            if (dsData.ds_empfehlung_regional_details) {
+                text += `. Konkret: ${dsData.ds_empfehlung_regional_details}`;
+            }
+        } else if (dsData.ds_empfehlung_regional_details) {
+            text += dsData.ds_empfehlung_regional_details + ' empfohlen';
+        }
+        text += '.';
+    }
+
+    // Abschließender integrativer Satz bei mehreren Kontexten
+    if ((hatFamilie && hatSchule) || (hatSchule && hatRegional) || (hatFamilie && hatRegional)) {
+        text += `\n\nDie erfolgreiche Umsetzung dieser Maßnahmen setzt eine gute Vernetzung aller beteiligten Akteure voraus, um ${name} optimal zu unterstützen.`;
+    }
+
+    return text.trim() || '(Maßnahmen für Familie, Schule, außerschulischen Kontext)';
 }
 
 // ==========================================
