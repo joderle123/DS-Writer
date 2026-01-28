@@ -291,6 +291,151 @@
             border-radius: var(--radius-full);
         }
 
+        /* === NEUE NAVIGATION === */
+        .main-nav {
+            display: flex;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%);
+            padding: 0;
+            position: relative;
+            border-bottom: 2px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .main-nav::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-neon), var(--info-neon), var(--primary-neon), transparent);
+        }
+
+        .main-nav-item {
+            flex: 1;
+            padding: 20px 24px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.6);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            white-space: nowrap;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .main-nav-item:hover {
+            color: white;
+            background: rgba(168, 85, 247, 0.15);
+        }
+
+        .main-nav-item.active {
+            color: white;
+            background: linear-gradient(180deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.05) 100%);
+        }
+
+        .main-nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-neon), var(--info-neon));
+            border-radius: var(--radius-full);
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .main-nav-item .nav-icon {
+            font-size: 1.2rem;
+        }
+
+        .main-nav-item .nav-number {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        .main-nav-item.active .nav-number {
+            background: linear-gradient(135deg, var(--primary-neon), var(--info-neon));
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .main-nav-item.completed .nav-number {
+            background: var(--success-neon);
+            box-shadow: 0 0 15px var(--success-glow);
+        }
+
+        /* Sub-Navigation für ELDiB */
+        .sub-nav {
+            display: none;
+            background: linear-gradient(180deg, rgba(250,250,255,0.98) 0%, rgba(255,255,255,1) 100%);
+            padding: 12px 24px;
+            gap: 6px;
+            border-bottom: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .sub-nav.visible {
+            display: flex;
+        }
+
+        .sub-nav-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            background: var(--gray-100);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            transition: all 0.3s ease;
+            border-radius: var(--radius-full);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sub-nav-item:hover {
+            background: var(--gray-200);
+            color: var(--gray-800);
+        }
+
+        .sub-nav-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 15px -3px var(--primary-glow);
+        }
+
+        .sub-nav-item.verhalten { border-left: 3px solid var(--danger); }
+        .sub-nav-item.kommunikation { border-left: 3px solid var(--info); }
+        .sub-nav-item.sozialisation { border-left: 3px solid var(--success); }
+        .sub-nav-item.kognition { border-left: 3px solid var(--warning); }
+        .sub-nav-item.zusaetzlich { border-left: 3px solid var(--primary); }
+
+        .sub-nav-item.active.verhalten { background: linear-gradient(135deg, var(--danger), var(--danger-dark)); }
+        .sub-nav-item.active.kommunikation { background: linear-gradient(135deg, var(--info), var(--info-dark)); }
+        .sub-nav-item.active.sozialisation { background: linear-gradient(135deg, var(--success), var(--success-dark)); }
+        .sub-nav-item.active.kognition { background: linear-gradient(135deg, var(--warning), var(--warning-dark)); }
+
+        /* Versteckte alte Tabs */
+        .tabs {
+            display: none !important;
+        }
+
         .tab {
             padding: 16px 28px;
             cursor: pointer;
@@ -1898,6 +2043,312 @@
             background: linear-gradient(180deg, #9b59b6, #8e44ad);
         }
 
+        /* === VERBESSERTES DIAGNOSTIC LAYOUT === */
+        .ds-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 0;
+            min-height: 70vh;
+        }
+
+        /* Fortschritts-Sidebar */
+        .ds-sidebar {
+            background: linear-gradient(180deg, #f8f9fc 0%, #f0f2f8 100%);
+            border-right: 1px solid var(--gray-200);
+            padding: 24px 0;
+            position: sticky;
+            top: 0;
+            height: fit-content;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .ds-sidebar-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray-500);
+            padding: 0 24px 16px;
+            border-bottom: 1px solid var(--gray-200);
+            margin-bottom: 8px;
+        }
+
+        .ds-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 24px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border-left: 3px solid transparent;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .ds-nav-item:hover {
+            background: rgba(155, 89, 182, 0.08);
+            color: var(--gray-800);
+        }
+
+        .ds-nav-item.active {
+            background: rgba(155, 89, 182, 0.12);
+            border-left-color: #9b59b6;
+            color: #9b59b6;
+            font-weight: 600;
+        }
+
+        .ds-nav-item.completed {
+            color: var(--success);
+        }
+
+        .ds-nav-item .ds-nav-number {
+            width: 28px;
+            height: 28px;
+            background: var(--gray-200);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .ds-nav-item.active .ds-nav-number {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            box-shadow: 0 4px 12px -2px rgba(155, 89, 182, 0.4);
+        }
+
+        .ds-nav-item.completed .ds-nav-number {
+            background: var(--success);
+            color: white;
+        }
+
+        .ds-nav-item.completed .ds-nav-number::after {
+            content: '✓';
+        }
+
+        .ds-nav-item.completed .ds-nav-number span {
+            display: none;
+        }
+
+        /* Hauptinhalt */
+        .ds-main-content {
+            padding: 32px 40px;
+            background: white;
+        }
+
+        .ds-section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .ds-section-number {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 800;
+            box-shadow: 0 8px 25px -5px rgba(155, 89, 182, 0.4);
+        }
+
+        .ds-section-title {
+            flex: 1;
+        }
+
+        .ds-section-title h2 {
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .ds-section-title p {
+            color: var(--gray-500);
+            font-size: 0.9rem;
+        }
+
+        /* Verbesserte Checkbox-Gruppen */
+        .ds-checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .checkbox-label-ds {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 14px 18px;
+            border-radius: var(--radius);
+            transition: all 0.25s ease;
+            background: linear-gradient(180deg, white 0%, var(--gray-50) 100%);
+            border: 2px solid var(--gray-200);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .checkbox-label-ds::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--gray-300);
+            transition: all 0.25s ease;
+        }
+
+        .checkbox-label-ds:hover {
+            border-color: var(--primary-light);
+            background: linear-gradient(180deg, white 0%, rgba(155, 89, 182, 0.05) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px -5px rgba(0,0,0,0.1);
+        }
+
+        .checkbox-label-ds:hover::before {
+            background: var(--primary-light);
+        }
+
+        .checkbox-label-ds:has(input:checked) {
+            border-color: #9b59b6;
+            background: linear-gradient(180deg, rgba(155, 89, 182, 0.08) 0%, rgba(155, 89, 182, 0.03) 100%);
+            box-shadow: 0 4px 15px -3px rgba(155, 89, 182, 0.25);
+        }
+
+        .checkbox-label-ds:has(input:checked)::before {
+            background: linear-gradient(180deg, #9b59b6, #8e44ad);
+        }
+
+        .checkbox-label-ds input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: #9b59b6;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* Akkordeon-Sektionen */
+        .ds-accordion {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid var(--gray-200);
+            background: white;
+        }
+
+        .ds-accordion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            background: linear-gradient(180deg, var(--gray-50) 0%, white 100%);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border-bottom: 1px solid transparent;
+        }
+
+        .ds-accordion-header:hover {
+            background: linear-gradient(180deg, rgba(155, 89, 182, 0.05) 0%, white 100%);
+        }
+
+        .ds-accordion.open .ds-accordion-header {
+            border-bottom-color: var(--gray-200);
+            background: linear-gradient(180deg, rgba(155, 89, 182, 0.08) 0%, rgba(155, 89, 182, 0.03) 100%);
+        }
+
+        .ds-accordion-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .ds-accordion-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--gray-200);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .ds-accordion.open .ds-accordion-icon {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        .ds-accordion-content {
+            display: none;
+            padding: 24px;
+        }
+
+        .ds-accordion.open .ds-accordion-content {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Info-Karten */
+        .ds-info-card {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.1) 0%, rgba(142, 68, 173, 0.05) 100%);
+            border: 1px solid rgba(155, 89, 182, 0.2);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .ds-info-card-icon {
+            font-size: 1.2rem;
+            color: #9b59b6;
+        }
+
+        .ds-info-card-text {
+            color: var(--gray-700);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Responsive für Diagnostic */
+        @media (max-width: 1024px) {
+            .ds-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .ds-sidebar {
+                display: none;
+            }
+
+            .ds-main-content {
+                padding: 24px;
+            }
+        }
+
         /* DS Responsive */
         @media (max-width: 768px) {
             .ds-massnahme-row,
@@ -2069,17 +2520,43 @@
             <h1>ELDiB Generator</h1>
             <p>Entwicklungstherapeutischer/entwicklungspädagogischer Lernziel-Diagnose-Bogen</p>
             <div class="progress-indicator" id="progress-indicator">
-                <div class="progress-dot" data-tab="stammdaten"></div>
-                <div class="progress-dot" data-tab="verhalten"></div>
-                <div class="progress-dot" data-tab="kommunikation"></div>
-                <div class="progress-dot" data-tab="sozialisation"></div>
-                <div class="progress-dot" data-tab="kognition"></div>
-                <div class="progress-dot" data-tab="zusaetzlich"></div>
-                <div class="progress-dot" data-tab="diagnostic"></div>
-                <div class="progress-dot" data-tab="export"></div>
+                <div class="progress-dot active" data-section="stammdaten" onclick="showMainSection('stammdaten')" title="Stammdaten"></div>
+                <div class="progress-dot" data-section="eldib" onclick="showMainSection('eldib')" title="ELDiB Bewertung"></div>
+                <div class="progress-dot" data-section="diagnostic" onclick="showMainSection('diagnostic')" title="Diagnostic Spécialisé"></div>
+                <div class="progress-dot" data-section="export" onclick="showMainSection('export')" title="Export"></div>
             </div>
         </div>
 
+        <!-- NEUE HAUPTNAVIGATION -->
+        <nav class="main-nav">
+            <button class="main-nav-item active" onclick="showMainSection('stammdaten')" title="Schülerdaten eingeben">
+                <span class="nav-number">1</span>
+                <span>Stammdaten</span>
+            </button>
+            <button class="main-nav-item" onclick="showMainSection('eldib')" title="ELDiB-Bewertung durchführen">
+                <span class="nav-number">2</span>
+                <span>ELDiB Bewertung</span>
+            </button>
+            <button class="main-nav-item" onclick="showMainSection('diagnostic')" title="Diagnostic Spécialisé erstellen">
+                <span class="nav-number">3</span>
+                <span>Diagnostic Spécialisé</span>
+            </button>
+            <button class="main-nav-item" onclick="showMainSection('export')" title="Dokumente exportieren">
+                <span class="nav-number">4</span>
+                <span>Export</span>
+            </button>
+        </nav>
+
+        <!-- SUB-NAVIGATION FÜR ELDIB -->
+        <nav class="sub-nav" id="eldib-sub-nav">
+            <button class="sub-nav-item verhalten active" onclick="showTab('verhalten')">Verhalten</button>
+            <button class="sub-nav-item kommunikation" onclick="showTab('kommunikation')">Kommunikation</button>
+            <button class="sub-nav-item sozialisation" onclick="showTab('sozialisation')">Sozialisation</button>
+            <button class="sub-nav-item kognition" onclick="showTab('kognition')">Kognition</button>
+            <button class="sub-nav-item zusaetzlich" onclick="showTab('zusaetzlich')">Zusätzliche Ziele</button>
+        </nav>
+
+        <!-- ALTE TABS (versteckt, für Kompatibilität) -->
         <div class="tabs">
             <button class="tab active" onclick="showTab('stammdaten')" title="Schülerdaten eingeben">Stammdaten</button>
             <button class="tab" onclick="showTab('verhalten')" title="Verhalten V-1 bis V-33">Verhalten</button>
@@ -2168,7 +2645,7 @@
             </div>
 
             <div class="button-group">
-                <button class="btn btn-primary" onclick="showTab('verhalten')">Weiter zu Verhalten &rarr;</button>
+                <button class="btn btn-primary" onclick="showMainSection('eldib')">Weiter zu ELDiB Bewertung &rarr;</button>
             </div>
         </div>
 
@@ -2684,21 +3161,77 @@
             </div>
 
             <div class="button-group">
-                <button class="btn btn-primary" onclick="showTab('diagnostic')">Weiter zu Diagnostic →</button>
+                <button class="btn btn-primary" onclick="showMainSection('diagnostic')">Weiter zu Diagnostic Spécialisé →</button>
             </div>
         </div>
 
         <!-- Diagnostic Tab - DS Fragebogen -->
         <div id="diagnostic" class="tab-content">
-            <h2 style="margin-bottom: 20px; color: #333;">Diagnostic Spécialisé - Fragebogen</h2>
-            <p style="margin-bottom: 25px; color: #666; font-size: 0.95rem;">
-                Füllen Sie die folgenden Abschnitte aus, um einen vollständigen Diagnostic Spécialisé zu generieren.
-                Die Stammdaten werden automatisch aus dem ersten Tab übernommen. Pflichtfelder sind mit <span style="color: var(--danger);">*</span> markiert.
-            </p>
+            <div class="ds-layout">
+                <!-- Fortschritts-Sidebar -->
+                <aside class="ds-sidebar">
+                    <div class="ds-sidebar-title">DS Abschnitte</div>
+                    <div class="ds-nav-item active" onclick="scrollToDSSection(1)">
+                        <span class="ds-nav-number"><span>1</span></span>
+                        <span>Auftragsklärung</span>
+                    </div>
+                    <div class="ds-nav-item" onclick="scrollToDSSection(2)">
+                        <span class="ds-nav-number"><span>2</span></span>
+                        <span>Anamnese</span>
+                    </div>
+                    <div class="ds-nav-item" onclick="scrollToDSSection(3)">
+                        <span class="ds-nav-number"><span>3</span></span>
+                        <span>Sichtweise Schule</span>
+                    </div>
+                    <div class="ds-nav-item" onclick="scrollToDSSection(4)">
+                        <span class="ds-nav-number"><span>4</span></span>
+                        <span>Sichtweise Kind</span>
+                    </div>
+                    <div class="ds-nav-item" onclick="scrollToDSSection(5)">
+                        <span class="ds-nav-number"><span>5</span></span>
+                        <span>Sichtweise Eltern</span>
+                    </div>
+                    <div class="ds-nav-item" onclick="scrollToDSSection(6)">
+                        <span class="ds-nav-number"><span>6</span></span>
+                        <span>Beobachtungen</span>
+                    </div>
+                    <div class="ds-nav-item" onclick="scrollToDSSection(7)">
+                        <span class="ds-nav-number"><span>7</span></span>
+                        <span>ELDiB Ergebnisse</span>
+                    </div>
+                    <div class="ds-nav-item" onclick="scrollToDSSection(8)">
+                        <span class="ds-nav-number"><span>8</span></span>
+                        <span>Interpretation</span>
+                    </div>
+                    <div class="ds-nav-item" onclick="scrollToDSSection(9)">
+                        <span class="ds-nav-number"><span>9</span></span>
+                        <span>Bedürfnisse</span>
+                    </div>
+                    <div class="ds-nav-item" onclick="scrollToDSSection(10)">
+                        <span class="ds-nav-number"><span>10</span></span>
+                        <span>Empfehlungen</span>
+                    </div>
+                </aside>
+
+                <!-- Hauptinhalt -->
+                <div class="ds-main-content">
+                    <div class="ds-info-card">
+                        <span class="ds-info-card-icon">ℹ️</span>
+                        <span class="ds-info-card-text">
+                            Füllen Sie die folgenden Abschnitte aus, um einen vollständigen Diagnostic Spécialisé zu generieren.
+                            Die Stammdaten werden automatisch übernommen. Pflichtfelder sind mit <span style="color: var(--danger);">*</span> markiert.
+                        </span>
+                    </div>
 
             <!-- 1. Auftragsklärung -->
             <div class="form-section" id="ds-section-1">
-                <h3 style="color: #9b59b6;">1. Auftragsklärung</h3>
+                <div class="ds-section-header">
+                    <span class="ds-section-number">1</span>
+                    <div class="ds-section-title">
+                        <h2>Auftragsklärung</h2>
+                        <p>Informationen zum Auftrag und Anlass der Anfrage</p>
+                    </div>
+                </div>
 
                 <div class="form-row">
                     <div class="form-group">
@@ -4273,9 +4806,11 @@
                 </div>
             </div>
 
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="showTab('export')">Zum Export →</button>
+            <div class="button-group" style="margin-top: 30px;">
+                <button class="btn btn-primary" onclick="showMainSection('export')">Zum Export →</button>
             </div>
+                </div><!-- Ende ds-main-content -->
+            </div><!-- Ende ds-layout -->
         </div>
 
         <!-- Export Tab -->
@@ -4856,6 +5391,9 @@ document.addEventListener('DOMContentLoaded', function() {
         stammdatenTab.addEventListener('input', debounce(saveToLocalStorage, 500));
         stammdatenTab.addEventListener('change', saveToLocalStorage);
     }
+
+    // Initialize DS section observer
+    initDSObserver();
 });
 
 // Debounce-Funktion für Auto-Save
@@ -4872,6 +5410,76 @@ function debounce(func, wait) {
 }
 
 // Tab Navigation
+// === NEUE NAVIGATION FUNKTIONEN ===
+function showMainSection(section) {
+    const mainNavItems = document.querySelectorAll('.main-nav-item');
+    const subNav = document.getElementById('eldib-sub-nav');
+
+    // Update main nav styling
+    mainNavItems.forEach(item => item.classList.remove('active'));
+    const activeMainItem = document.querySelector(`.main-nav-item[onclick*="${section}"]`);
+    if (activeMainItem) activeMainItem.classList.add('active');
+
+    // Show/hide sub-nav
+    if (section === 'eldib') {
+        subNav.classList.add('visible');
+        // Show first ELDiB tab (Verhalten)
+        showTab('verhalten');
+        updateSubNavActive('verhalten');
+    } else {
+        subNav.classList.remove('visible');
+        showTab(section);
+    }
+}
+
+function updateSubNavActive(tabId) {
+    const subNavItems = document.querySelectorAll('.sub-nav-item');
+    subNavItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.classList.contains(tabId) ||
+            (tabId === 'zusaetzlich' && item.classList.contains('zusaetzlich'))) {
+            item.classList.add('active');
+        }
+    });
+}
+
+function scrollToDSSection(sectionNum) {
+    const section = document.getElementById(`ds-section-${sectionNum}`);
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Update sidebar highlighting
+        document.querySelectorAll('.ds-nav-item').forEach((item, index) => {
+            item.classList.remove('active');
+            if (index === sectionNum - 1) {
+                item.classList.add('active');
+            }
+        });
+    }
+}
+
+// Observe DS sections for auto-highlighting sidebar
+function initDSObserver() {
+    const sections = document.querySelectorAll('[id^="ds-section-"]');
+    const navItems = document.querySelectorAll('.ds-nav-item');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const sectionNum = entry.target.id.replace('ds-section-', '');
+                navItems.forEach((item, index) => {
+                    item.classList.remove('active');
+                    if (index === parseInt(sectionNum) - 1) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, { threshold: 0.3, rootMargin: '-100px 0px -50% 0px' });
+
+    sections.forEach(section => observer.observe(section));
+}
+
 function showTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -4880,6 +5488,17 @@ function showTab(tabId) {
         const onclickAttr = tab.getAttribute('onclick');
         if (onclickAttr && onclickAttr.includes("'" + tabId + "'")) tab.classList.add('active');
     });
+
+    // Update sub-nav if in ELDiB section
+    const eldibTabs = ['verhalten', 'kommunikation', 'sozialisation', 'kognition', 'zusaetzlich'];
+    if (eldibTabs.includes(tabId)) {
+        updateSubNavActive(tabId);
+        document.getElementById('eldib-sub-nav').classList.add('visible');
+        // Update main nav
+        document.querySelectorAll('.main-nav-item').forEach(item => item.classList.remove('active'));
+        document.querySelector('.main-nav-item[onclick*="eldib"]').classList.add('active');
+    }
+
     // Update progress indicator
     updateProgressIndicator(tabId);
 
@@ -4888,8 +5507,15 @@ function showTab(tabId) {
 }
 
 function updateProgressIndicator(activeTab) {
-    const tabs = ['stammdaten', 'verhalten', 'kommunikation', 'sozialisation', 'kognition', 'zusaetzlich', 'diagnostic', 'export'];
-    const activeIndex = tabs.indexOf(activeTab);
+    // Map tabs to main sections
+    const eldibTabs = ['verhalten', 'kommunikation', 'sozialisation', 'kognition', 'zusaetzlich'];
+    let activeSection = activeTab;
+    if (eldibTabs.includes(activeTab)) {
+        activeSection = 'eldib';
+    }
+
+    const sections = ['stammdaten', 'eldib', 'diagnostic', 'export'];
+    const activeIndex = sections.indexOf(activeSection);
 
     document.querySelectorAll('.progress-dot').forEach((dot, index) => {
         dot.classList.remove('active', 'completed');
@@ -4897,6 +5523,16 @@ function updateProgressIndicator(activeTab) {
             dot.classList.add('active');
         } else if (index < activeIndex) {
             dot.classList.add('completed');
+        }
+    });
+
+    // Also update main nav
+    document.querySelectorAll('.main-nav-item').forEach((item, index) => {
+        item.classList.remove('active', 'completed');
+        if (index === activeIndex) {
+            item.classList.add('active');
+        } else if (index < activeIndex) {
+            item.classList.add('completed');
         }
     });
 }
