@@ -7321,17 +7321,100 @@ function generateSichtweiseElternText(dsData) {
     const erwartung = dsData.checkboxes?.ds_eltern_erwartung || [];
     const mitWem = dsData.checkboxes?.ds_eltern_gespraech_mit || [];
 
-    // Text-Mappings für natürliche Sprache
+    // Fachsprachliche Text-Mappings (deskriptiv, Konjunktiv I für Berichte)
     const M = {
-        verhalten: { 'unauffaellig': 'überwiegend unauffällig und altersentsprechend', 'teilweise': 'teilweise auffällig', 'stark': 'deutlich auffällig und herausfordernd' },
-        beziehung: { 'sehr_gut': 'sehr eng und liebevoll', 'gut': 'gut und tragfähig', 'ambivalent': 'ambivalent, geprägt von Nähe und Konflikten gleichermaßen', 'angespannt': 'angespannt', 'schwierig': 'aktuell schwierig und belastet' },
-        positiv: { 'hilfsbereit': 'Hilfsbereitschaft im Haushalt', 'liebevoll': 'liebevolles Verhalten gegenüber Familienmitgliedern', 'selbststaendig': 'Selbstständigkeit', 'regeln': 'grundsätzliche Regelakzeptanz', 'tagesstruktur': 'eine gute Tagesstruktur' },
-        negativ: { 'wutausbrueche': 'Wutausbrüchen', 'geschwisterkonflikte': 'häufigen Geschwisterkonflikten', 'verweigert_regeln': 'Regelverweigerung', 'schlafprobleme': 'Schlafproblemen', 'essprobleme': 'Essproblemen', 'aengste': 'Ängsten', 'rueckzug': 'Rückzugsverhalten', 'medienkonsum': 'exzessivem Medienkonsum', 'einnaessen': 'Einnässen oder Einkoten', 'selbstverletzung': 'selbstverletzendem Verhalten', 'hausaufgaben': 'Konflikten bei den Hausaufgaben' },
-        konflikt: { 'morgens': 'morgens beim Aufstehen', 'hausaufgaben': 'bei den Hausaufgaben', 'essen': 'beim Essen', 'schlafengehen': 'beim Schlafengehen', 'bildschirmzeit': 'rund um die Medienzeit', 'pflichten': 'bei häuslichen Pflichten', 'geschwister': 'zwischen den Geschwistern', 'nein_akzeptieren': 'wenn ein "Nein" akzeptiert werden soll' },
-        stil: { 'konsequent': 'konsequent', 'inkonsequent': 'manchmal inkonsequent', 'streng': 'eher streng', 'nachgiebig': 'eher nachgiebig', 'uneinig': 'bezüglich der Erziehung nicht immer einig', 'ueberfordert': 'zeitweise überfordert', 'strukturiert': 'mit gut strukturiertem Alltag', 'wenig_struktur': 'mit wenig fester Tagesstruktur' },
-        belastung: { 'staendige_konflikte': 'die ständigen Konflikte', 'sorge_zukunft': 'Sorgen um die Zukunft des Kindes', 'schule_beschwerden': 'die regelmäßigen Beschwerden aus der Schule', 'hilflosigkeit': 'Gefühle der Hilflosigkeit', 'aggressives_verhalten': 'das aggressive Verhalten', 'keine_besserung': 'ausbleibende Verbesserungen trotz Bemühungen', 'erschoepfung': 'Erschöpfung', 'partnerkonflikt': 'Partnerschaftskonflikte wegen des Kindes', 'schuldgefuehle': 'Schuldgefühle', 'soziale_isolation': 'soziale Isolation' },
-        erwartung: { 'verhalten_verbessern': 'Verhaltensverbesserung', 'entspannung_zuhause': 'eine entspanntere häusliche Situation', 'strategien_eltern': 'konkrete Erziehungsstrategien', 'schule_verbessern': 'bessere schulische Leistungen', 'abklaerung': 'eine diagnostische Abklärung', 'therapie': 'therapeutische Unterstützung', 'elternberatung': 'Beratung für sich selbst', 'anderer_foerderort': 'Prüfung eines anderen Förderorts', 'verstehen': 'das Kind besser zu verstehen', 'bestätigung': 'Bestätigung ihrer Erziehungsbemühungen' },
-        zusammenarbeit: { 'sehr_hoch': 'sehr hoch, die Eltern zeigen sich motiviert und engagiert', 'hoch': 'hoch', 'mittel': 'mittelmäßig', 'zurueckhaltend': 'eher zurückhaltend', 'ablehnend': 'ablehnend' }
+        // Verhalten im häuslichen Kontext (Konjunktiv für Elternberichte)
+        verhalten: {
+            'unauffaellig': 'zeige sich das Verhalten im häuslichen Umfeld überwiegend altersentsprechend und unauffällig',
+            'teilweise': 'träten situativ Verhaltensauffälligkeiten auf',
+            'stark': 'bestünden ausgeprägte Verhaltensschwierigkeiten, die das Familienleben erheblich beeinträchtigten'
+        },
+        // Eltern-Kind-Beziehung (Konjunktiv)
+        beziehung: {
+            'sehr_gut': 'als tragfähig und von emotionaler Nähe geprägt',
+            'gut': 'als überwiegend positiv und belastbar',
+            'ambivalent': 'als ambivalent, gekennzeichnet durch einen Wechsel von Nähe und Konflikt',
+            'angespannt': 'als derzeit angespannt',
+            'schwierig': 'als aktuell belastet und von wiederkehrenden Konflikten geprägt'
+        },
+        // Positive Verhaltensaspekte (Konjunktiv für Berichte)
+        positiv: {
+            'hilfsbereit': 'prosoziale Verhaltensweisen im häuslichen Kontext',
+            'liebevoll': 'Bindungsverhalten gegenüber Familienmitgliedern',
+            'selbststaendig': 'Ansätze zur Selbstständigkeit',
+            'regeln': 'grundsätzliche Regelakzeptanz',
+            'tagesstruktur': 'eine angemessene Orientierung an der Tagesstruktur'
+        },
+        // Problemverhalten (Konjunktiv für Berichte, deskriptiv)
+        negativ: {
+            'wutausbrueche': 'affektiven Durchbrüchen',
+            'geschwisterkonflikte': 'wiederkehrenden Geschwisterkonflikten',
+            'verweigert_regeln': 'oppositionellem Verhalten gegenüber Regeln',
+            'schlafprobleme': 'Schlafstörungen',
+            'essprobleme': 'auffälligem Essverhalten',
+            'aengste': 'Angstsymptomatik',
+            'rueckzug': 'sozialem Rückzugsverhalten',
+            'medienkonsum': 'dysreguliertem Mediennutzungsverhalten',
+            'einnaessen': 'Enuresis bzw. Enkopresis',
+            'selbstverletzung': 'selbstverletzendem Verhalten',
+            'hausaufgaben': 'Konflikten in der Hausaufgabensituation'
+        },
+        // Konfliktsituationen (Konjunktiv)
+        konflikt: {
+            'morgens': 'in der morgendlichen Aufstehsituation',
+            'hausaufgaben': 'in der Hausaufgabensituation',
+            'essen': 'bei den Mahlzeiten',
+            'schlafengehen': 'beim Zubettgehen',
+            'bildschirmzeit': 'bei der Begrenzung der Medienzeit',
+            'pflichten': 'bei häuslichen Pflichten',
+            'geschwister': 'in Geschwisterinteraktionen',
+            'nein_akzeptieren': 'bei der Grenzsetzung'
+        },
+        // Elterlicher Erziehungsstil (Konjunktiv für Selbsteinschätzung)
+        stil: {
+            'konsequent': 'eine konsequente Haltung',
+            'inkonsequent': 'zeitweise Schwierigkeiten in der Konsequenz',
+            'streng': 'eine ausgeprägte Grenzsetzung',
+            'nachgiebig': 'eine eher permissive Haltung',
+            'uneinig': 'differierende Erziehungsvorstellungen zwischen den Bezugspersonen',
+            'ueberfordert': 'Überforderungserleben',
+            'strukturiert': 'eine gut strukturierte Alltagsgestaltung',
+            'wenig_struktur': 'wenig feste Strukturen im Tagesablauf'
+        },
+        // Elterliche Belastungen (Konjunktiv)
+        belastung: {
+            'staendige_konflikte': 'die wiederkehrenden Auseinandersetzungen',
+            'sorge_zukunft': 'antizipatorische Sorgen bezüglich der Entwicklungsprognose',
+            'schule_beschwerden': 'die häufigen negativen Rückmeldungen aus dem schulischen Kontext',
+            'hilflosigkeit': 'Gefühle der Hilflosigkeit und Ohnmacht',
+            'aggressives_verhalten': 'die aggressiven Verhaltensweisen',
+            'keine_besserung': 'das Ausbleiben von Verbesserungen trotz Bemühungen',
+            'erschoepfung': 'anhaltende Erschöpfung',
+            'partnerkonflikt': 'kindbezogene Partnerschaftskonflikte',
+            'schuldgefuehle': 'Schuldattributionen',
+            'soziale_isolation': 'sozialen Rückzug der Familie'
+        },
+        // Erwartungen an die Maßnahme (Konjunktiv)
+        erwartung: {
+            'verhalten_verbessern': 'eine Verbesserung des Sozialverhaltens',
+            'entspannung_zuhause': 'eine Entlastung des häuslichen Zusammenlebens',
+            'strategien_eltern': 'konkrete Handlungsstrategien für Erziehungssituationen',
+            'schule_verbessern': 'eine Stabilisierung der schulischen Situation',
+            'abklaerung': 'eine diagnostische Einordnung',
+            'therapie': 'therapeutische Unterstützung',
+            'elternberatung': 'Beratung für sich selbst als Erziehende',
+            'anderer_foerderort': 'die Prüfung alternativer Beschulungsformen',
+            'verstehen': 'ein vertieftes Verständnis für das kindliche Verhalten',
+            'bestätigung': 'eine Bestätigung der eigenen Erziehungsbemühungen'
+        },
+        // Kooperationsbereitschaft
+        zusammenarbeit: {
+            'sehr_hoch': 'ausgeprägte Kooperationsbereitschaft und hohe Motivation',
+            'hoch': 'grundsätzliche Kooperationsbereitschaft',
+            'mittel': 'ambivalente Kooperationsbereitschaft',
+            'zurueckhaltend': 'zurückhaltendes Kooperationsverhalten',
+            'ablehnend': 'eingeschränkte Kooperationsbereitschaft'
+        }
     };
 
     // Hilfsfunktion für natürliche Aufzählungen
@@ -7342,50 +7425,52 @@ function generateSichtweiseElternText(dsData) {
         return items.slice(0, -1).join(', ') + ' und ' + items[items.length - 1];
     };
 
-    // ===== KOHÄRENTER FLIESSTEXT =====
+    // ===== KOHÄRENTER FLIESSTEXT MIT KONJUNKTIV FÜR ELTERNBERICHTE =====
     let text = '';
 
-    // EINLEITUNG: Gesprächskontext
+    // EINLEITUNG: Anamnestischer Gesprächskontext
     if (dsData.ds_eltern_gespraech_datum) {
         const datum = new Date(dsData.ds_eltern_gespraech_datum).toLocaleDateString('de-DE');
         let mitText = '';
-        if (mitWem.includes('beide')) mitText = 'beiden Elternteilen';
-        else if (mitWem.includes('mutter') && mitWem.includes('vater')) mitText = 'beiden Elternteilen';
-        else if (mitWem.includes('mutter')) mitText = 'der Mutter';
-        else if (mitWem.includes('vater')) mitText = 'dem Vater';
-        else if (mitWem.includes('andere')) mitText = 'dem/der Erziehungsberechtigten';
+        if (mitWem.includes('beide')) mitText = 'mit beiden Elternteilen';
+        else if (mitWem.includes('mutter') && mitWem.includes('vater')) mitText = 'mit beiden Elternteilen';
+        else if (mitWem.includes('mutter')) mitText = 'mit der Mutter';
+        else if (mitWem.includes('vater')) mitText = 'mit dem Vater';
+        else if (mitWem.includes('andere')) mitText = 'mit dem/der Erziehungsberechtigten';
 
-        text += `Im Elterngespräch am ${datum}${mitText ? ' mit ' + mitText : ''} wurde die familiäre Perspektive erhoben. `;
+        text += `Im Rahmen der anamnestischen Erhebung fand am ${datum} ein Gespräch ${mitText || 'mit den Bezugspersonen'} statt, um die familiäre Perspektive auf die Entwicklung von ${name} zu erfassen. `;
     }
 
-    // ABSATZ 1: Verhalten zu Hause und Beziehungsqualität
+    // ABSATZ 1: Verhalten im häuslichen Kontext und Beziehungsqualität (Konjunktiv I)
     const hatVerhalten = verhalten && verhalten !== '';
     const hatBeziehung = beziehung && beziehung !== '';
     const hatPositiv = positiv.length > 0;
     const hatNegativ = negativ.length > 0;
 
     if (hatVerhalten || hatBeziehung || hatPositiv || hatNegativ) {
+        text += 'Laut Angaben der Eltern ';
+
         if (hatVerhalten) {
-            text += `Das Verhalten von ${name} zu Hause wird von den Eltern als ${M.verhalten[verhalten]} beschrieben`;
+            text += M.verhalten[verhalten];
             if (hatBeziehung) {
-                text += `, wobei die Eltern-Kind-Beziehung als ${M.beziehung[beziehung]} charakterisiert wird`;
+                text += `. Die Eltern-Kind-Beziehung werde ${M.beziehung[beziehung]} wahrgenommen`;
             }
             text += '. ';
         } else if (hatBeziehung) {
-            text += `Die Beziehung zu ${name} beschreiben die Eltern als ${M.beziehung[beziehung]}. `;
+            text += `werde die Beziehung zu ${name} ${M.beziehung[beziehung]} wahrgenommen. `;
         }
 
-        // Stärken und Herausforderungen verbinden
+        // Ressourcen und Problemverhalten synthetisiert darstellen (Konjunktiv)
         if (hatPositiv && hatNegativ) {
-            text += `Im häuslichen Umfeld zeigt ${name} einerseits ${liste(positiv, M.positiv)}, andererseits berichten die Eltern von ${liste(negativ, M.negativ)}. `;
+            text += `Im häuslichen Umfeld werden einerseits ${liste(positiv, M.positiv)} berichtet. Im Kontrast dazu stehe jedoch die Belastung durch ${liste(negativ, M.negativ)}, was das Familienleben deutlich beeinträchtige. `;
         } else if (hatPositiv) {
-            text += `Positiv heben die Eltern ${liste(positiv, M.positiv)} hervor. `;
+            text += `Ressourcenorientiert wird hervorgehoben, dass ${name} ${liste(positiv, M.positiv)} zeige. `;
         } else if (hatNegativ) {
-            text += `Als herausfordernd erleben die Eltern insbesondere die Situationen mit ${liste(negativ, M.negativ)}. `;
+            text += `Als belastend erleben die Eltern insbesondere ${liste(negativ, M.negativ)}. `;
         }
     }
 
-    // ABSATZ 2: Konfliktsituationen und Erziehungsstil
+    // ABSATZ 2: Konfliktsituationen und Erziehungsstil als Kontext (Konjunktiv)
     const hatKonflikt = konflikt.length > 0;
     const hatStil = stil.length > 0;
 
@@ -7393,37 +7478,49 @@ function generateSichtweiseElternText(dsData) {
         text += '\n\n';
 
         if (hatKonflikt && hatStil) {
-            text += `Konfliktsituationen entstehen im Alltag besonders ${liste(konflikt, M.konflikt)}. Die Eltern beschreiben ihren eigenen Erziehungsstil als ${liste(stil, M.stil)}. `;
+            // Synthese: Konflikte mit Erziehungsstil verbinden
+            text += `Hinsichtlich der alltäglichen Anforderungssituationen wird berichtet, dass Konflikte vornehmlich ${liste(konflikt, M.konflikt)} aufträten. `;
+            text += `Bezüglich des eigenen Erziehungsverhaltens reflektieren die Eltern ${liste(stil, M.stil)}. `;
+
+            // Mögliche Zusammenhänge aufzeigen
+            if (stil.includes('inkonsequent') || stil.includes('uneinig')) {
+                text += `Auffällig ist hierbei der mögliche Zusammenhang zwischen den beschriebenen Konfliktsituationen und der reflektierten Erziehungsdynamik. `;
+            }
         } else if (hatKonflikt) {
-            text += `Typische Konfliktsituationen im Familienalltag ergeben sich ${liste(konflikt, M.konflikt)}. `;
+            text += `Typische Konfliktauslöser im Alltag seien ${liste(konflikt, M.konflikt)}. `;
         } else if (hatStil) {
-            text += `Die Eltern reflektieren ihren Erziehungsstil und beschreiben sich als ${liste(stil, M.stil)}. `;
+            text += `In der Selbstreflexion bezüglich des Erziehungsverhaltens berichten die Eltern ${liste(stil, M.stil)}. `;
         }
     }
 
-    // Ergänzende Details
+    // Ergänzende qualitative Angaben
     if (dsData.ds_eltern_verhalten_details) {
-        text += '\n\n' + dsData.ds_eltern_verhalten_details + ' ';
+        text += '\n\nErgänzend wird berichtet: ' + dsData.ds_eltern_verhalten_details + ' ';
     }
 
-    // ABSATZ 3: Elterliche Belastungen
+    // ABSATZ 3: Elterliches Belastungserleben (Konjunktiv)
     const hatBelastung = belastung.length > 0 || dsData.ds_eltern_belastung;
 
     if (hatBelastung) {
-        text += '\n\nBezüglich der eigenen Situation ';
+        text += '\n\nHinsichtlich des elterlichen Belastungserlebens ';
         const belastListe = liste(belastung, M.belastung);
         if (belastListe) {
-            text += `fühlen sich die Eltern belastet durch ${belastListe}`;
+            text += `werden als zentrale Stressoren ${belastListe} benannt`;
             if (dsData.ds_eltern_belastung) {
-                text += `. Zudem beschreiben sie: ${dsData.ds_eltern_belastung}`;
+                text += `. Darüber hinaus berichten die Eltern: ${dsData.ds_eltern_belastung}`;
+            }
+            text += '. ';
+
+            // Mögliche Auswirkungen auf das Erziehungsverhalten thematisieren
+            if (belastung.includes('erschoepfung') || belastung.includes('hilflosigkeit')) {
+                text += 'Diese Belastungsfaktoren können potentiell die Verfügbarkeit und Responsivität der Bezugspersonen beeinflussen. ';
             }
         } else if (dsData.ds_eltern_belastung) {
-            text += `beschreiben die Eltern: ${dsData.ds_eltern_belastung}`;
+            text += `berichten die Eltern: ${dsData.ds_eltern_belastung}. `;
         }
-        text += '. ';
     }
 
-    // ABSATZ 4: Erwartungen und Kooperationsbereitschaft
+    // ABSATZ 4: Erwartungen an die Maßnahme und Kooperationsbereitschaft
     const hatErwartung = erwartung.length > 0 || dsData.ds_eltern_erwartungen;
     const hatZusammenarbeit = zusammenarbeit && zusammenarbeit !== '';
 
@@ -7432,38 +7529,92 @@ function generateSichtweiseElternText(dsData) {
 
         if (hatErwartung) {
             const erwartungListe = liste(erwartung, M.erwartung);
+            text += 'Bezüglich der Erwartungen an die Maßnahme äußern die Eltern den Wunsch nach ';
             if (erwartungListe) {
-                text += `Von der Maßnahme erhoffen sich die Eltern insbesondere ${erwartungListe}`;
+                text += erwartungListe;
                 if (dsData.ds_eltern_erwartungen) {
-                    text += ` sowie ${dsData.ds_eltern_erwartungen}`;
+                    text += `. Zudem werde ${dsData.ds_eltern_erwartungen} erhofft`;
                 }
             } else if (dsData.ds_eltern_erwartungen) {
-                text += `Von der Maßnahme erhoffen sich die Eltern ${dsData.ds_eltern_erwartungen}`;
+                text += dsData.ds_eltern_erwartungen;
             }
             text += '. ';
         }
 
         if (hatZusammenarbeit) {
-            text += `Die Bereitschaft zur Zusammenarbeit wird als ${M.zusammenarbeit[zusammenarbeit]} eingeschätzt.`;
+            text += `Die Kooperationsbereitschaft der Familie ist als ${M.zusammenarbeit[zusammenarbeit]} einzuschätzen`;
+            // Prognostische Einordnung
+            if (zusammenarbeit === 'sehr_hoch' || zusammenarbeit === 'hoch') {
+                text += ', was als günstiger prognostischer Faktor zu werten ist';
+            } else if (zusammenarbeit === 'zurueckhaltend' || zusammenarbeit === 'ablehnend') {
+                text += ', was im weiteren Verlauf der Maßnahme Berücksichtigung finden sollte';
+            }
+            text += '.';
         }
     }
 
-    return text.trim() || '(Sichtweise der Eltern wird hier eingefügt)';
+    return text.trim() || '(Anamnestische Angaben der Bezugspersonen werden hier eingefügt)';
 }
 
 function generateVerhaltensbeobachtungenText(dsData) {
     if (!dsData.beobachtungen || dsData.beobachtungen.length === 0) {
-        return '(Objektive, konkrete Verhaltensbeobachtungen)';
+        return '(Verhaltensbeobachtungen werden hier eingefügt)';
     }
 
     const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
 
-    // Text-Mappings für natürliche Sprache
+    // Fachsprachliche Text-Mappings (Indikativ, Präsens für EIGENE Beobachtungen)
     const M = {
-        setting: { 'einzelsituation': 'in einer Einzelsituation', 'kleingruppe': 'in der Kleingruppe', 'klassenverband': 'im Klassenverband', 'pausenhof': 'auf dem Pausenhof', 'maison_relais': 'in der Maison Relais', 'andere': 'in einem anderen Setting' },
-        positiv: { 'aufgabe_begonnen': 'begann Aufgaben selbstständig', 'aufgabe_beendet': 'brachte begonnene Aufgaben zu Ende', 'konzentriert': 'arbeitete konzentriert', 'hilfe_geholt': 'holte sich bei Bedarf Hilfe', 'regeln_eingehalten': 'hielt sich an die vereinbarten Regeln', 'freundlich': 'verhielt sich freundlich', 'kooperativ': 'zeigte kooperatives Verhalten', 'beteiligt': 'beteiligte sich aktiv', 'anweisungen': 'befolgte Anweisungen', 'geduldig': 'wartete geduldig', 'konflikt_geloest': 'löste einen Konflikt konstruktiv', 'emotionen_reguliert': 'konnte eigene Emotionen regulieren' },
-        negativ: { 'abgelenkt': 'zeigte erhöhte Ablenkbarkeit', 'motorisch_unruhig': 'wirkte motorisch unruhig', 'verweigert': 'verweigerte die gestellte Aufgabe', 'wutausbruch': 'zeigte einen Wutausbruch', 'weinen': 'weinte', 'aggressiv_verbal': 'äußerte verbale Aggression', 'aggressiv_koerperlich': 'zeigte körperlich aggressives Verhalten', 'regelverletzung': 'verletzte geltende Regeln', 'stoeren': 'störte den Ablauf', 'rueckzug': 'zog sich zurück', 'kontaktvermeidung': 'vermied sozialen Kontakt', 'frustration': 'zeigte eine niedrige Frustrationstoleranz' },
-        interaktion: { 'blickkontakt_gut': 'angemessenen Blickkontakt zu halten', 'blickkontakt_vermeidet': 'Blickkontakt zu vermeiden', 'kontakt_sucht': 'aktiv Kontakt zu Erwachsenen zu suchen', 'kontakt_peers': 'guten Kontakt zu Gleichaltrigen aufzubauen', 'isoliert': 'sich von der Gruppe zu isolieren', 'dominiert': 'andere dominieren zu wollen', 'fuegt_sich': 'sich gut in die Gruppe einzufügen', 'provoziert': 'andere zu provozieren' }
+        // Beobachtungssetting
+        setting: {
+            'einzelsituation': 'in einer strukturierten Einzelsituation',
+            'kleingruppe': 'im Kleingruppensetting',
+            'klassenverband': 'im Klassenkontext',
+            'pausenhof': 'in der unstrukturierten Pausensituation',
+            'maison_relais': 'im außerschulischen Betreuungskontext',
+            'andere': 'in einem alternativen Setting'
+        },
+        // Adaptives Verhalten (Indikativ, deskriptiv)
+        positiv: {
+            'aufgabe_begonnen': 'zeigt Aufgabeninitiierung',
+            'aufgabe_beendet': 'zeigt Aufgabenpersistenz',
+            'konzentriert': 'ist konzentriertes Arbeiten zu beobachten',
+            'hilfe_geholt': 'ist adäquates Hilfesuchverhalten erkennbar',
+            'regeln_eingehalten': 'ist Regelakzeptanz festzustellen',
+            'freundlich': 'zeigt sich freundlich-zugewandtes Sozialverhalten',
+            'kooperativ': 'sind kooperative Verhaltenstendenzen zu beobachten',
+            'beteiligt': 'zeigt sich aktive Beteiligung',
+            'anweisungen': 'erfolgt Instruktionsbefolgung',
+            'geduldig': 'ist Warteverhalten und Impulskontrolle zu beobachten',
+            'konflikt_geloest': 'zeigen sich konstruktive Konfliktlösungsstrategien',
+            'emotionen_reguliert': 'ist eine adäquate Emotionsregulation erkennbar'
+        },
+        // Auffälliges Verhalten (Indikativ, deskriptiv-neutral)
+        negativ: {
+            'abgelenkt': 'fällt eine erhöhte Ablenkbarkeit auf',
+            'motorisch_unruhig': 'zeigt sich motorische Unruhe',
+            'verweigert': 'ist Aufgabenverweigerung zu beobachten',
+            'wutausbruch': 'kommt es zu einem affektiven Durchbruch',
+            'weinen': 'zeigt sich emotionale Überflutung (Weinen)',
+            'aggressiv_verbal': 'sind verbale Aggressionen zu beobachten',
+            'aggressiv_koerperlich': 'tritt körperlich-aggressives Verhalten auf',
+            'regelverletzung': 'erfolgen Regelverletzungen',
+            'stoeren': 'zeigt sich störendes Verhalten',
+            'rueckzug': 'ist soziales Rückzugsverhalten zu beobachten',
+            'kontaktvermeidung': 'fällt Kontaktvermeidung auf',
+            'frustration': 'zeigt sich eine niedrige Frustrationstoleranz'
+        },
+        // Interaktionsverhalten (Indikativ)
+        interaktion: {
+            'blickkontakt_gut': 'angemessener Blickkontakt',
+            'blickkontakt_vermeidet': 'Blickkontaktvermeidung',
+            'kontakt_sucht': 'aktives Kontaktsuchen zu Erwachsenen',
+            'kontakt_peers': 'Kontaktaufnahme zu Gleichaltrigen',
+            'isoliert': 'Selbstisolation von der Peergroup',
+            'dominiert': 'dominante Interaktionsmuster',
+            'fuegt_sich': 'gruppenkonformes Verhalten',
+            'provoziert': 'provokative Verhaltenstendenzen'
+        }
     };
 
     // Hilfsfunktion für natürliche Aufzählungen
@@ -7471,99 +7622,199 @@ function generateVerhaltensbeobachtungenText(dsData) {
         const items = arr.filter(i => i && map[i]).map(i => map[i]);
         if (items.length === 0) return '';
         if (items.length === 1) return items[0];
-        return items.slice(0, -1).join(', ') + ' und ' + items[items.length - 1];
+        return items.slice(0, -1).join(', ') + ' sowie ' + items[items.length - 1];
     };
 
-    // Generiere Text für jede Beobachtung
+    // Generiere Text für jede Beobachtung (INDIKATIV für eigene Beobachtungen)
     const beobachtungsTexte = dsData.beobachtungen.map((b, idx) => {
         let text = '';
         const hatPositiv = (b.positivChecks && b.positivChecks.length > 0) || b.positiv;
         const hatNegativ = (b.negativChecks && b.negativChecks.length > 0) || b.negativ;
         const hatInteraktion = b.interaktionChecks && b.interaktionChecks.length > 0;
 
-        // EINLEITUNG mit Setting-Kontext
+        // EINLEITUNG: Strukturierte Beobachtungssituation (Indikativ Perfekt)
         if (b.datum) {
             const datum = new Date(b.datum).toLocaleDateString('de-DE');
-            text += `Am ${datum} wurde ${name} `;
+            text += `Am ${datum} wurde eine systematische Verhaltensbeobachtung `;
             if (b.setting) {
                 text += `${M.setting[b.setting] || b.setting} `;
             }
             if (b.dauer) {
-                text += `über einen Zeitraum von ${b.dauer} Minuten `;
+                text += `über ${b.dauer} Minuten `;
             }
+            text += 'durchgeführt';
             if (b.beobachter) {
-                text += `von ${b.beobachter} `;
+                text += ` (Beobachter: ${b.beobachter})`;
             }
-            text += 'beobachtet. ';
+            text += '. ';
         }
 
-        // HAUPTTEIL: Positives und Herausforderungen als kohärentes Narrativ
+        // HAUPTTEIL: Verhaltensanalyse in Indikativ
         if (hatPositiv && hatNegativ) {
-            // Beide Seiten verbinden
-            const posListe = liste(b.positivChecks || [], M.positiv);
-            const negListe = liste(b.negativChecks || [], M.negativ);
+            // Synthese: Differenziertes Verhaltensprofil
+            text += `Die Beobachtung ergibt ein differenziertes Verhaltensprofil. `;
 
-            text += `Während der Beobachtung zeigte ${name} ein differenziertes Verhaltensprofil: `;
-            if (posListe) {
-                text += `Positiv fiel auf, dass ${name} ${posListe}`;
-                if (b.positiv) text += `, ${b.positiv}`;
-                text += '. ';
+            // Adaptives Verhalten zuerst
+            const posChecks = b.positivChecks || [];
+            if (posChecks.length > 0) {
+                text += `Hinsichtlich adaptiver Verhaltensweisen `;
+                // Kategorisiere nach Verhaltensdomänen
+                const aufgaben = posChecks.filter(p => ['aufgabe_begonnen', 'aufgabe_beendet', 'konzentriert', 'anweisungen'].includes(p));
+                const sozial = posChecks.filter(p => ['freundlich', 'kooperativ', 'beteiligt', 'konflikt_geloest'].includes(p));
+                const regulation = posChecks.filter(p => ['geduldig', 'emotionen_reguliert', 'regeln_eingehalten', 'hilfe_geholt'].includes(p));
+
+                if (aufgaben.length > 0) {
+                    text += `ist im Bereich der Aufgabenbewältigung festzustellen, dass ${name} ${liste(aufgaben, M.positiv)}. `;
+                }
+                if (sozial.length > 0) {
+                    text += `Im sozialen Bereich ${liste(sozial, M.positiv)}. `;
+                }
+                if (regulation.length > 0) {
+                    text += `Bezüglich der Selbstregulation ${liste(regulation, M.positiv)}. `;
+                }
+                if (b.positiv) {
+                    text += `Ergänzend ist zu notieren: ${b.positiv}. `;
+                }
             }
-            if (negListe) {
-                text += `Gleichzeitig ${negListe}`;
-                if (b.negativ) text += `, zudem ${b.negativ}`;
-                text += '. ';
+
+            // Auffälliges Verhalten mit Situationsbezug
+            const negChecks = b.negativChecks || [];
+            if (negChecks.length > 0) {
+                text += `Im Kontrast dazu `;
+                // Kategorisiere nach Problemdomänen
+                const aufmerksamkeit = negChecks.filter(n => ['abgelenkt', 'motorisch_unruhig'].includes(n));
+                const externalisierend = negChecks.filter(n => ['wutausbruch', 'aggressiv_verbal', 'aggressiv_koerperlich', 'stoeren', 'regelverletzung'].includes(n));
+                const internalisierend = negChecks.filter(n => ['weinen', 'rueckzug', 'kontaktvermeidung'].includes(n));
+                const regulation = negChecks.filter(n => ['verweigert', 'frustration'].includes(n));
+
+                if (aufmerksamkeit.length > 0 && (externalisierend.length > 0 || internalisierend.length > 0)) {
+                    text += `${liste(aufmerksamkeit, M.negativ)}, was in Verbindung mit `;
+                    if (externalisierend.length > 0) {
+                        text += `externalisierenden Verhaltensweisen steht: ${liste(externalisierend, M.negativ)}. `;
+                    } else if (internalisierend.length > 0) {
+                        text += `internalisierenden Auffälligkeiten steht: ${liste(internalisierend, M.negativ)}. `;
+                    }
+                } else {
+                    text += `${liste(negChecks, M.negativ)}. `;
+                }
+                if (regulation.length > 0 && !negChecks.every(n => regulation.includes(n))) {
+                    text += `Auffällig ist hierbei die Verbindung zur eingeschränkten Selbstregulation. `;
+                }
+                if (b.negativ) {
+                    text += `Weiterhin ist zu beobachten: ${b.negativ}. `;
+                }
             }
         } else if (hatPositiv) {
             const posListe = liste(b.positivChecks || [], M.positiv);
-            text += `Im Verlauf der Beobachtung zeigte ${name} vorwiegend positives Verhalten: `;
-            if (posListe) text += `${name} ${posListe}`;
-            if (b.positiv) text += (posListe ? `. Zudem ${b.positiv}` : b.positiv);
+            text += `Im Beobachtungszeitraum zeigt ${name} überwiegend adaptives Verhalten: `;
+            if (posListe) text += `Es ${posListe}`;
+            if (b.positiv) text += `. Darüber hinaus ist festzuhalten: ${b.positiv}`;
             text += '. ';
         } else if (hatNegativ) {
             const negListe = liste(b.negativChecks || [], M.negativ);
-            text += `Während der Beobachtung zeigten sich Herausforderungen: `;
-            if (negListe) text += `${name} ${negListe}`;
-            if (b.negativ) text += (negListe ? `. Zudem ${b.negativ}` : b.negativ);
+            text += `In der Beobachtungssituation zeigen sich Verhaltensauffälligkeiten: `;
+            if (negListe) text += `Es ${negListe}`;
+            if (b.negativ) text += `. Zudem ist zu beobachten: ${b.negativ}`;
             text += '. ';
         }
 
-        // INTERAKTIONSVERHALTEN als eigenes Element
+        // INTERAKTIONSVERHALTEN als eigene diagnostisch relevante Dimension
         if (hatInteraktion) {
-            const interListe = liste(b.interaktionChecks || [], M.interaktion);
-            if (interListe) {
-                text += `Im Bereich des Interaktionsverhaltens fiel auf, dass ${name} dazu neigte, ${interListe}. `;
+            const interChecks = b.interaktionChecks || [];
+            // Differenzierte Darstellung des Interaktionsverhaltens
+            const adaptivInter = interChecks.filter(i => ['blickkontakt_gut', 'kontakt_peers', 'fuegt_sich'].includes(i));
+            const auffaelligInter = interChecks.filter(i => ['blickkontakt_vermeidet', 'isoliert', 'dominiert', 'provoziert'].includes(i));
+            const kontaktverhalten = interChecks.filter(i => ['kontakt_sucht'].includes(i));
+
+            if (adaptivInter.length > 0 && auffaelligInter.length > 0) {
+                text += `Im Bereich des Interaktionsverhaltens zeigt sich ein ambivalentes Bild: Einerseits ist ${liste(adaptivInter, M.interaktion)} zu beobachten, andererseits fällt ${liste(auffaelligInter, M.interaktion)} auf. `;
+            } else if (adaptivInter.length > 0) {
+                text += `Das Interaktionsverhalten ist gekennzeichnet durch ${liste(adaptivInter, M.interaktion)}. `;
+            } else if (auffaelligInter.length > 0) {
+                text += `Im Interaktionsverhalten fällt ${liste(auffaelligInter, M.interaktion)} auf. `;
+            }
+            if (kontaktverhalten.length > 0) {
+                text += `Zu Erwachsenen ist ${liste(kontaktverhalten, M.interaktion)} erkennbar. `;
             }
         }
 
-        // ZUSAMMENFASSUNG als Abschluss
+        // ZUSAMMENFASSUNG: Klinische Einordnung
         if (b.zusammenfassung) {
-            text += b.zusammenfassung;
+            text += `Zusammenfassend: ${b.zusammenfassung}`;
         }
 
         return text.trim();
     }).filter(t => t !== '');
 
-    // Übergreifende Einleitung bei mehreren Beobachtungen
+    // Übergreifende Einleitung und Integration der Beobachtungen
     if (beobachtungsTexte.length > 1) {
-        return `Im Rahmen der Diagnostik wurden mehrere Verhaltensbeobachtungen durchgeführt:\n\n${beobachtungsTexte.join('\n\n')}`;
+        return `Im Rahmen der diagnostischen Abklärung wurden systematische Verhaltensbeobachtungen in verschiedenen Kontexten durchgeführt:\n\n${beobachtungsTexte.join('\n\n')}`;
     } else if (beobachtungsTexte.length === 1) {
         return beobachtungsTexte[0];
     }
 
-    return '(Objektive, konkrete Verhaltensbeobachtungen)';
+    return '(Verhaltensbeobachtungen werden hier eingefügt)';
 }
 
 function generateInterpretationText(dsData) {
     const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
 
-    // Text-Mappings für natürliche Sprache
+    // Fachsprachliche Text-Mappings für integrative Befundinterpretation
     const M = {
-        uebereinstimmung: { 'alle_verhalten': 'berichten alle befragten Personen von ähnlichen Verhaltensweisen', 'alle_staerken': 'werden die Stärken übereinstimmend beschrieben', 'alle_schwaechen': 'herrscht Einigkeit bezüglich der bestehenden Schwierigkeiten', 'beobachtung_bestaetigt': 'bestätigen die direkten Verhaltensbeobachtungen die Berichte der Bezugspersonen', 'eldib_bestaetigt': 'deckt sich der ELDiB-Befund mit dem klinischen Gesamteindruck', 'kind_einsicht': 'zeigt das Kind selbst ein gewisses Problembewusstsein' },
-        differenz: { 'schule_zuhause': 'das Verhalten je nach Kontext (Schule vs. zu Hause) unterschiedlich beschrieben wird', 'eltern_schule': 'die Perspektiven von Eltern und Schule voneinander abweichen', 'kind_andere': 'die Selbstwahrnehmung des Kindes von der Fremdwahrnehmung abweicht', 'kein_problembewusstsein': 'beim Kind (noch) kein Problembewusstsein erkennbar ist', 'beobachtung_abweichend': 'die direkten Beobachtungen von den Berichten abweichen', 'eltern_bagatellisieren': 'die Eltern die Problematik möglicherweise bagatellisieren', 'schule_dramatisiert': 'die schulische Darstellung möglicherweise überspitzt ist', 'kontextabhaengig': 'das Verhalten stark kontextabhängig variiert' },
-        erklaerung: { 'entwicklungsverzoegerung': 'eine Entwicklungsverzögerung im sozio-emotionalen Bereich', 'belastungsreaktion': 'eine Reaktion auf aktuelle oder vergangene Belastungserfahrungen', 'bindungsunsicherheit': 'eine zugrundeliegende Bindungsunsicherheit', 'reizueberflutung': 'Reizüberflutung oder sensorische Überforderung', 'aufmerksamkeitsproblematik': 'eine Aufmerksamkeitsproblematik', 'emotionale_dysregulation': 'Schwierigkeiten in der Emotionsregulation', 'soziale_unsicherheit': 'grundlegende soziale Unsicherheit', 'trauma_folgen': 'mögliche Traumafolgen', 'familiendynamik': 'die aktuelle Familiendynamik', 'schulische_ueberforderung': 'schulische Überforderung', 'schulische_unterforderung': 'schulische Unterforderung', 'fehlende_strategien': 'ein Mangel an adäquaten Bewältigungsstrategien' },
-        entwicklungsangst: { 'stufe1': 'die Angst vor Verlassenwerden und Alleinsein (Stufe I nach ELDiB-Theorie)', 'stufe2': 'die Angst vor Unzulänglichkeit und Versagen (Stufe II)', 'stufe3': 'die Angst vor Ablehnung durch die Gruppe (Stufe III)', 'stufe4': 'die Angst vor Konflikten mit Gleichaltrigen (Stufe IV)', 'stufe5': 'die Angst vor Identitätsverlust (Stufe V)' },
-        abwehr: { 'rueckzug': 'Rückzug', 'aggression': 'Aggression', 'verweigerung': 'Verweigerung', 'regression': 'Regression (Rückfall in frühere Verhaltensmuster)', 'vermeidung': 'Vermeidung', 'clown': 'Clownsverhalten', 'ueberkontrolle': 'Überkontrolle', 'projektion': 'Projektion' }
+        // Übereinstimmung zwischen Informationsquellen
+        uebereinstimmung: {
+            'alle_verhalten': 'konvergieren die Angaben aller befragten Bezugspersonen hinsichtlich der beschriebenen Verhaltensweisen',
+            'alle_staerken': 'werden die vorhandenen Ressourcen und Kompetenzen übereinstimmend benannt',
+            'alle_schwaechen': 'besteht Konsens bezüglich der identifizierten Entwicklungsbereiche mit Förderbedarf',
+            'beobachtung_bestaetigt': 'korrespondieren die direkten Verhaltensbeobachtungen mit den anamnestischen Angaben',
+            'eldib_bestaetigt': 'stimmt die entwicklungsdiagnostische Einordnung mittels ELDiB mit dem klinischen Gesamteindruck überein',
+            'kind_einsicht': 'zeigt das Kind selbst Ansätze von Problemeinsicht'
+        },
+        // Diskrepanzen zwischen Perspektiven
+        differenz: {
+            'schule_zuhause': 'die Verhaltensdarstellung kontextabhängig variiert, wobei schulisches und häusliches Verhalten unterschiedlich beschrieben werden',
+            'eltern_schule': 'die Perspektiven von Familie und Schule voneinander abweichen, was auf unterschiedliche Anforderungskontexte oder Wahrnehmungsunterschiede hinweisen kann',
+            'kind_andere': 'eine Diskrepanz zwischen Selbst- und Fremdwahrnehmung besteht',
+            'kein_problembewusstsein': 'beim Kind (noch) kein Problembewusstsein erkennbar ist, was die Veränderungsmotivation beeinflussen kann',
+            'beobachtung_abweichend': 'die standardisierten Verhaltensbeobachtungen von den anamnestischen Berichten divergieren',
+            'eltern_bagatellisieren': 'die elterliche Darstellung möglicherweise die Symptomausprägung unterschätzt',
+            'schule_dramatisiert': 'die schulische Darstellung möglicherweise durch Belastungserleben gefärbt ist',
+            'kontextabhaengig': 'das gezeigte Verhalten ausgeprägt situationsspezifisch variiert'
+        },
+        // Ätiologische Erklärungsansätze
+        erklaerung: {
+            'entwicklungsverzoegerung': 'eine Entwicklungsverzögerung im sozio-emotionalen Bereich',
+            'belastungsreaktion': 'eine Anpassungsstörung als Reaktion auf Belastungserfahrungen',
+            'bindungsunsicherheit': 'eine Bindungsunsicherheit mit entsprechenden Auswirkungen auf das Beziehungsverhalten',
+            'reizueberflutung': 'eine veränderte sensorische Verarbeitung mit Neigung zur Reizüberflutung',
+            'aufmerksamkeitsproblematik': 'eine zugrundeliegende Aufmerksamkeitsstörung',
+            'emotionale_dysregulation': 'eine Beeinträchtigung der Emotionsregulation',
+            'soziale_unsicherheit': 'eine grundlegende soziale Unsicherheit mit Vermeidungstendenzen',
+            'trauma_folgen': 'mögliche Traumafolgestörungen',
+            'familiendynamik': 'die aktuelle Familiendynamik als aufrechterhaltender Faktor',
+            'schulische_ueberforderung': 'eine schulische Überforderungssituation',
+            'schulische_unterforderung': 'eine schulische Unterforderung mit sekundären Verhaltensauffälligkeiten',
+            'fehlende_strategien': 'ein Defizit an adaptiven Bewältigungsstrategien'
+        },
+        // Entwicklungstherapeutische Einordnung nach ELDiB
+        entwicklungsangst: {
+            'stufe1': 'die Angst vor Verlassenwerden und Alleinsein (Entwicklungsstufe I)',
+            'stufe2': 'die Angst vor Unzulänglichkeit und Versagen (Entwicklungsstufe II)',
+            'stufe3': 'die Angst vor Ablehnung durch die Gruppe (Entwicklungsstufe III)',
+            'stufe4': 'die Angst vor Konflikten mit Gleichaltrigen (Entwicklungsstufe IV)',
+            'stufe5': 'die Angst vor Identitätsverlust (Entwicklungsstufe V)'
+        },
+        // Abwehr- und Bewältigungsmechanismen
+        abwehr: {
+            'rueckzug': 'sozialem Rückzug',
+            'aggression': 'externalisierender Aggression',
+            'verweigerung': 'passiver Verweigerung',
+            'regression': 'regressiven Verhaltensmustern',
+            'vermeidung': 'Vermeidungsverhalten',
+            'clown': 'kompensatorischem Clownsverhalten',
+            'ueberkontrolle': 'Überkontrolle und Rigidität',
+            'projektion': 'Projektion auf die Umwelt'
+        }
     };
 
     // Hilfsfunktion für natürliche Aufzählungen
@@ -7571,7 +7822,7 @@ function generateInterpretationText(dsData) {
         const items = arr.filter(i => i && map[i]).map(i => map[i]);
         if (items.length === 0) return '';
         if (items.length === 1) return items[0];
-        return items.slice(0, -1).join(', ') + ' und ' + items[items.length - 1];
+        return items.slice(0, -1).join(', ') + ' sowie ' + items[items.length - 1];
     };
 
     // Daten extrahieren
@@ -7581,93 +7832,124 @@ function generateInterpretationText(dsData) {
     const aengste = dsData.checkboxes?.ds_entwicklungsangst || [];
     const abwehr = dsData.checkboxes?.ds_abwehr || [];
 
-    // ===== KOHÄRENTER FLIESSTEXT =====
+    // ===== INTEGRATIVE BEFUNDINTERPRETATION MIT PROFESSIONELLEN ÜBERLEITUNGEN =====
     let text = '';
 
-    // EINLEITUNG
-    text += `Bei der integrativen Zusammenschau aller erhobenen Informationen über ${name} ergibt sich folgendes Bild:\n\n`;
+    // EINLEITUNG: Rahmen für die Synthese
+    text += `Bei der integrativen Zusammenschau aller diagnostischen Informationen über ${name} ergibt sich folgendes differenziertes Bild:\n\n`;
 
-    // ABSATZ 1: Übereinstimmungen und Differenzen als zusammenhängendes Narrativ
+    // ABSATZ 1: Multiperspektivische Befundkonvergenz und -divergenz
     const hatUeber = uebereinstimmung.length > 0 || dsData.ds_interpretation_uebereinstimmung;
     const hatDiff = differenz.length > 0 || dsData.ds_interpretation_differenzen;
 
     if (hatUeber || hatDiff) {
         if (hatUeber && hatDiff) {
-            // Beide Perspektiven verbinden
+            // Synthese beider Aspekte mit professioneller Überleitung
             const ueberListe = liste(uebereinstimmung, M.uebereinstimmung);
             const diffListe = liste(differenz, M.differenz);
 
-            text += 'Die verschiedenen Informationsquellen zeigen sowohl Übereinstimmungen als auch Unterschiede. ';
+            text += 'Hinsichtlich der Befundkonvergenz ist zunächst festzuhalten, dass ';
             if (ueberListe) {
-                text += `Konsistent ist, dass ${ueberListe}`;
+                text += ueberListe;
                 if (dsData.ds_interpretation_uebereinstimmung) text += `. ${dsData.ds_interpretation_uebereinstimmung}`;
                 text += '. ';
             }
-            if (diffListe) {
-                text += `Gleichzeitig fällt auf, dass ${diffListe}`;
-                if (dsData.ds_interpretation_differenzen) text += `. ${dsData.ds_interpretation_differenzen}`;
-                text += '. ';
+
+            // Professionelle Überleitung zu Diskrepanzen
+            text += `Im Kontrast dazu fällt auf, dass ${diffListe}`;
+            if (dsData.ds_interpretation_differenzen) text += `. ${dsData.ds_interpretation_differenzen}`;
+            text += '. ';
+
+            // Synthese: Bedeutung der Diskrepanzen interpretieren
+            if (differenz.includes('schule_zuhause') || differenz.includes('kontextabhaengig')) {
+                text += 'Diese Kontextabhängigkeit des Verhaltens liefert wichtige diagnostische Hinweise auf situationsspezifische Trigger und protektive Faktoren. ';
+            }
+            if (differenz.includes('kind_andere') || differenz.includes('kein_problembewusstsein')) {
+                text += 'Die eingeschränkte Selbstwahrnehmung ist bei der Planung interventiver Maßnahmen zu berücksichtigen. ';
             }
         } else if (hatUeber) {
             const ueberListe = liste(uebereinstimmung, M.uebereinstimmung);
-            text += 'Die verschiedenen Informationsquellen zeichnen ein konsistentes Bild: ';
-            if (ueberListe) text += `${ueberListe}`;
+            text += 'Die verschiedenen diagnostischen Informationsquellen zeichnen ein konsistentes Bild. Übereinstimmend ';
+            if (ueberListe) text += ueberListe;
             if (dsData.ds_interpretation_uebereinstimmung) text += `. ${dsData.ds_interpretation_uebereinstimmung}`;
-            text += '. ';
+            text += '. Diese Befundkonvergenz erhöht die diagnostische Validität der Einschätzungen. ';
         } else if (hatDiff) {
             const diffListe = liste(differenz, M.differenz);
-            text += 'Bei der Analyse fallen Unterschiede zwischen den Perspektiven auf: ';
-            if (diffListe) text += `${diffListe}`;
+            text += 'Auffällig ist bei der Analyse, dass ';
+            text += diffListe;
             if (dsData.ds_interpretation_differenzen) text += `. ${dsData.ds_interpretation_differenzen}`;
-            text += '. ';
+            text += '. Diese Diskrepanzen sind diagnostisch bedeutsam und erfordern eine differenzierte Betrachtung. ';
         }
     }
 
-    // ABSATZ 2: Erklärungsansätze
+    // ABSATZ 2: Ätiologische Hypothesen mit Verknüpfung zur Symptomatik
     const hatErkl = erklaerung.length > 0 || dsData.ds_interpretation_deutung;
 
     if (hatErkl) {
-        text += '\n\n';
+        text += '\n\nHinsichtlich der ätiologischen Einordnung ';
         const erklListe = liste(erklaerung, M.erklaerung);
         if (erklListe) {
-            text += `Als mögliche Erklärungen für die beobachteten Verhaltensweisen kommen ${erklListe} in Betracht`;
+            text += `kommen als mögliche Erklärungsansätze für die beobachteten Verhaltensauffälligkeiten ${erklListe} in Betracht`;
+
+            // Verknüpfung verschiedener Erklärungsansätze
+            if (erklaerung.length > 1) {
+                text += '. Dabei sind diese Faktoren nicht isoliert zu betrachten, sondern können in wechselseitiger Interaktion stehen';
+            }
+
             if (dsData.ds_interpretation_deutung) text += `. ${dsData.ds_interpretation_deutung}`;
             text += '. ';
+
+            // Spezifische Verbindungen zwischen Symptomen und Erklärungen
+            if (erklaerung.includes('emotionale_dysregulation') && erklaerung.includes('fehlende_strategien')) {
+                text += 'Auffällig ist hierbei der Zusammenhang zwischen der eingeschränkten Emotionsregulation und dem Mangel an adaptiven Bewältigungsstrategien. ';
+            }
+            if (erklaerung.includes('bindungsunsicherheit') && (erklaerung.includes('familiendynamik') || erklaerung.includes('belastungsreaktion'))) {
+                text += 'Die Bindungsdynamik erscheint im Kontext der familiären Situation als bedeutsamer entwicklungspsychologischer Faktor. ';
+            }
         } else if (dsData.ds_interpretation_deutung) {
             text += dsData.ds_interpretation_deutung + ' ';
         }
     }
 
-    // ABSATZ 3: Entwicklungstherapeutische Einordnung (Ängste und Abwehr zusammen)
+    // ABSATZ 3: Entwicklungstherapeutische Einordnung mit Angst-Abwehr-Dynamik
     const hatAngst = aengste.length > 0;
     const hatAbwehr = abwehr.length > 0;
 
     if (hatAngst || hatAbwehr) {
-        text += '\n\nAus entwicklungstherapeutischer Perspektive ';
+        text += '\n\nAus entwicklungstherapeutischer Perspektive nach dem ELDiB-Modell ';
 
         if (hatAngst && hatAbwehr) {
             const angstListe = liste(aengste, M.entwicklungsangst);
             const abwehrListe = liste(abwehr, M.abwehr);
-            text += `lässt sich bei ${name} ${angstListe} als zentrale Entwicklungsangst identifizieren. Als Bewältigungsmechanismen zeigen sich ${abwehrListe}`;
-            if (dsData.ds_abwehr_konkret) text += `, was sich konkret darin äußert, dass ${dsData.ds_abwehr_konkret}`;
+
+            text += `lässt sich bei ${name} ${angstListe} als zentrale, das Verhalten organisierende Entwicklungsangst identifizieren. `;
+            text += `Die beobachteten Verhaltensauffälligkeiten sind in diesem Rahmen als Bewältigungsversuche zu verstehen, die sich in Form von ${abwehrListe} manifestieren`;
+
+            if (dsData.ds_abwehr_konkret) text += `. Im Alltag äußert sich dies konkret darin, dass ${dsData.ds_abwehr_konkret}`;
             text += '. ';
+
+            // Synthese: Zusammenhang Angst und Abwehr erläutern
+            text += 'Diese Angst-Abwehr-Dynamik bietet einen verstehenden Zugang zum Verhalten und gibt Hinweise auf die entwicklungstherapeutischen Ansatzpunkte. ';
         } else if (hatAngst) {
             const angstListe = liste(aengste, M.entwicklungsangst);
-            text += `zeigt sich bei ${name} ${angstListe} als zentrale Entwicklungsangst. `;
+            text += `zeigt sich bei ${name} ${angstListe} als zentrale Entwicklungsangst, die das Verhalten maßgeblich mitbestimmt. `;
         } else if (hatAbwehr) {
             const abwehrListe = liste(abwehr, M.abwehr);
-            text += `zeigen sich bei ${name} ${abwehrListe} als vorherrschende Abwehrmechanismen`;
+            text += `zeigen sich bei ${name} primär ${abwehrListe} als vorherrschende Bewältigungsmechanismen`;
             if (dsData.ds_abwehr_konkret) text += `, was sich konkret darin äußert, dass ${dsData.ds_abwehr_konkret}`;
             text += '. ';
         }
     }
 
-    // ABSCHLUSS: Gesamtinterpretation
+    // ABSCHLUSS: Integrative Gesamteinschätzung
     if (dsData.ds_gesamtinterpretation) {
-        text += `\n\nZusammenfassend lässt sich festhalten: ${dsData.ds_gesamtinterpretation}`;
+        text += `\n\nZusammenfassend ist festzuhalten: ${dsData.ds_gesamtinterpretation}`;
+    } else if (hatUeber || hatDiff || hatErkl || hatAngst || hatAbwehr) {
+        // Automatischer Abschlusssatz wenn Inhalte vorhanden aber keine manuelle Zusammenfassung
+        text += `\n\nDie diagnostische Gesamtschau verdeutlicht den Förderbedarf von ${name} und liefert die Grundlage für eine gezielte Maßnahmenplanung.`;
     }
 
-    return text.trim() || '(Interpretation der Befunde wird hier eingefügt)';
+    return text.trim() || '(Integrative Interpretation der diagnostischen Befunde wird hier eingefügt)';
 }
 
 function generateSpezifischeBeduerfnisseText(dsData) {
