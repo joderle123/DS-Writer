@@ -35,16 +35,67 @@ const STORAGE_KEYS = {
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    initTabNavigation();
-    initAccordions();
-    initCheckboxCounters();
-    initFormHandler();
-    initToastContainer();
-    initKeyboardShortcuts();
-    initSavedCasesDropdown();
-    loadCurrentCase();
-    startAutosave();
-    initDarkMode();
+    try {
+        initTabNavigation();
+    } catch (e) {
+        console.error('Error initializing tab navigation:', e);
+    }
+
+    try {
+        initAccordions();
+    } catch (e) {
+        console.error('Error initializing accordions:', e);
+    }
+
+    try {
+        initCheckboxCounters();
+    } catch (e) {
+        console.error('Error initializing checkbox counters:', e);
+    }
+
+    try {
+        initFormHandler();
+    } catch (e) {
+        console.error('Error initializing form handler:', e);
+    }
+
+    try {
+        initToastContainer();
+    } catch (e) {
+        console.error('Error initializing toast container:', e);
+    }
+
+    try {
+        initKeyboardShortcuts();
+    } catch (e) {
+        console.error('Error initializing keyboard shortcuts:', e);
+    }
+
+    try {
+        initSavedCasesDropdown();
+    } catch (e) {
+        console.error('Error initializing saved cases dropdown:', e);
+    }
+
+    try {
+        loadCurrentCase();
+    } catch (e) {
+        console.error('Error loading current case:', e);
+    }
+
+    try {
+        startAutosave();
+    } catch (e) {
+        console.error('Error starting autosave:', e);
+    }
+
+    try {
+        initDarkMode();
+    } catch (e) {
+        console.error('Error initializing dark mode:', e);
+    }
+
+    console.log('PädoPsych Advisor initialized');
 });
 
 /**
@@ -235,28 +286,38 @@ function startAnalysis() {
 
     // Fake-Delay für bessere UX (fühlt sich wertiger an)
     setTimeout(() => {
-        // Analyse durchführen
-        analysisResult = ClinicalEngine.analyze(caseData);
-        console.log('Analyseergebnis:', analysisResult);
+        try {
+            // Prüfen ob ClinicalEngine verfügbar ist
+            if (typeof ClinicalEngine === 'undefined') {
+                throw new Error('ClinicalEngine nicht geladen');
+            }
 
-        // Ergebnisse rendern
-        renderAnalysis(analysisResult);
-        renderBedienungsanleitung(analysisResult);
+            // Analyse durchführen
+            analysisResult = ClinicalEngine.analyze(caseData);
+            console.log('Analyseergebnis:', analysisResult);
 
-        // Button zurücksetzen
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Analyse starten';
+            // Ergebnisse rendern
+            renderAnalysis(analysisResult);
+            renderBedienungsanleitung(analysisResult);
+
+            // Fall automatisch speichern
+            saveCurrentCase();
+
+            // Toast zeigen
+            showToast('Analyse abgeschlossen', 'success');
+
+            // Zum Analyse-Tab wechseln
+            switchToTab('analyse');
+        } catch (error) {
+            console.error('Fehler bei der Analyse:', error);
+            showToast('Fehler bei der Analyse: ' + error.message, 'error');
+        } finally {
+            // Button IMMER zurücksetzen
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Analyse starten';
+            }
         }
-
-        // Fall automatisch speichern
-        saveCurrentCase();
-
-        // Toast zeigen
-        showToast('Analyse abgeschlossen', 'success');
-
-        // Zum Analyse-Tab wechseln
-        switchToTab('analyse');
     }, 800);
 }
 
@@ -1411,9 +1472,11 @@ function initKeyboardShortcuts() {
     // Klick außerhalb des Dropdowns schließt es
     document.addEventListener('click', (e) => {
         const dropdown = document.getElementById('saved-cases-dropdown');
-        const btn = document.getElementById('saved-cases-btn');
-        if (dropdown && !dropdown.contains(e.target) && e.target !== btn) {
-            closeSavedCasesDropdown();
+        if (dropdown && dropdown.classList.contains('open')) {
+            // Prüfen ob der Klick innerhalb des Dropdowns war
+            if (!dropdown.contains(e.target)) {
+                closeSavedCasesDropdown();
+            }
         }
     });
 }
