@@ -40,56 +40,328 @@
                 </div>
 
                 <form id="case-form" class="case-form">
-                    <div class="form-group">
-                        <label for="alter">Alter des Kindes</label>
-                        <input type="text" id="alter" name="alter" placeholder="z.B. 8 Jahre">
+                    <!-- ABSCHNITT 1: Grunddaten -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Grunddaten</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Name / Pseudonym</label>
+                                <input type="text" id="name" name="name" placeholder="z.B. Max M.">
+                            </div>
+                            <div class="form-group">
+                                <label for="alter">Alter</label>
+                                <select id="alter" name="alter">
+                                    <option value="">Bitte wählen...</option>
+                                    <option value="3">3 Jahre</option>
+                                    <option value="4">4 Jahre</option>
+                                    <option value="5">5 Jahre</option>
+                                    <option value="6">6 Jahre</option>
+                                    <option value="7">7 Jahre</option>
+                                    <option value="8">8 Jahre</option>
+                                    <option value="9">9 Jahre</option>
+                                    <option value="10">10 Jahre</option>
+                                    <option value="11">11 Jahre</option>
+                                    <option value="12">12 Jahre</option>
+                                    <option value="13">13 Jahre</option>
+                                    <option value="14">14 Jahre</option>
+                                    <option value="15">15 Jahre</option>
+                                    <option value="16">16 Jahre</option>
+                                    <option value="17">17 Jahre</option>
+                                    <option value="18">18 Jahre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="geschlecht">Geschlecht</label>
+                                <select id="geschlecht" name="geschlecht">
+                                    <option value="">Bitte wählen...</option>
+                                    <option value="maennlich">Männlich</option>
+                                    <option value="weiblich">Weiblich</option>
+                                    <option value="divers">Divers</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="geschlecht">Geschlecht</label>
-                        <select id="geschlecht" name="geschlecht">
-                            <option value="">Bitte wählen...</option>
-                            <option value="maennlich">Männlich</option>
-                            <option value="weiblich">Weiblich</option>
-                            <option value="divers">Divers</option>
-                        </select>
+                    <!-- ABSCHNITT 2: Hauptproblem -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Hauptproblem</h3>
+                        <p class="form-section-hint">Wählen Sie das primäre Problemfeld</p>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="hauptproblem" value="externalisierend">
+                                <span class="radio-label">
+                                    <strong>Externalisierend</strong>
+                                    <small>Wut, Aggression, Opposition</small>
+                                </span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="hauptproblem" value="internalisierend">
+                                <span class="radio-label">
+                                    <strong>Internalisierend</strong>
+                                    <small>Rückzug, Angst, Traurigkeit</small>
+                                </span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="hauptproblem" value="aufmerksamkeit">
+                                <span class="radio-label">
+                                    <strong>Aufmerksamkeit / Konzentration</strong>
+                                    <small>Ablenkbarkeit, Unruhe</small>
+                                </span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="hauptproblem" value="sozial">
+                                <span class="radio-label">
+                                    <strong>Soziale Schwierigkeiten</strong>
+                                    <small>Kontaktprobleme, Isolation</small>
+                                </span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="hauptproblem" value="schulisch">
+                                <span class="radio-label">
+                                    <strong>Schulische Probleme</strong>
+                                    <small>Leistung, Verweigerung</small>
+                                </span>
+                            </label>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="vorstellungsgrund">Vorstellungsgrund</label>
-                        <textarea id="vorstellungsgrund" name="vorstellungsgrund" rows="3"
-                            placeholder="Warum wird das Kind vorgestellt?"></textarea>
+                    <!-- ABSCHNITT 3: Symptom-Checkliste -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Symptom-Checkliste</h3>
+                        <p class="form-section-hint">Wählen Sie alle zutreffenden Symptome</p>
+
+                        <!-- Akkordeon: Aufmerksamkeit & Aktivität -->
+                        <div class="accordion">
+                            <button type="button" class="accordion-header" data-accordion="aufmerksamkeit">
+                                <span class="accordion-icon">+</span>
+                                Aufmerksamkeit & Aktivität
+                                <span class="accordion-count" data-count="aufmerksamkeit">0</span>
+                            </button>
+                            <div class="accordion-content" id="aufmerksamkeit">
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="nicht_stillsitzen">
+                                        <span>Kann nicht stillsitzen</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="unterbricht">
+                                        <span>Unterbricht andere</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="verliert_sachen">
+                                        <span>Verliert Sachen</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="hoert_nicht_zu">
+                                        <span>Hört nicht zu</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="beendet_nicht">
+                                        <span>Beendet Aufgaben nicht</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="ablenkbar">
+                                        <span>Leicht ablenkbar</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Akkordeon: Emotionen -->
+                        <div class="accordion">
+                            <button type="button" class="accordion-header" data-accordion="emotionen">
+                                <span class="accordion-icon">+</span>
+                                Emotionen
+                                <span class="accordion-count" data-count="emotionen">0</span>
+                            </button>
+                            <div class="accordion-content" id="emotionen">
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="wutausbrueche">
+                                        <span>Häufige Wutausbrüche</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="frustriert">
+                                        <span>Schnell frustriert</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="aengstlich">
+                                        <span>Ängstlich / besorgt</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="traurig">
+                                        <span>Traurig / niedergeschlagen</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="stimmungsschwankungen">
+                                        <span>Stimmungsschwankungen</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="weint_viel">
+                                        <span>Weint viel</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Akkordeon: Soziales Verhalten -->
+                        <div class="accordion">
+                            <button type="button" class="accordion-header" data-accordion="soziales">
+                                <span class="accordion-icon">+</span>
+                                Soziales Verhalten
+                                <span class="accordion-count" data-count="soziales">0</span>
+                            </button>
+                            <div class="accordion-content" id="soziales">
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="wenig_freunde">
+                                        <span>Wenig Freunde</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="wird_gemobbt">
+                                        <span>Wird gemobbt</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="mobbt_andere">
+                                        <span>Mobbt andere</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="spielt_allein">
+                                        <span>Spielt lieber allein</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="soziale_regeln">
+                                        <span>Versteht soziale Regeln nicht</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="kein_blickkontakt">
+                                        <span>Kein Blickkontakt</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Akkordeon: Opposition & Aggression -->
+                        <div class="accordion">
+                            <button type="button" class="accordion-header" data-accordion="opposition">
+                                <span class="accordion-icon">+</span>
+                                Opposition & Aggression
+                                <span class="accordion-count" data-count="opposition">0</span>
+                            </button>
+                            <div class="accordion-content" id="opposition">
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="verweigert">
+                                        <span>Verweigert Anweisungen</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="streitet">
+                                        <span>Streitet mit Erwachsenen</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="provoziert">
+                                        <span>Provoziert absichtlich</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="handgreiflich">
+                                        <span>Wird handgreiflich</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="zerstoert">
+                                        <span>Zerstört Sachen</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="luegt">
+                                        <span>Lügt häufig</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Akkordeon: Trauma & Belastung -->
+                        <div class="accordion">
+                            <button type="button" class="accordion-header" data-accordion="trauma">
+                                <span class="accordion-icon">+</span>
+                                Trauma & Belastung
+                                <span class="accordion-count" data-count="trauma">0</span>
+                            </button>
+                            <div class="accordion-content" id="trauma">
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="elterntrennung">
+                                        <span>Elterntrennung</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="verlust_trauer">
+                                        <span>Verlust / Trauer</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="haeusliche_konflikte">
+                                        <span>Häusliche Konflikte</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="schulwechsel">
+                                        <span>Schulwechsel</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="gewalterfahrung">
+                                        <span>Gewalterfahrung</span>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" name="symptome[]" value="vernachlaessigung">
+                                        <span>Vernachlässigung</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="symptome">Beobachtete Symptome</label>
-                        <textarea id="symptome" name="symptome" rows="4"
-                            placeholder="Beschreiben Sie die beobachteten Verhaltensweisen und Symptome..."></textarea>
+                    <!-- ABSCHNITT 4: Kontext -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Kontext</h3>
+                        <p class="form-section-hint">Wo und seit wann treten die Symptome auf?</p>
+                        <div class="checkbox-list">
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="kontext[]" value="nur_schule">
+                                <span>Symptome nur in der Schule</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="kontext[]" value="nur_zuhause">
+                                <span>Symptome nur zuhause</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="kontext[]" value="ueberall">
+                                <span>Symptome überall</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="kontext[]" value="seit_immer">
+                                <span>Seit Geburt / immer schon</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="kontext[]" value="nach_ereignis">
+                                <span>Nach Ereignis begonnen</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="kontext[]" value="familiaer">
+                                <span>Familiäre Vorbelastung (ADHS, Depression, etc.)</span>
+                            </label>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="dauer">Dauer der Symptomatik</label>
-                        <input type="text" id="dauer" name="dauer" placeholder="z.B. seit 6 Monaten">
+                    <!-- ABSCHNITT 5: Freitext -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Ergänzende Beobachtungen</h3>
+                        <div class="form-group">
+                            <label for="freitext">Was fällt Ihnen noch auf? (optional)</label>
+                            <textarea id="freitext" name="freitext" rows="4"
+                                placeholder="Weitere Beobachtungen, Stärken des Kindes, besondere Umstände..."></textarea>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="kontext">Familiärer/Schulischer Kontext</label>
-                        <textarea id="kontext" name="kontext" rows="3"
-                            placeholder="Relevante Informationen zum Umfeld..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="vorgeschichte">Relevante Vorgeschichte</label>
-                        <textarea id="vorgeschichte" name="vorgeschichte" rows="3"
-                            placeholder="Frühere Auffälligkeiten, Erkrankungen, Traumata..."></textarea>
-                    </div>
-
+                    <!-- Submit Button -->
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary btn-large">
                             Analyse starten
-                        </button>
-                        <button type="reset" class="btn btn-secondary">
-                            Formular leeren
                         </button>
                     </div>
                 </form>
