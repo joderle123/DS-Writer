@@ -375,22 +375,42 @@
                 </div>
 
                 <div class="analysis-container">
-                    <!-- Hypothesen-Karten Platzhalter -->
+                    <!-- Zusammenfassung -->
+                    <div class="summary-section">
+                        <h3 class="section-title">Fallzusammenfassung</h3>
+                        <div id="summary-container">
+                            <div class="placeholder-card">
+                                <p>Die Zusammenfassung wird nach der Analyse angezeigt.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hypothesen-Karten -->
                     <div class="hypotheses-section">
                         <h3 class="section-title">Klinische Hypothesen</h3>
-                        <div id="hypotheses-container" class="card-grid">
+                        <div id="hypotheses-container" class="hypotheses-grid">
                             <div class="placeholder-card">
                                 <p>Bitte füllen Sie zuerst die Fallbeschreibung aus und starten Sie die Analyse.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Differentialdiagnosen Platzhalter -->
+                    <!-- Differentialdiagnosen -->
                     <div class="differential-section">
                         <h3 class="section-title">Differentialdiagnostische Überlegungen</h3>
-                        <div id="differential-container" class="card-grid">
+                        <div id="differential-container" class="differential-grid">
                             <div class="placeholder-card">
                                 <p>Differentialdiagnosen werden nach der Analyse angezeigt.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bio-Psycho-Soziales Modell -->
+                    <div class="model-section">
+                        <h3 class="section-title">Bio-Psycho-Soziales Modell</h3>
+                        <div id="model-container">
+                            <div class="placeholder-card">
+                                <p>Das klinische Modell wird nach der Analyse angezeigt.</p>
                             </div>
                         </div>
                     </div>
@@ -402,35 +422,78 @@
                 <div class="panel-header">
                     <h2>Bedienungsanleitung</h2>
                     <p>Praktische Empfehlungen für den Umgang mit dem Kind</p>
+                    <button class="btn btn-secondary print-btn" onclick="printBedienungsanleitung()">
+                        <span>🖨️</span> Drucken
+                    </button>
                 </div>
 
                 <div class="guide-container">
-                    <!-- Interventionen Platzhalter -->
-                    <div class="interventions-section">
-                        <h3 class="section-title">Empfohlene Interventionen</h3>
-                        <div id="interventions-container" class="intervention-list">
+                    <!-- Grundhaltung -->
+                    <div class="grundhaltung-section">
+                        <h3 class="section-title">Grundhaltung</h3>
+                        <div id="grundhaltung-container">
                             <div class="placeholder-card">
-                                <p>Interventionsempfehlungen werden nach der Analyse angezeigt.</p>
+                                <p>Die Grundhaltung wird nach der Analyse angezeigt.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Kommunikationstipps Platzhalter -->
-                    <div class="communication-section">
-                        <h3 class="section-title">Kommunikationstipps</h3>
-                        <div id="communication-container" class="tip-list">
+                    <!-- Ampelsystem -->
+                    <div class="ampel-section">
+                        <h3 class="section-title">Ampelsystem - Signale erkennen</h3>
+                        <div id="ampel-container">
                             <div class="placeholder-card">
-                                <p>Kommunikationsstrategien werden nach der Analyse angezeigt.</p>
+                                <p>Das Ampelsystem wird nach der Analyse angezeigt.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Do's and Don'ts Platzhalter -->
+                    <!-- Situationsrezepte -->
+                    <div class="rezepte-section">
+                        <h3 class="section-title">Situationsrezepte - Wenn-Dann-Anleitungen</h3>
+                        <div id="rezepte-container">
+                            <div class="placeholder-card">
+                                <p>Situationsrezepte werden nach der Analyse angezeigt.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Do's and Don'ts -->
                     <div class="dos-donts-section">
                         <h3 class="section-title">Do's and Don'ts</h3>
-                        <div id="dos-donts-container" class="dos-donts-grid">
+                        <div id="dos-donts-container">
                             <div class="placeholder-card">
                                 <p>Verhaltensempfehlungen werden nach der Analyse angezeigt.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notfallplan -->
+                    <div class="notfall-section">
+                        <h3 class="section-title">Notfallplan</h3>
+                        <div id="notfall-container">
+                            <div class="placeholder-card">
+                                <p>Der Notfallplan wird nach der Analyse angezeigt.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Beziehungstipps -->
+                    <div class="beziehung-section">
+                        <h3 class="section-title">Beziehungstipps</h3>
+                        <div id="beziehung-container">
+                            <div class="placeholder-card">
+                                <p>Beziehungstipps werden nach der Analyse angezeigt.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Elterninfo -->
+                    <div class="eltern-section">
+                        <h3 class="section-title">Information für Eltern</h3>
+                        <div id="eltern-container">
+                            <div class="placeholder-card">
+                                <p>Elterninformationen werden nach der Analyse angezeigt.</p>
                             </div>
                         </div>
                     </div>
