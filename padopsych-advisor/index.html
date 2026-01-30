@@ -5,13 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PädoPsych Advisor - Klinisches Beratungstool</title>
     <link rel="stylesheet" href="css/styles.css">
+    <!-- Favicon als SVG inline -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
 </head>
 <body>
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
-            <h1 class="app-title">PädoPsych Advisor</h1>
-            <p class="app-subtitle">Klinisches Beratungstool für Kinder- und Jugendpsychiatrie</p>
+            <div class="header-top">
+                <div class="header-brand">
+                    <span class="header-logo">🧠</span>
+                    <div class="header-titles">
+                        <h1 class="app-title">PädoPsych Advisor</h1>
+                        <p class="app-subtitle">Klinisches Beratungstool für Kinder- und Jugendpsychiatrie</p>
+                    </div>
+                </div>
+                <div class="header-controls">
+                    <button type="button" class="header-btn" onclick="newCase()" title="Neuer Fall (Strg+N)">
+                        <span>➕</span>
+                        <span class="btn-text">Neuer Fall</span>
+                    </button>
+                    <div class="dropdown-wrapper" id="saved-cases-dropdown">
+                        <button type="button" class="header-btn" id="saved-cases-btn" onclick="toggleSavedCasesDropdown()" title="Gespeicherte Fälle">
+                            <span>📁</span>
+                            <span class="btn-text">Letzte Fälle</span>
+                        </button>
+                        <div class="dropdown-menu" id="saved-cases-list">
+                            <div class="dropdown-empty">Keine gespeicherten Fälle</div>
+                        </div>
+                    </div>
+                    <button type="button" class="header-btn icon-only" id="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode umschalten">
+                        🌙
+                    </button>
+                </div>
+            </div>
         </header>
 
         <!-- Tab Navigation -->
@@ -83,7 +110,7 @@
                     </div>
 
                     <!-- ABSCHNITT 2: Hauptproblem -->
-                    <div class="form-section">
+                    <div class="form-section" id="hauptproblem-section" data-section="hauptproblem-section">
                         <h3 class="form-section-title">Hauptproblem</h3>
                         <p class="form-section-hint">Wählen Sie das primäre Problemfeld</p>
                         <div class="radio-group">
@@ -126,7 +153,7 @@
                     </div>
 
                     <!-- ABSCHNITT 3: Symptom-Checkliste -->
-                    <div class="form-section">
+                    <div class="form-section" id="symptom-section" data-section="symptom-section">
                         <h3 class="form-section-title">Symptom-Checkliste</h3>
                         <p class="form-section-hint">Wählen Sie alle zutreffenden Symptome</p>
 
@@ -422,9 +449,14 @@
                 <div class="panel-header">
                     <h2>Bedienungsanleitung</h2>
                     <p>Praktische Empfehlungen für den Umgang mit dem Kind</p>
-                    <button class="btn btn-secondary print-btn" onclick="printBedienungsanleitung()">
-                        <span>🖨️</span> Drucken
-                    </button>
+                    <div class="panel-actions">
+                        <button class="btn btn-secondary" onclick="exportAsText()" title="Als Text exportieren">
+                            <span>📄</span> Export
+                        </button>
+                        <button class="btn btn-secondary" onclick="printBedienungsanleitung()" title="Drucken (Strg+P)">
+                            <span>🖨️</span> Drucken
+                        </button>
+                    </div>
                 </div>
 
                 <div class="guide-container">
@@ -504,11 +536,19 @@
         <!-- Footer -->
         <footer class="app-footer">
             <p class="disclaimer">
-                <strong>Hinweis:</strong> Dieses Tool dient ausschließlich als Unterstützung für Fachpersonal.
+                <strong>⚠️ Hinweis:</strong> Dieses Tool dient ausschließlich als Unterstützung für Fachpersonal.
                 Es ersetzt keine professionelle Diagnostik oder Behandlung.
             </p>
+            <div class="keyboard-hints">
+                <span title="Analyse starten">Strg+Enter: Analyse</span>
+                <span title="Fall speichern">Strg+S: Speichern</span>
+                <span title="Tab wechseln">1/2/3: Tabs</span>
+            </div>
         </footer>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
     <script src="js/clinical-knowledge.js"></script>
     <script src="js/clinical-engine.js"></script>

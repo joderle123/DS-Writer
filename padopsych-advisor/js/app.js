@@ -1,7 +1,11 @@
 /**
  * PädoPsych Advisor - Main Application
- * Tab-Navigation, Akkordeons und Formular-Steuerung
+ * Tab-Navigation, Akkordeons, Formular-Steuerung, Speicherung und Export
  */
+
+// ============================================================
+// GLOBALE VARIABLEN
+// ============================================================
 
 // Globales Objekt für Falldaten
 let caseData = {
@@ -16,11 +20,31 @@ let caseData = {
     freitext: ''
 };
 
+// Autosave-Intervall ID
+let autosaveInterval = null;
+
+// LocalStorage Keys
+const STORAGE_KEYS = {
+    CURRENT_CASE: 'padopsych_current_case',
+    CASE_ARCHIVE: 'padopsych_case_archive',
+    DARK_MODE: 'padopsych_dark_mode'
+};
+
+// ============================================================
+// INITIALISIERUNG
+// ============================================================
+
 document.addEventListener('DOMContentLoaded', function() {
     initTabNavigation();
     initAccordions();
     initCheckboxCounters();
     initFormHandler();
+    initToastContainer();
+    initKeyboardShortcuts();
+    initSavedCasesDropdown();
+    loadCurrentCase();
+    startAutosave();
+    initDarkMode();
 });
 
 /**
@@ -186,42 +210,135 @@ let analysisResult = null;
  * Startet die Analyse
  */
 function startAnalysis() {
+    // Alle Fehlermarkierungen zurücksetzen
+    clearValidationErrors();
+
     // Validierung
-    if (!caseData.grunddaten.alter) {
-        showValidationError('Bitte geben Sie das Alter des Kindes an.');
-        return;
-    }
-
-    if (!caseData.hauptproblem) {
-        showValidationError('Bitte wählen Sie ein Hauptproblem aus.');
-        return;
-    }
-
-    if (caseData.symptome.length === 0) {
-        showValidationError('Bitte wählen Sie mindestens ein Symptom aus.');
+    const errors = validateCaseData();
+    if (errors.length > 0) {
+        errors.forEach(err => {
+            highlightErrorField(err.fieldId);
+        });
+        showValidationError(errors[0].message);
+        scrollToFirstError();
         return;
     }
 
     console.log('Analyse wird gestartet mit:', caseData);
 
-    // Analyse durchführen
-    analysisResult = ClinicalEngine.analyze(caseData);
-    console.log('Analyseergebnis:', analysisResult);
+    // Button in Ladezustand versetzen
+    const submitBtn = document.querySelector('.btn-primary.btn-large');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Analysiere...';
+    }
 
-    // Ergebnisse rendern
-    renderAnalysis(analysisResult);
-    renderBedienungsanleitung(analysisResult);
+    // Fake-Delay für bessere UX (fühlt sich wertiger an)
+    setTimeout(() => {
+        // Analyse durchführen
+        analysisResult = ClinicalEngine.analyze(caseData);
+        console.log('Analyseergebnis:', analysisResult);
 
-    // Zum Analyse-Tab wechseln
-    switchToTab('analyse');
+        // Ergebnisse rendern
+        renderAnalysis(analysisResult);
+        renderBedienungsanleitung(analysisResult);
+
+        // Button zurücksetzen
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Analyse starten';
+        }
+
+        // Fall automatisch speichern
+        saveCurrentCase();
+
+        // Toast zeigen
+        showToast('Analyse abgeschlossen', 'success');
+
+        // Zum Analyse-Tab wechseln
+        switchToTab('analyse');
+    }, 800);
+}
+
+/**
+ * Validiert die Falldaten
+ * @returns {Array} Array von Fehlerobjekten
+ */
+function validateCaseData() {
+    const errors = [];
+
+    if (!caseData.grunddaten.alter) {
+        errors.push({
+            fieldId: 'alter',
+            message: 'Bitte geben Sie das Alter des Kindes an.'
+        });
+    }
+
+    if (!caseData.hauptproblem) {
+        errors.push({
+            fieldId: 'hauptproblem-section',
+            message: 'Bitte wählen Sie ein Hauptproblem aus.'
+        });
+    }
+
+    if (caseData.symptome.length < 1) {
+        errors.push({
+            fieldId: 'symptom-section',
+            message: 'Bitte wählen Sie mindestens ein Symptom aus.'
+        });
+    }
+
+    return errors;
+}
+
+/**
+ * Markiert ein Feld als fehlerhaft
+ * @param {string} fieldId - ID des Feldes
+ */
+function highlightErrorField(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (field) {
+        field.classList.add('validation-error');
+    }
+
+    // Spezialfall für Sektionen
+    const section = document.querySelector(`[data-section="${fieldId}"]`);
+    if (section) {
+        section.classList.add('validation-error');
+    }
+}
+
+/**
+ * Entfernt alle Fehlermarkierungen
+ */
+function clearValidationErrors() {
+    document.querySelectorAll('.validation-error').forEach(el => {
+        el.classList.remove('validation-error');
+    });
+}
+
+/**
+ * Scrollt zum ersten Fehlerfeld
+ */
+function scrollToFirstError() {
+    const firstError = document.querySelector('.validation-error');
+    if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 }
 
 /**
  * Zeigt einen Validierungsfehler an
  * @param {string} message - Fehlermeldung
+ * @param {string} fieldId - ID des fehlenden Feldes (optional)
  */
-function showValidationError(message) {
-    alert(message);
+function showValidationError(message, fieldId) {
+    showToast(message, 'error');
+
+    // Visuelles Feedback für fehlendes Feld
+    if (fieldId) {
+        highlightErrorField(fieldId);
+    }
 }
 
 // ============================================================
@@ -271,8 +388,12 @@ function copySummary() {
                         btn.innerHTML = '<span>📋</span> Kopieren';
                     }, 2000);
                 }
+                showToast('In Zwischenablage kopiert!', 'success');
             })
-            .catch(err => console.error('Kopieren fehlgeschlagen:', err));
+            .catch(err => {
+                console.error('Kopieren fehlgeschlagen:', err);
+                showToast('Kopieren fehlgeschlagen', 'error');
+            });
     }
 }
 
@@ -750,4 +871,585 @@ function resetCaseData() {
         badge.textContent = '0';
         badge.classList.remove('has-items');
     });
+}
+
+// ============================================================
+// TOAST NOTIFICATIONS
+// ============================================================
+
+/**
+ * Initialisiert den Toast-Container
+ */
+function initToastContainer() {
+    if (!document.getElementById('toast-container')) {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+}
+
+/**
+ * Zeigt eine Toast-Benachrichtigung
+ * @param {string} message - Nachricht
+ * @param {string} type - Typ: 'success', 'error', 'info'
+ * @param {number} duration - Anzeigedauer in ms (default: 3000)
+ */
+function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+    const icons = {
+        success: '✓',
+        error: '✗',
+        info: 'ℹ'
+    };
+
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || icons.info}</span>
+        <span class="toast-message">${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Animation starten
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // Auto-hide
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, duration);
+}
+
+// ============================================================
+// LOCAL STORAGE - SPEICHERUNG
+// ============================================================
+
+/**
+ * Speichert den aktuellen Fall in LocalStorage
+ */
+function saveCurrentCase() {
+    const savedCase = {
+        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+        name: caseData.grunddaten.name || 'Unbenannter Fall',
+        savedAt: new Date().toISOString(),
+        caseData: JSON.parse(JSON.stringify(caseData)),
+        analysis: analysisResult ? JSON.parse(JSON.stringify(analysisResult)) : null
+    };
+
+    // Aktuellen Fall speichern
+    localStorage.setItem(STORAGE_KEYS.CURRENT_CASE, JSON.stringify(savedCase));
+
+    // Zum Archiv hinzufügen (nur wenn Analyse vorhanden)
+    if (analysisResult) {
+        addToArchive(savedCase);
+    }
+}
+
+/**
+ * Fügt einen Fall zum Archiv hinzu
+ * @param {Object} savedCase - Der zu speichernde Fall
+ */
+function addToArchive(savedCase) {
+    let archive = getArchive();
+
+    // Prüfen ob Fall mit gleicher ID bereits existiert
+    const existingIndex = archive.findIndex(c => c.id === savedCase.id);
+    if (existingIndex >= 0) {
+        archive[existingIndex] = savedCase;
+    } else {
+        archive.unshift(savedCase);
+    }
+
+    // Maximal 10 Fälle behalten
+    archive = archive.slice(0, 10);
+
+    localStorage.setItem(STORAGE_KEYS.CASE_ARCHIVE, JSON.stringify(archive));
+    updateSavedCasesDropdown();
+}
+
+/**
+ * Lädt das Fallarchiv
+ * @returns {Array} Array von gespeicherten Fällen
+ */
+function getArchive() {
+    try {
+        const archive = localStorage.getItem(STORAGE_KEYS.CASE_ARCHIVE);
+        return archive ? JSON.parse(archive) : [];
+    } catch (e) {
+        console.error('Fehler beim Laden des Archivs:', e);
+        return [];
+    }
+}
+
+/**
+ * Lädt den aktuellen Fall aus LocalStorage
+ */
+function loadCurrentCase() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_CASE);
+        if (saved) {
+            const savedCase = JSON.parse(saved);
+            if (savedCase.caseData) {
+                caseData = savedCase.caseData;
+                restoreFormFromCaseData();
+            }
+            if (savedCase.analysis) {
+                analysisResult = savedCase.analysis;
+            }
+        }
+    } catch (e) {
+        console.error('Fehler beim Laden des Falls:', e);
+    }
+}
+
+/**
+ * Lädt einen Fall aus dem Archiv
+ * @param {string} caseId - ID des Falls
+ */
+function loadCaseFromArchive(caseId) {
+    const archive = getArchive();
+    const savedCase = archive.find(c => c.id === caseId);
+
+    if (savedCase) {
+        caseData = savedCase.caseData;
+        analysisResult = savedCase.analysis;
+
+        restoreFormFromCaseData();
+
+        if (analysisResult) {
+            renderAnalysis(analysisResult);
+            renderBedienungsanleitung(analysisResult);
+        }
+
+        showToast(`Fall "${savedCase.name}" geladen`, 'success');
+        closeSavedCasesDropdown();
+    }
+}
+
+/**
+ * Stellt das Formular aus caseData wieder her
+ */
+function restoreFormFromCaseData() {
+    const form = document.getElementById('case-form');
+    if (!form) return;
+
+    // Grunddaten
+    const nameInput = form.querySelector('#name');
+    const alterSelect = form.querySelector('#alter');
+    const geschlechtSelect = form.querySelector('#geschlecht');
+
+    if (nameInput) nameInput.value = caseData.grunddaten.name || '';
+    if (alterSelect) alterSelect.value = caseData.grunddaten.alter || '';
+    if (geschlechtSelect) geschlechtSelect.value = caseData.grunddaten.geschlecht || '';
+
+    // Hauptproblem
+    const hauptproblemRadio = form.querySelector(`input[name="hauptproblem"][value="${caseData.hauptproblem}"]`);
+    if (hauptproblemRadio) hauptproblemRadio.checked = true;
+
+    // Symptome
+    form.querySelectorAll('input[name="symptome[]"]').forEach(cb => {
+        cb.checked = caseData.symptome.includes(cb.value);
+    });
+
+    // Kontext
+    form.querySelectorAll('input[name="kontext[]"]').forEach(cb => {
+        cb.checked = caseData.kontext.includes(cb.value);
+    });
+
+    // Freitext
+    const freitextArea = form.querySelector('#freitext');
+    if (freitextArea) freitextArea.value = caseData.freitext || '';
+
+    // Akkordeon-Zähler aktualisieren
+    document.querySelectorAll('.accordion').forEach(accordion => {
+        const header = accordion.querySelector('.accordion-header');
+        if (header) {
+            const accordionId = header.dataset.accordion;
+            updateAccordionCount(accordionId);
+        }
+    });
+}
+
+/**
+ * Startet den Autosave
+ */
+function startAutosave() {
+    if (autosaveInterval) {
+        clearInterval(autosaveInterval);
+    }
+
+    autosaveInterval = setInterval(() => {
+        if (caseData.grunddaten.name || caseData.symptome.length > 0) {
+            const savedCase = {
+                id: 'current',
+                name: caseData.grunddaten.name || 'Aktueller Fall',
+                savedAt: new Date().toISOString(),
+                caseData: JSON.parse(JSON.stringify(caseData)),
+                analysis: analysisResult ? JSON.parse(JSON.stringify(analysisResult)) : null
+            };
+            localStorage.setItem(STORAGE_KEYS.CURRENT_CASE, JSON.stringify(savedCase));
+        }
+    }, 30000); // Alle 30 Sekunden
+}
+
+/**
+ * Startet einen neuen Fall (mit Bestätigung)
+ */
+function newCase() {
+    const hasData = caseData.grunddaten.name || caseData.symptome.length > 0;
+
+    if (hasData) {
+        if (!confirm('Möchten Sie wirklich einen neuen Fall beginnen? Nicht gespeicherte Änderungen gehen verloren.')) {
+            return;
+        }
+    }
+
+    // Formular zurücksetzen
+    const form = document.getElementById('case-form');
+    if (form) {
+        form.reset();
+    }
+
+    // Daten zurücksetzen
+    resetCaseData();
+    analysisResult = null;
+
+    // Placeholder-Karten wieder anzeigen
+    resetPlaceholders();
+
+    // LocalStorage leeren
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_CASE);
+
+    // Zum ersten Tab wechseln
+    switchToTab('fallbeschreibung');
+
+    showToast('Neuer Fall gestartet', 'info');
+}
+
+/**
+ * Setzt die Placeholder-Karten zurück
+ */
+function resetPlaceholders() {
+    const placeholderHTML = `
+        <div class="placeholder-card">
+            <p>Bitte füllen Sie zuerst die Fallbeschreibung aus und starten Sie die Analyse.</p>
+        </div>
+    `;
+
+    const containers = [
+        'summary-container', 'hypotheses-container', 'differential-container',
+        'model-container', 'grundhaltung-container', 'ampel-container',
+        'rezepte-container', 'dos-donts-container', 'notfall-container',
+        'beziehung-container', 'eltern-container'
+    ];
+
+    containers.forEach(id => {
+        const container = document.getElementById(id);
+        if (container) {
+            container.innerHTML = placeholderHTML;
+        }
+    });
+}
+
+/**
+ * Initialisiert das Dropdown für gespeicherte Fälle
+ */
+function initSavedCasesDropdown() {
+    updateSavedCasesDropdown();
+}
+
+/**
+ * Aktualisiert das Dropdown für gespeicherte Fälle
+ */
+function updateSavedCasesDropdown() {
+    const dropdown = document.getElementById('saved-cases-list');
+    if (!dropdown) return;
+
+    const archive = getArchive();
+
+    if (archive.length === 0) {
+        dropdown.innerHTML = '<div class="dropdown-empty">Keine gespeicherten Fälle</div>';
+        return;
+    }
+
+    dropdown.innerHTML = archive.map(savedCase => {
+        const date = new Date(savedCase.savedAt);
+        const dateStr = date.toLocaleDateString('de-DE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        return `
+            <button type="button" class="dropdown-item" onclick="loadCaseFromArchive('${savedCase.id}')">
+                <span class="case-name">${savedCase.name || 'Unbenannt'}</span>
+                <span class="case-date">${dateStr}</span>
+            </button>
+        `;
+    }).join('');
+}
+
+/**
+ * Öffnet/schließt das Dropdown für gespeicherte Fälle
+ */
+function toggleSavedCasesDropdown() {
+    const dropdown = document.getElementById('saved-cases-dropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('open');
+    }
+}
+
+/**
+ * Schließt das Dropdown für gespeicherte Fälle
+ */
+function closeSavedCasesDropdown() {
+    const dropdown = document.getElementById('saved-cases-dropdown');
+    if (dropdown) {
+        dropdown.classList.remove('open');
+    }
+}
+
+// ============================================================
+// EXPORT-FUNKTIONEN
+// ============================================================
+
+/**
+ * Exportiert die Bedienungsanleitung als Textdatei
+ */
+function exportAsText() {
+    if (!analysisResult) {
+        showToast('Bitte führen Sie zuerst eine Analyse durch.', 'error');
+        return;
+    }
+
+    const name = caseData.grunddaten.name || 'Unbenannt';
+    const date = new Date().toLocaleDateString('de-DE');
+    const anleitung = analysisResult.bedienungsanleitung;
+
+    let text = `
+═══════════════════════════════════════════════════════════════
+                    BEDIENUNGSANLEITUNG
+═══════════════════════════════════════════════════════════════
+
+Name: ${name}
+Datum: ${date}
+VERTRAULICH - Nur für autorisiertes Fachpersonal
+
+───────────────────────────────────────────────────────────────
+ZUSAMMENFASSUNG
+───────────────────────────────────────────────────────────────
+
+${analysisResult.modell.zusammenfassung}
+
+───────────────────────────────────────────────────────────────
+GRUNDHALTUNG
+───────────────────────────────────────────────────────────────
+
+Leitsatz: "${anleitung.grundhaltung.leitsatz}"
+
+${anleitung.grundhaltung.erklaerung}
+
+Mantra: "${anleitung.grundhaltung.mantra}"
+
+───────────────────────────────────────────────────────────────
+AMPELSYSTEM - SIGNALE ERKENNEN
+───────────────────────────────────────────────────────────────
+
+GRÜN - Kind ist stabil:
+${anleitung.ampelsystem.gruen.map(s => `  • ${s.signal}`).join('\n')}
+
+GELB - Vorsicht:
+${anleitung.ampelsystem.gelb.map(s => `  • ${s.signal}`).join('\n')}
+
+ROT - Krise:
+${anleitung.ampelsystem.rot.map(s => `  • ${s.signal}`).join('\n')}
+
+───────────────────────────────────────────────────────────────
+DO'S AND DON'TS
+───────────────────────────────────────────────────────────────
+
+TU DAS:
+${anleitung.dosAndDonts.tuDas.map(d => `  ✓ ${d.tipp}`).join('\n')}
+
+LASS DAS:
+${anleitung.dosAndDonts.lassDas.map(d => `  ✗ ${d.tipp}`).join('\n')}
+
+───────────────────────────────────────────────────────────────
+NOTFALLPLAN
+───────────────────────────────────────────────────────────────
+
+${anleitung.notfallplan.schritte.map((s, i) => `${i + 1}. ${s.text}`).join('\n')}
+
+WICHTIG: ${anleitung.notfallplan.wichtig}
+
+───────────────────────────────────────────────────────────────
+BEZIEHUNGSTIPPS
+───────────────────────────────────────────────────────────────
+
+${anleitung.beziehungstipps.map(t => `${t.tipp}\n${t.beschreibung}`).join('\n\n')}
+
+───────────────────────────────────────────────────────────────
+INFORMATION FÜR ELTERN
+───────────────────────────────────────────────────────────────
+
+${anleitung.elterninfo.kernbotschaften.map(k => `• ${k}`).join('\n')}
+
+${anleitung.elterninfo.spezifisch.length > 0 ? 'Spezifische Informationen:\n' + anleitung.elterninfo.spezifisch.map(s => `• ${s}`).join('\n') : ''}
+
+═══════════════════════════════════════════════════════════════
+Erstellt mit PädoPsych Advisor
+Dieses Tool ersetzt keine professionelle Diagnostik
+═══════════════════════════════════════════════════════════════
+`;
+
+    // Download erstellen
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}_Bedienungsanleitung_${date.replace(/\./g, '-')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('Export als Text heruntergeladen', 'success');
+}
+
+/**
+ * Druckt die Bedienungsanleitung (verbesserte Version)
+ */
+function printBedienungsanleitung() {
+    if (!analysisResult) {
+        showToast('Bitte führen Sie zuerst eine Analyse durch.', 'error');
+        return;
+    }
+
+    // Print-Header hinzufügen
+    const name = caseData.grunddaten.name || 'Unbenannt';
+    const date = new Date().toLocaleDateString('de-DE');
+
+    // Temporären Print-Header erstellen
+    const printHeader = document.createElement('div');
+    printHeader.id = 'print-header';
+    printHeader.innerHTML = `
+        <div class="print-header-content">
+            <div class="print-title">Bedienungsanleitung für ${name}</div>
+            <div class="print-meta">
+                <span>Datum: ${date}</span>
+                <span class="print-confidential">VERTRAULICH</span>
+            </div>
+        </div>
+    `;
+
+    document.body.insertBefore(printHeader, document.body.firstChild);
+
+    // Drucken
+    window.print();
+
+    // Header wieder entfernen
+    printHeader.remove();
+}
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+
+/**
+ * Initialisiert Tastaturkürzel
+ */
+function initKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + Enter: Analyse starten (wenn in Tab 1)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            const tab1Active = document.getElementById('fallbeschreibung')?.classList.contains('active');
+            if (tab1Active) {
+                e.preventDefault();
+                startAnalysis();
+            }
+        }
+
+        // Ctrl/Cmd + P: Drucken (wenn in Tab 3)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+            const tab3Active = document.getElementById('bedienungsanleitung')?.classList.contains('active');
+            if (tab3Active && analysisResult) {
+                e.preventDefault();
+                printBedienungsanleitung();
+            }
+        }
+
+        // Ctrl/Cmd + S: Fall speichern
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            saveCurrentCase();
+            showToast('Fall gespeichert', 'success');
+        }
+
+        // Tasten 1, 2, 3: Tab-Wechsel (nur wenn nicht in Eingabefeld)
+        if (!e.target.matches('input, textarea, select')) {
+            if (e.key === '1') switchToTab('fallbeschreibung');
+            if (e.key === '2') switchToTab('analyse');
+            if (e.key === '3') switchToTab('bedienungsanleitung');
+        }
+
+        // Escape: Dropdown schließen
+        if (e.key === 'Escape') {
+            closeSavedCasesDropdown();
+        }
+    });
+
+    // Klick außerhalb des Dropdowns schließt es
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('saved-cases-dropdown');
+        const btn = document.getElementById('saved-cases-btn');
+        if (dropdown && !dropdown.contains(e.target) && e.target !== btn) {
+            closeSavedCasesDropdown();
+        }
+    });
+}
+
+// ============================================================
+// DARK MODE
+// ============================================================
+
+/**
+ * Initialisiert den Dark Mode
+ */
+function initDarkMode() {
+    const savedMode = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
+    if (savedMode === 'true') {
+        document.body.classList.add('dark-mode');
+        updateDarkModeButton(true);
+    }
+}
+
+/**
+ * Schaltet den Dark Mode um
+ */
+function toggleDarkMode() {
+    const isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem(STORAGE_KEYS.DARK_MODE, isDark.toString());
+    updateDarkModeButton(isDark);
+}
+
+/**
+ * Aktualisiert den Dark Mode Button
+ * @param {boolean} isDark - Ist Dark Mode aktiv?
+ */
+function updateDarkModeButton(isDark) {
+    const btn = document.getElementById('dark-mode-btn');
+    if (btn) {
+        btn.innerHTML = isDark ? '☀️' : '🌙';
+        btn.title = isDark ? 'Light Mode aktivieren' : 'Dark Mode aktivieren';
+    }
 }
