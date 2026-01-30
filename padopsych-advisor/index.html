@@ -767,8 +767,318 @@
     <!-- Toast Container -->
     <div id="toast-container"></div>
 
+    <!-- Inline JavaScript für bessere Kompatibilität bei lokalem Zugriff -->
     <script src="js/clinical-knowledge.js"></script>
     <script src="js/clinical-engine.js"></script>
     <script src="js/app.js"></script>
+
+    <!-- Fallback: Wenn externe JS-Dateien nicht laden, wird dies verwendet -->
+    <script>
+    // Prüfen ob die externen Skripte geladen wurden
+    if (typeof CLINICAL_KNOWLEDGE === 'undefined') {
+        console.log('Externe JS-Dateien nicht geladen, verwende Inline-Fallback...');
+
+        // === CLINICAL_KNOWLEDGE ===
+        const CLINICAL_KNOWLEDGE = {
+            hypothesen: {
+                adhs: { name: "ADHS", vollname: "Aufmerksamkeitsdefizit-Hyperaktivitätsstörung", kategorie: "Entwicklungsstörung", icd10: "F90.0", kernSymptome: { unaufmerksamkeit: ["ablenkbar", "hoert_nicht_zu", "beendet_nicht", "verliert_sachen"], hyperaktivitaet: ["nicht_stillsitzen", "unterbricht"], impulsivitaet: ["unterbricht"] }, gewichtung: { "nicht_stillsitzen": 2, "ablenkbar": 2, "unterbricht": 1.5, "hoert_nicht_zu": 1.5, "beendet_nicht": 1.5, "verliert_sachen": 1, "frustriert": 0.5, "wutausbrueche": 0.5 }, staerkendeFaktoren: ["seit_immer", "ueberall", "familiaer"], schwächendeFaktoren: ["nach_ereignis", "nur_schule", "nur_zuhause"], differentialDiagnosen: ["trauma", "angst", "hochbegabung", "emotionsregulation"], interpretation: { hoch: "Die Symptomkonstellation ist hochgradig vereinbar mit ADHS.", mittel: "Hinweise auf mögliche ADHS, differenzierte Abklärung empfohlen.", niedrig: "Einzelne Aufmerksamkeitsprobleme vorhanden." } },
+                angst: { name: "Angststörung", vollname: "Angststörung im Kindes- und Jugendalter", kategorie: "Emotionale Störung", icd10: "F93 / F40 / F41", kernSymptome: { kernsymptome: ["aengstlich", "weint_viel"], vermeidung: ["spielt_allein", "wenig_freunde"], koerperlich: [] }, gewichtung: { "aengstlich": 2.5, "weint_viel": 1.5, "spielt_allein": 1, "wenig_freunde": 1, "traurig": 0.5, "stimmungsschwankungen": 0.5 }, staerkendeFaktoren: ["familiaer", "nach_ereignis"], schwächendeFaktoren: ["seit_immer", "handgreiflich", "provoziert"], differentialDiagnosen: ["depression", "trauma", "asd", "bindung"], interpretation: { hoch: "Klinisches Bild spricht für Angststörung.", mittel: "Hinweise auf ängstliche Symptomatik.", niedrig: "Leichte ängstliche Tendenzen." } },
+                depression: { name: "Depression", vollname: "Depressive Episode im Kindes- und Jugendalter", kategorie: "Emotionale Störung", icd10: "F32 / F33", kernSymptome: { affekt: ["traurig", "stimmungsschwankungen"], antrieb: ["spielt_allein", "wenig_freunde"], reizbarkeit: ["wutausbrueche", "frustriert"] }, gewichtung: { "traurig": 2.5, "stimmungsschwankungen": 1.5, "weint_viel": 1.5, "spielt_allein": 1, "wenig_freunde": 0.5, "wutausbrueche": 1, "frustriert": 1, "aengstlich": 0.5 }, staerkendeFaktoren: ["verlust_trauer", "nach_ereignis", "familiaer", "haeusliche_konflikte"], schwächendeFaktoren: ["seit_immer", "nicht_stillsitzen"], differentialDiagnosen: ["angst", "trauma", "emotionsregulation", "adhs"], wichtigerHinweis: "Bei Kindern äußert sich Depression häufig als Reizbarkeit!", interpretation: { hoch: "Symptomatik vereinbar mit depressiver Episode. Suizidalität explorieren!", mittel: "Depressive Symptome erkennbar.", niedrig: "Vereinzelte Stimmungsprobleme." } },
+                odd: { name: "Störung des Sozialverhaltens", vollname: "Oppositionelle Störung / Störung des Sozialverhaltens", kategorie: "Verhaltensstörung", icd10: "F91 / F92", kernSymptome: { opposition: ["verweigert", "streitet", "provoziert"], aggression: ["handgreiflich", "zerstoert", "mobbt_andere"], regelverletzung: ["luegt"] }, gewichtung: { "verweigert": 2, "streitet": 2, "provoziert": 2, "handgreiflich": 2.5, "zerstoert": 2, "luegt": 1.5, "mobbt_andere": 2, "wutausbrueche": 1, "frustriert": 0.5 }, staerkendeFaktoren: ["haeusliche_konflikte", "ueberall"], schwächendeFaktoren: ["nur_schule", "nach_ereignis", "aengstlich"], differentialDiagnosen: ["adhs", "trauma", "bindung", "emotionsregulation"], wichtigerHinweis: "ODD ist oft ein Symptom, nicht die Ursache!", interpretation: { hoch: "Deutliche oppositionell-aggressive Züge. Ursachen klären!", mittel: "Oppositionelles Verhalten vorhanden.", niedrig: "Gelegentliches Aufbegehren." } },
+                trauma: { name: "Traumafolgestörung", vollname: "Anpassungsstörung / PTBS", kategorie: "Belastungsreaktion", icd10: "F43.1 / F43.2", kernSymptome: { intrusion: [], vermeidung: ["spielt_allein", "aengstlich"], dysregulation: ["wutausbrueche", "stimmungsschwankungen", "frustriert", "weint_viel"] }, gewichtung: { "gewalterfahrung": 3, "vernachlaessigung": 3, "verlust_trauer": 2.5, "elterntrennung": 1.5, "haeusliche_konflikte": 2, "schulwechsel": 1, "wutausbrueche": 1.5, "stimmungsschwankungen": 1.5, "aengstlich": 1.5, "traurig": 1, "spielt_allein": 1 }, staerkendeFaktoren: ["gewalterfahrung", "vernachlaessigung", "verlust_trauer", "nach_ereignis", "haeusliche_konflikte"], schwächendeFaktoren: ["seit_immer"], differentialDiagnosen: ["depression", "angst", "odd", "bindung"], wichtigerHinweis: "Traumasensibles Vorgehen essentiell!", interpretation: { hoch: "Symptome sprechen für Traumafolgestörung.", mittel: "Belastungsreaktionen erkennbar.", niedrig: "Keine eindeutigen Traumafolgesymptome." } },
+                asd: { name: "Autismus-Spektrum", vollname: "Autismus-Spektrum-Störung", kategorie: "Entwicklungsstörung", icd10: "F84.0 / F84.5", kernSymptome: { sozial: ["kein_blickkontakt", "soziale_regeln", "spielt_allein", "wenig_freunde"], kommunikation: ["hoert_nicht_zu"], verhalten: [] }, gewichtung: { "kein_blickkontakt": 2.5, "soziale_regeln": 2.5, "spielt_allein": 2, "wenig_freunde": 1.5, "hoert_nicht_zu": 0.5 }, staerkendeFaktoren: ["seit_immer", "ueberall", "familiaer"], schwächendeFaktoren: ["nach_ereignis", "nur_schule", "nur_zuhause"], differentialDiagnosen: ["angst", "bindung", "adhs"], wichtigerHinweis: "Spezialisierte Diagnostik erforderlich!", interpretation: { hoch: "Merkmale des Autismus-Spektrums erkennbar.", mittel: "Einzelne autistische Züge vorhanden.", niedrig: "Keine eindeutigen ASD-Hinweise." } },
+                bindung: { name: "Bindungsproblematik", vollname: "Bindungsstörung / Bindungsunsicherheit", kategorie: "Beziehungsstörung", icd10: "F94.1 / F94.2", kernSymptome: { unsicher: ["aengstlich", "weint_viel"], desorganisiert: ["stimmungsschwankungen", "wutausbrueche"], vermeidend: ["spielt_allein", "wenig_freunde"] }, gewichtung: { "vernachlaessigung": 3, "haeusliche_konflikte": 2, "elterntrennung": 2, "aengstlich": 1, "weint_viel": 1, "stimmungsschwankungen": 1.5, "wutausbrueche": 1, "spielt_allein": 0.5 }, staerkendeFaktoren: ["vernachlaessigung", "haeusliche_konflikte", "elterntrennung", "gewalterfahrung"], schwächendeFaktoren: ["seit_immer"], differentialDiagnosen: ["angst", "trauma", "asd", "depression"], wichtigerHinweis: "Beziehungskontinuität priorisieren!", interpretation: { hoch: "Beziehungsmuster deuten auf Bindungsproblematik.", mittel: "Unsichere Bindungsanteile erkennbar.", niedrig: "Keine auffällige Bindungsproblematik." } },
+                emotionsregulation: { name: "Emotionsregulationsstörung", vollname: "Störung der Emotionsregulation", kategorie: "Entwicklungsbedingt", icd10: "F92.8", kernSymptome: { dysregulation: ["wutausbrueche", "frustriert", "stimmungsschwankungen"], intensitaet: ["weint_viel"] }, gewichtung: { "wutausbrueche": 2.5, "frustriert": 2, "stimmungsschwankungen": 2, "weint_viel": 1.5 }, staerkendeFaktoren: ["haeusliche_konflikte"], schwächendeFaktoren: [], differentialDiagnosen: ["adhs", "depression", "trauma", "odd"], wichtigerHinweis: "Co-Regulation durch Bezugspersonen wichtig!", interpretation: { hoch: "Deutliche Schwierigkeiten in der Emotionsregulation.", mittel: "Emotionsregulation noch unreif.", niedrig: "Altersgemäße emotionale Reaktionen." } }
+            },
+            symptomLabels: { "nicht_stillsitzen": "Kann nicht stillsitzen", "unterbricht": "Unterbricht andere", "verliert_sachen": "Verliert Sachen", "hoert_nicht_zu": "Hört nicht zu", "beendet_nicht": "Beendet Aufgaben nicht", "ablenkbar": "Leicht ablenkbar", "wutausbrueche": "Häufige Wutausbrüche", "frustriert": "Schnell frustriert", "aengstlich": "Ängstlich/besorgt", "traurig": "Traurig/niedergeschlagen", "stimmungsschwankungen": "Stimmungsschwankungen", "weint_viel": "Weint viel", "wenig_freunde": "Wenig Freunde", "wird_gemobbt": "Wird gemobbt", "mobbt_andere": "Mobbt andere", "spielt_allein": "Spielt lieber allein", "soziale_regeln": "Versteht soziale Regeln nicht", "kein_blickkontakt": "Kein Blickkontakt", "verweigert": "Verweigert Anweisungen", "streitet": "Streitet mit Erwachsenen", "provoziert": "Provoziert absichtlich", "handgreiflich": "Wird handgreiflich", "zerstoert": "Zerstört Sachen", "luegt": "Lügt häufig", "elterntrennung": "Elterntrennung", "verlust_trauer": "Verlust/Trauer", "haeusliche_konflikte": "Häusliche Konflikte", "schulwechsel": "Schulwechsel", "gewalterfahrung": "Gewalterfahrung", "vernachlaessigung": "Vernachlässigung" },
+            kontextLabels: { "nur_schule": "Nur in der Schule", "nur_zuhause": "Nur zuhause", "ueberall": "Überall/situationsübergreifend", "seit_immer": "Seit Geburt/immer schon", "nach_ereignis": "Nach Ereignis begonnen", "familiaer": "Familiäre Vorbelastung" },
+            hauptproblemRelevanz: { "externalisierend": ["odd", "adhs", "emotionsregulation", "trauma", "bindung"], "internalisierend": ["angst", "depression", "trauma", "bindung"], "aufmerksamkeit": ["adhs", "angst", "trauma", "asd"], "sozial": ["asd", "angst", "bindung", "adhs"], "schulisch": ["adhs", "angst", "depression", "trauma"] },
+            kategoriefarben: { "Entwicklungsstörung": "#6366f1", "Emotionale Störung": "#8b5cf6", "Verhaltensstörung": "#ef4444", "Belastungsreaktion": "#f59e0b", "Beziehungsstörung": "#ec4899", "Entwicklungsbedingt": "#10b981" }
+        };
+        window.CLINICAL_KNOWLEDGE = CLINICAL_KNOWLEDGE;
+
+        // === ClinicalEngine (vereinfachte Version) ===
+        const ClinicalEngine = {
+            analyze(caseData) {
+                const hypothesen = this.generateHypothesen(caseData);
+                return {
+                    hypothesen,
+                    differential: this.differentialDiagnose(hypothesen),
+                    modell: this.generateModell(hypothesen, caseData),
+                    bedienungsanleitung: this.generateBedienungsanleitung(hypothesen),
+                    caseData,
+                    timestamp: new Date().toISOString()
+                };
+            },
+            generateHypothesen(caseData) {
+                const results = [];
+                const symptome = [...(caseData.symptome || []), ...(caseData.kontext || [])];
+                const kontext = caseData.kontext || [];
+                const relevante = CLINICAL_KNOWLEDGE.hauptproblemRelevanz[caseData.hauptproblem] || [];
+
+                for (const [id, hypo] of Object.entries(CLINICAL_KNOWLEDGE.hypothesen)) {
+                    let score = relevante.includes(id) ? 2 : 0;
+                    const evidenz = [];
+
+                    for (const items of Object.values(hypo.kernSymptome)) {
+                        items.forEach(s => {
+                            const gewicht = hypo.gewichtung?.[s] || 1;
+                            if (symptome.includes(s)) {
+                                score += gewicht;
+                                evidenz.push(CLINICAL_KNOWLEDGE.symptomLabels[s] || s);
+                            }
+                        });
+                    }
+
+                    hypo.staerkendeFaktoren?.forEach(f => {
+                        if (kontext.includes(f) || symptome.includes(f)) {
+                            score += 1.5;
+                            evidenz.push((CLINICAL_KNOWLEDGE.kontextLabels[f] || f) + " (verstärkend)");
+                        }
+                    });
+
+                    const konfidenz = Math.min(100, Math.max(20, Math.round(score * 10)));
+
+                    if (konfidenz > 15 || evidenz.length >= 2) {
+                        results.push({
+                            id, name: hypo.name, vollname: hypo.vollname,
+                            kategorie: hypo.kategorie, icd10: hypo.icd10,
+                            konfidenz, evidenz, gegenEvidenz: [],
+                            interpretation: konfidenz >= 60 ? hypo.interpretation.hoch : konfidenz >= 35 ? hypo.interpretation.mittel : hypo.interpretation.niedrig,
+                            wichtigerHinweis: hypo.wichtigerHinweis || null,
+                            farbe: CLINICAL_KNOWLEDGE.kategoriefarben[hypo.kategorie] || '#6366f1',
+                            differentialDiagnosen: hypo.differentialDiagnosen || []
+                        });
+                    }
+                }
+                return results.sort((a, b) => b.konfidenz - a.konfidenz);
+            },
+            differentialDiagnose(hypothesen) {
+                const ueberlegungen = [];
+                const hypoIds = hypothesen.map(h => h.id);
+
+                if (hypoIds.includes('adhs') && hypoIds.includes('trauma')) {
+                    ueberlegungen.push({ typ: "wichtig", icon: "⚠️", titel: "ADHS vs. Trauma", text: "Traumatisierte Kinder zeigen oft ADHS-ähnliche Symptome. ENTSCHEIDEND: Gab es ein auslösendes Ereignis?" });
+                }
+                if (hypoIds.includes('angst') && hypoIds.includes('depression')) {
+                    ueberlegungen.push({ typ: "komorbidität", icon: "🔗", titel: "Komorbidität Angst/Depression", text: "Häufig gemeinsam auftretend. Beide Aspekte in Behandlung berücksichtigen." });
+                }
+                const oddHypo = hypothesen.find(h => h.id === 'odd');
+                if (oddHypo && oddHypo.konfidenz > 40) {
+                    ueberlegungen.push({ typ: "hinweis", icon: "💡", titel: "Opposition als Symptom", text: "Oppositionelles Verhalten ist oft ein SYMPTOM, nicht die Ursache!" });
+                }
+                return ueberlegungen;
+            },
+            generateModell(hypothesen, caseData) {
+                const name = caseData.grunddaten?.name || "Das Kind";
+                const topHypo = hypothesen[0];
+                const symptomCount = (caseData.symptome || []).length;
+
+                let zusammenfassung = `${name}`;
+                if (caseData.grunddaten?.alter) zusammenfassung += ` (${caseData.grunddaten.alter} Jahre)`;
+                zusammenfassung += ` wird vorgestellt. `;
+                if (symptomCount > 0) zusammenfassung += `Insgesamt wurden ${symptomCount} Symptome identifiziert. `;
+                if (topHypo) zusammenfassung += `Die Analyse ergibt mit ${topHypo.konfidenz}% Konfidenz Hinweise auf ${topHypo.vollname}.`;
+
+                return {
+                    zusammenfassung,
+                    biopsychosozial: {
+                        praedisponierend: ["Noch zu explorieren"],
+                        ausloesend: ["Noch zu explorieren"],
+                        aufrechterhaltend: ["Noch zu explorieren"],
+                        protektiv: ["Ressourcen sollten exploriert werden"]
+                    },
+                    haupthypothese: topHypo ? { id: topHypo.id, name: topHypo.vollname, konfidenz: topHypo.konfidenz, farbe: topHypo.farbe } : null
+                };
+            },
+            generateBedienungsanleitung(hypothesen) {
+                const topId = hypothesen[0]?.id || 'emotionsregulation';
+                const haltungen = {
+                    adhs: { leitsatz: "Struktur geben, nicht strafen", erklaerung: "Das Kind KANN nicht, es WILL nicht nicht.", mantra: "Kurz, klar, konsequent.", icon: "🎯" },
+                    angst: { leitsatz: "Sicherheit geben, mutig machen", erklaerung: "Das Kind erlebt echte Angst.", mantra: "Ich sehe deine Angst. Du schaffst das.", icon: "🛡️" },
+                    depression: { leitsatz: "Dabeibleiben, nicht aufgeben", erklaerung: "Depression zeigt sich oft als Reizbarkeit.", mantra: "Du bist wichtig.", icon: "💙" },
+                    odd: { leitsatz: "Verbindung vor Korrektur", erklaerung: "Hinter Opposition steckt ein Bedürfnis.", mantra: "Ich kämpfe für dich, nicht gegen dich.", icon: "🤝" },
+                    trauma: { leitsatz: "Sicherheit, Sicherheit, Sicherheit", erklaerung: "Das Nervensystem ist im Überlebensmodus.", mantra: "Du bist hier sicher.", icon: "🏠" },
+                    asd: { leitsatz: "Klar, konkret, visuell", erklaerung: "Das Kind denkt anders, nicht schlechter.", mantra: "Ich sage genau, was ich meine.", icon: "📋" },
+                    bindung: { leitsatz: "Beziehung ist die Intervention", erklaerung: "Das Kind hat gelernt, dass Beziehungen unsicher sind.", mantra: "Ich bleibe.", icon: "❤️" },
+                    emotionsregulation: { leitsatz: "Co-Regulation vor Selbstregulation", erklaerung: "Das Kind braucht Sie als externen Regler.", mantra: "Ich bleibe ruhig.", icon: "🌊" }
+                };
+
+                return {
+                    grundhaltung: haltungen[topId] || haltungen.emotionsregulation,
+                    ampelsystem: {
+                        gruen: [{ signal: "Kind ist ansprechbar", icon: "✓" }, { signal: "Kann Frustrationen aushalten", icon: "✓" }],
+                        gelb: [{ signal: "Zunehmende Unruhe", icon: "⚡" }, { signal: "Kürzere Zündschnur", icon: "⚡" }],
+                        rot: [{ signal: "Kontrollverlust", icon: "🔴" }, { signal: "Aggression/Flucht", icon: "🔴" }]
+                    },
+                    situationsrezepte: [
+                        { situation: "Kind verweigert", icon: "🚫", reaktion: ["NICHT: Druck erhöhen", "STATTDESSEN: Wahlmöglichkeit anbieten"] },
+                        { situation: "Kind wird wütend", icon: "😠", reaktion: ["NICHT: Laut werden", "STATTDESSEN: Stimme SENKEN, Raum geben"] }
+                    ],
+                    dosAndDonts: {
+                        tuDas: [{ tipp: "Ruhig bleiben", icon: "🧘" }, { tipp: "Beziehung priorisieren", icon: "❤️" }],
+                        lassDas: [{ tipp: "Machtkämpfe eingehen", icon: "❌" }, { tipp: "Vor anderen bloßstellen", icon: "❌" }]
+                    },
+                    notfallplan: {
+                        titel: "Krisenplan", icon: "🆘",
+                        schritte: [{ text: "STOPP - Eigene Atmung verlangsamen", icon: "🛑" }, { text: "Raum geben, NICHT bedrängen", icon: "↔️" }],
+                        wichtig: "Hilfe holen ist keine Schwäche!",
+                        nachDerKrise: ["Eigene Gefühle reflektieren"]
+                    },
+                    beziehungstipps: [{ tipp: "2-Minuten-Ritual", icon: "⏰", beschreibung: "Täglich 2 Min positive Zeit." }],
+                    elterninfo: {
+                        headline: "Was Eltern wissen sollten", icon: "👨‍👩‍👧",
+                        kernbotschaften: ["Das Kind macht das nicht absichtlich", "Professionelle Hilfe ist kein Versagen"],
+                        spezifisch: [], ressourcen: ["Erziehungsberatungsstellen"]
+                    }
+                };
+            }
+        };
+        window.ClinicalEngine = ClinicalEngine;
+
+        // === App.js Inline (Kurzversion) ===
+        let caseData = { grunddaten: { name: '', alter: '', geschlecht: '' }, hauptproblem: '', symptome: [], kontext: [], freitext: '' };
+        let analysisResult = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab Navigation
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.tab).classList.add('active');
+                });
+            });
+
+            // Akkordeons
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = document.getElementById(header.dataset.accordion);
+                    const icon = header.querySelector('.accordion-icon');
+                    const isActive = header.classList.contains('active');
+                    header.classList.toggle('active', !isActive);
+                    content.classList.toggle('open', !isActive);
+                    icon.textContent = isActive ? '+' : '−';
+                });
+            });
+
+            // Checkbox Counter
+            document.querySelectorAll('.accordion').forEach(acc => {
+                const header = acc.querySelector('.accordion-header');
+                const content = acc.querySelector('.accordion-content');
+                const badge = header.querySelector('.accordion-count');
+                content.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.addEventListener('change', () => {
+                        const count = content.querySelectorAll('input:checked').length;
+                        badge.textContent = count;
+                        badge.classList.toggle('has-items', count > 0);
+                    });
+                });
+            });
+
+            // Form Handler
+            const form = document.getElementById('case-form');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    updateCaseData();
+                    if (!caseData.grunddaten.alter) { alert('Bitte Alter angeben'); return; }
+                    if (!caseData.hauptproblem) { alert('Bitte Hauptproblem wählen'); return; }
+                    if (caseData.symptome.length < 1) { alert('Bitte mind. 1 Symptom wählen'); return; }
+
+                    const btn = form.querySelector('.btn-primary');
+                    btn.disabled = true;
+                    btn.innerHTML = 'Analysiere...';
+
+                    setTimeout(() => {
+                        analysisResult = ClinicalEngine.analyze(caseData);
+                        renderAnalysis(analysisResult);
+                        renderBedienungsanleitung(analysisResult);
+                        btn.disabled = false;
+                        btn.innerHTML = 'Analyse starten';
+                        document.querySelector('[data-tab="analyse"]').click();
+                    }, 500);
+                });
+            }
+
+            console.log('PädoPsych Advisor (Fallback) initialized');
+        });
+
+        function updateCaseData() {
+            const form = document.getElementById('case-form');
+            if (!form) return;
+            caseData.grunddaten.name = form.querySelector('#name')?.value || '';
+            caseData.grunddaten.alter = form.querySelector('#alter')?.value || '';
+            caseData.grunddaten.geschlecht = form.querySelector('#geschlecht')?.value || '';
+            const hp = form.querySelector('input[name="hauptproblem"]:checked');
+            caseData.hauptproblem = hp?.value || '';
+            caseData.symptome = Array.from(form.querySelectorAll('input[name="symptome[]"]:checked')).map(cb => cb.value);
+            caseData.kontext = Array.from(form.querySelectorAll('input[name="kontext[]"]:checked')).map(cb => cb.value);
+            caseData.freitext = form.querySelector('#freitext')?.value || '';
+        }
+
+        function renderAnalysis(result) {
+            const sum = document.getElementById('summary-container');
+            if (sum) sum.innerHTML = `<div class="summary-box"><p class="summary-text">${result.modell.zusammenfassung}</p></div>`;
+
+            const hyp = document.getElementById('hypotheses-container');
+            if (hyp && result.hypothesen.length > 0) {
+                hyp.innerHTML = result.hypothesen.map((h, i) => `
+                    <div class="hypothesis-card ${i === 0 ? 'primary' : ''}" style="--card-color: ${h.farbe}">
+                        <div class="hypothesis-header">
+                            <div class="hypothesis-rank">${i + 1}</div>
+                            <div class="hypothesis-info"><h4 class="hypothesis-name">${h.vollname}</h4><span class="hypothesis-icd">${h.icd10 || ''}</span></div>
+                            <div class="hypothesis-score"><span class="confidence-value">${h.konfidenz}%</span><div class="confidence-bar"><div class="confidence-fill" style="width:${h.konfidenz}%;background-color:${h.konfidenz >= 60 ? '#10b981' : '#f59e0b'}"></div></div></div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const diff = document.getElementById('differential-container');
+            if (diff) {
+                diff.innerHTML = result.differential.map(d => `<div class="differential-card ${d.typ}"><div class="differential-icon">${d.icon}</div><div class="differential-content"><h4 class="differential-title">${d.titel}</h4><p class="differential-text">${d.text}</p></div></div>`).join('');
+            }
+
+            const model = document.getElementById('model-container');
+            if (model) {
+                const bps = result.modell.biopsychosozial;
+                model.innerHTML = `<div class="bps-model"><div class="bps-section praedisponierend"><h4>Prädisponierend</h4><ul class="bps-list">${bps.praedisponierend.map(f => `<li>${f}</li>`).join('')}</ul></div><div class="bps-section protektiv"><h4>Protektiv</h4><ul class="bps-list">${bps.protektiv.map(f => `<li>${f}</li>`).join('')}</ul></div></div>`;
+            }
+        }
+
+        function renderBedienungsanleitung(result) {
+            const a = result.bedienungsanleitung;
+
+            const gh = document.getElementById('grundhaltung-container');
+            if (gh) gh.innerHTML = `<div class="grundhaltung-card"><div class="grundhaltung-icon">${a.grundhaltung.icon}</div><div class="grundhaltung-content"><h3 class="grundhaltung-leitsatz">"${a.grundhaltung.leitsatz}"</h3><p class="grundhaltung-erklaerung">${a.grundhaltung.erklaerung}</p><div class="mantra-box"><span class="mantra-label">Mantra:</span><p class="mantra-text">"${a.grundhaltung.mantra}"</p></div></div></div>`;
+
+            const amp = document.getElementById('ampel-container');
+            if (amp) amp.innerHTML = `<div class="ampel-grid"><div class="ampel-section gruen"><div class="ampel-header"><span class="ampel-light green"></span><h4>Grün</h4></div><ul class="ampel-list">${a.ampelsystem.gruen.map(s => `<li>${s.icon} ${s.signal}</li>`).join('')}</ul></div><div class="ampel-section gelb"><div class="ampel-header"><span class="ampel-light yellow"></span><h4>Gelb</h4></div><ul class="ampel-list">${a.ampelsystem.gelb.map(s => `<li>${s.icon} ${s.signal}</li>`).join('')}</ul></div><div class="ampel-section rot"><div class="ampel-header"><span class="ampel-light red"></span><h4>Rot</h4></div><ul class="ampel-list">${a.ampelsystem.rot.map(s => `<li>${s.icon} ${s.signal}</li>`).join('')}</ul></div></div>`;
+
+            const rez = document.getElementById('rezepte-container');
+            if (rez) rez.innerHTML = a.situationsrezepte.map(r => `<div class="rezept-accordion"><div class="rezept-header">${r.icon} ${r.situation}</div><div class="rezept-content open"><ul class="rezept-schritte">${r.reaktion.map(s => `<li class="${s.startsWith('NICHT') ? 'dont' : s.startsWith('STATT') ? 'do' : ''}">${s}</li>`).join('')}</ul></div></div>`).join('');
+
+            const dd = document.getElementById('dos-donts-container');
+            if (dd) dd.innerHTML = `<div class="dos-donts-grid"><div class="dos-section"><h4 class="dos-title">✓ Tu das</h4><ul class="dos-list">${a.dosAndDonts.tuDas.map(d => `<li class="dos-item"><span class="item-icon">${d.icon}</span><span class="item-text">${d.tipp}</span></li>`).join('')}</ul></div><div class="donts-section"><h4 class="donts-title">✗ Lass das</h4><ul class="donts-list">${a.dosAndDonts.lassDas.map(d => `<li class="donts-item"><span class="item-icon">${d.icon}</span><span class="item-text">${d.tipp}</span></li>`).join('')}</ul></div></div>`;
+
+            const nf = document.getElementById('notfall-container');
+            if (nf) nf.innerHTML = `<div class="notfall-card"><div class="notfall-header"><span class="notfall-icon">${a.notfallplan.icon}</span><h3 class="notfall-title">${a.notfallplan.titel}</h3></div><ol class="notfall-schritte">${a.notfallplan.schritte.map(s => `<li class="notfall-schritt"><span class="schritt-icon">${s.icon}</span><span class="schritt-text">${s.text}</span></li>`).join('')}</ol><div class="notfall-wichtig"><strong>⚠️</strong> ${a.notfallplan.wichtig}</div></div>`;
+
+            const bz = document.getElementById('beziehung-container');
+            if (bz) bz.innerHTML = `<div class="beziehung-grid">${a.beziehungstipps.map(t => `<div class="beziehung-card"><div class="beziehung-icon">${t.icon}</div><h4 class="beziehung-title">${t.tipp}</h4><p class="beziehung-text">${t.beschreibung}</p></div>`).join('')}</div>`;
+
+            const el = document.getElementById('eltern-container');
+            if (el) el.innerHTML = `<div class="eltern-card"><div class="eltern-header"><span class="eltern-icon">${a.elterninfo.icon}</span><h3 class="eltern-headline">${a.elterninfo.headline}</h3></div><div class="eltern-section"><h4>Kernbotschaften</h4><ul class="kern-liste">${a.elterninfo.kernbotschaften.map(k => `<li>${k}</li>`).join('')}</ul></div></div>`;
+        }
+
+        // Globale Funktionen
+        window.newCase = function() { location.reload(); };
+        window.toggleSavedCasesDropdown = function() { const d = document.getElementById('saved-cases-dropdown'); if(d) d.classList.toggle('open'); };
+        window.toggleDarkMode = function() { document.body.classList.toggle('dark-mode'); const btn = document.getElementById('dark-mode-btn'); if(btn) btn.innerHTML = document.body.classList.contains('dark-mode') ? '☀️' : '🌙'; };
+        window.exportAsText = function() { alert('Export-Funktion: Bitte drucken Sie die Seite (Strg+P) und wählen Sie "Als PDF speichern"'); };
+        window.printBedienungsanleitung = function() { window.print(); };
+    }
+    </script>
 </body>
 </html>
