@@ -11849,6 +11849,9 @@ function startAnalysis() {
 function renderAnalysis(result) {
     if (!result) return;
 
+    // Store full result for integrated synthesis access
+    window.currentAnalysisResult = result;
+
     // ACE Score
     renderACEScore(result.aceScore);
 
@@ -12010,6 +12013,510 @@ function toggleHypothesisDetails(id) {
 }
 
 /**
+ * Render Integrated Clinical Synthesis
+ * Professional case formulation integrating all theoretical perspectives
+ */
+function renderIntegratedSynthesis(synthese) {
+    if (!synthese) return '<p>Keine Synthese-Daten verfügbar</p>';
+
+    const bps = synthese.biopsychosozial || {};
+    const sys = synthese.systemisch || {};
+    const trauma = synthese.trauma || {};
+    const bindung = synthese.bindung || {};
+    const entwicklung = synthese.entwicklung || {};
+    const oeko = synthese.oekologisch || {};
+    const resilienz = synthese.resilienz || {};
+
+    // Get current analysis result for additional context
+    const result = window.currentAnalysisResult || {};
+    const grunddaten = result.grunddaten || {};
+    const hypothesen = result.hypothesen || [];
+    const risikoprofil = result.risikoprofil || {};
+    const aceScore = result.aceScore || {};
+
+    // Build the integrated clinical formulation
+    let html = `
+        <div class="integrated-synthesis">
+            <div class="tool-info-box scientific-box" style="margin-bottom: 20px;">
+                <h4>📋 Ganzheitliche klinische Fallkonzeption</h4>
+                <p>Diese Synthese integriert alle theoretischen Perspektiven zu einem kohärenten klinischen Verständnis,
+                wie es in der kinder- und jugendpsychiatrischen Praxis üblich ist. Die Fallkonzeption folgt dem
+                <strong>multiaxialen Klassifikationsschema (MAS)</strong> und berücksichtigt ätiologische,
+                aufrechterhaltende und protektive Faktoren.</p>
+            </div>
+
+            <!-- 1. DESKRIPTIVE ZUSAMMENFASSUNG -->
+            <div class="synthesis-section" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #0284c7;">
+                <h3 style="margin: 0 0 16px; color: #0369a1;">📝 1. Deskriptive Zusammenfassung</h3>
+                <div style="font-size: 0.95rem; line-height: 1.7;">
+                    ${generateDescriptiveSummary(grunddaten, hypothesen, bps)}
+                </div>
+            </div>
+
+            <!-- 2. ÄTIOLOGISCHES MODELL -->
+            <div class="synthesis-section" style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #d97706;">
+                <h3 style="margin: 0 0 16px; color: #92400e;">🔍 2. Ätiologisches Verständnis</h3>
+                <div style="font-size: 0.95rem; line-height: 1.7;">
+                    ${generateEtiologicalModel(bps, trauma, bindung, entwicklung, aceScore)}
+                </div>
+            </div>
+
+            <!-- 3. AUFRECHTERHALTENDE FAKTOREN -->
+            <div class="synthesis-section" style="background: linear-gradient(135deg, #fee2e2, #fecaca); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
+                <h3 style="margin: 0 0 16px; color: #991b1b;">🔄 3. Aufrechterhaltende Faktoren</h3>
+                <div style="font-size: 0.95rem; line-height: 1.7;">
+                    ${generateMaintainingFactors(bps, sys, oeko)}
+                </div>
+            </div>
+
+            <!-- 4. SCHUTZFAKTOREN & RESSOURCEN -->
+            <div class="synthesis-section" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #059669;">
+                <h3 style="margin: 0 0 16px; color: #047857;">💪 4. Schutzfaktoren & Ressourcen</h3>
+                <div style="font-size: 0.95rem; line-height: 1.7;">
+                    ${generateProtectiveFactors(resilienz, oeko)}
+                </div>
+            </div>
+
+            <!-- 5. DIAGNOSTISCHE EINORDNUNG -->
+            <div class="synthesis-section" style="background: linear-gradient(135deg, #ede9fe, #ddd6fe); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #7c3aed;">
+                <h3 style="margin: 0 0 16px; color: #5b21b6;">🏥 5. Diagnostische Einordnung</h3>
+                <div style="font-size: 0.95rem; line-height: 1.7;">
+                    ${generateDiagnosticFormulation(hypothesen, entwicklung, risikoprofil)}
+                </div>
+            </div>
+
+            <!-- 6. INTEGRIERTE FALLHYPOTHESE -->
+            <div class="synthesis-section" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #475569;">
+                <h3 style="margin: 0 0 16px; color: #1e293b;">🎯 6. Integrierte Fallhypothese</h3>
+                <div style="font-size: 0.95rem; line-height: 1.7; font-style: italic; background: white; padding: 16px; border-radius: 8px; border-left: 4px solid #6366f1;">
+                    ${generateIntegratedHypothesis(grunddaten, hypothesen, bps, trauma, bindung, sys, resilienz)}
+                </div>
+            </div>
+
+            <!-- 7. BEHANDLUNGSIMPLIKATIONEN -->
+            <div class="synthesis-section" style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #10b981;">
+                <h3 style="margin: 0 0 16px; color: #065f46;">💊 7. Behandlungsimplikationen</h3>
+                <div style="font-size: 0.95rem; line-height: 1.7;">
+                    ${generateTreatmentImplications(hypothesen, bps, trauma, bindung, sys, grunddaten)}
+                </div>
+            </div>
+
+            <!-- 8. PROGNOSE -->
+            <div class="synthesis-section" style="background: linear-gradient(135deg, #f0f9ff, #dbeafe); padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6;">
+                <h3 style="margin: 0 0 16px; color: #1d4ed8;">📊 8. Prognostische Einschätzung</h3>
+                <div style="font-size: 0.95rem; line-height: 1.7;">
+                    ${generatePrognosis(resilienz, risikoprofil, aceScore, hypothesen)}
+                </div>
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+// Helper functions for integrated synthesis
+
+function generateDescriptiveSummary(grunddaten, hypothesen, bps) {
+    const alter = grunddaten.alter;
+    const geschlecht = grunddaten.geschlecht;
+    const geschlechtText = geschlecht === 'weiblich' ? 'Mädchen' : geschlecht === 'männlich' ? 'Junge' : 'Kind/Jugendliche(r)';
+    const anlass = grunddaten.vorstellungsanlass || 'verschiedener Auffälligkeiten';
+
+    let text = `<p>Es handelt sich um ${alter ? 'ein ' + alter + '-jähriges' : 'ein'} <strong>${geschlechtText}</strong>, `;
+    text += `das/der wegen <strong>${anlass}</strong> vorgestellt wird.</p>`;
+
+    if (hypothesen.length > 0) {
+        text += `<p>Die klinische Analyse ergibt <strong>Hinweise auf ${hypothesen[0].label}</strong> (Konfidenz: ${hypothesen[0].konfidenz}%). `;
+        if (hypothesen.length > 1) {
+            text += `Differentialdiagnostisch sind <strong>${hypothesen.slice(1, 4).map(h => h.label).join(', ')}</strong> zu erwägen.</p>`;
+        } else {
+            text += '</p>';
+        }
+    }
+
+    // Phänomenologie
+    const allSymptoms = [...(bps.biologisch || []), ...(bps.psychologisch || [])].slice(0, 5);
+    if (allSymptoms.length > 0) {
+        text += `<p><strong>Phänomenologie:</strong> ${allSymptoms.map(s => typeof s === 'object' ? s.faktor : s).join(', ')}.</p>`;
+    }
+
+    return text;
+}
+
+function generateEtiologicalModel(bps, trauma, bindung, entwicklung, aceScore) {
+    let text = '<p><strong>Prädisponierende Faktoren:</strong></p><ul>';
+
+    // Biologische Vulnerabilität
+    const bioFactors = (bps.biologisch || []).filter(f => {
+        const fText = typeof f === 'object' ? f.faktor : f;
+        return fText.toLowerCase().includes('genetik') || fText.toLowerCase().includes('familiär') ||
+               fText.toLowerCase().includes('neurobiolog') || fText.toLowerCase().includes('perinatal');
+    });
+    if (bioFactors.length > 0) {
+        text += `<li><strong>Biologische Vulnerabilität:</strong> ${bioFactors.map(f => typeof f === 'object' ? f.faktor : f).join(', ')}</li>`;
+    }
+
+    // Frühe Bindungserfahrungen
+    if (bindung.früheFaktoren && bindung.früheFaktoren.length > 0) {
+        text += `<li><strong>Frühe Bindungserfahrungen:</strong> ${bindung.früheFaktoren.slice(0, 3).join(', ')}</li>`;
+    }
+    if (bindung.einschätzung?.muster) {
+        text += `<li><strong>Bindungsmuster:</strong> ${bindung.einschätzung.muster} - ${bindung.einschätzung.beschreibung || ''}</li>`;
+    }
+
+    // Trauma/ACE
+    if (trauma.relevant && aceScore.score > 0) {
+        text += `<li><strong>Belastende Kindheitserfahrungen (ACE):</strong> Score ${aceScore.score}/10 - ${aceScore.interpretation}</li>`;
+        if (trauma.traumatyp && trauma.traumatyp.length > 0) {
+            text += `<li><strong>Trauma-Typ:</strong> ${trauma.traumatyp.map(t => t.typ + (t.beschreibung ? ' (' + t.beschreibung + ')' : '')).join(', ')}</li>`;
+        }
+    }
+
+    // Entwicklungsaspekte
+    if (entwicklung.entwicklungsphase) {
+        text += `<li><strong>Entwicklungsphase:</strong> ${entwicklung.entwicklungsphase}`;
+        if (entwicklung.auffälligkeiten && entwicklung.auffälligkeiten.length > 0) {
+            text += ` - Auffälligkeiten: ${entwicklung.auffälligkeiten.join(', ')}`;
+        }
+        text += '</li>';
+    }
+
+    text += '</ul>';
+
+    // Auslösende Faktoren
+    text += '<p><strong>Auslösende Faktoren (Trigger):</strong></p>';
+    if (trauma.trigger && trauma.trigger.length > 0) {
+        text += `<ul>${trauma.trigger.map(t => '<li>' + t + '</li>').join('')}</ul>`;
+    } else {
+        text += '<p style="color: #64748b; font-style: italic;">Keine spezifischen Trigger dokumentiert. Im Gespräch explorieren.</p>';
+    }
+
+    return text;
+}
+
+function generateMaintainingFactors(bps, sys, oeko) {
+    let text = '<p>Folgende Faktoren können zur Aufrechterhaltung der Symptomatik beitragen:</p><ul>';
+
+    // Psychologische aufrechterhaltende Faktoren
+    const psychoFactors = (bps.psychologisch || []).filter(f => {
+        const fText = typeof f === 'object' ? f.faktor : f;
+        return fText.toLowerCase().includes('vermeidung') || fText.toLowerCase().includes('grübel') ||
+               fText.toLowerCase().includes('negativ') || fText.toLowerCase().includes('coping') ||
+               fText.toLowerCase().includes('selbstwert') || fText.toLowerCase().includes('schema');
+    });
+    if (psychoFactors.length > 0) {
+        text += `<li><strong>Intrapsychisch:</strong> ${psychoFactors.map(f => typeof f === 'object' ? f.faktor : f).join(', ')}</li>`;
+    }
+
+    // Systemische/Familiäre Faktoren
+    if (sys.aspekte && sys.aspekte.length > 0) {
+        const relevantAspekte = sys.aspekte.filter(a =>
+            a.name.toLowerCase().includes('konflikt') || a.name.toLowerCase().includes('kommunikation') ||
+            a.name.toLowerCase().includes('dynamik') || a.name.toLowerCase().includes('triangul')
+        );
+        if (relevantAspekte.length > 0) {
+            text += `<li><strong>Familiendynamik:</strong> ${relevantAspekte.map(a => a.name + ' - ' + a.inhalt).join('; ')}</li>`;
+        }
+    }
+
+    // Soziale/Ökologische Faktoren
+    const sozialFactors = (bps.sozial || []).filter(f => {
+        const fText = typeof f === 'object' ? f.faktor : f;
+        return fText.toLowerCase().includes('mobbing') || fText.toLowerCase().includes('isolation') ||
+               fText.toLowerCase().includes('konflikt') || fText.toLowerCase().includes('schul');
+    });
+    if (sozialFactors.length > 0) {
+        text += `<li><strong>Soziales Umfeld:</strong> ${sozialFactors.map(f => typeof f === 'object' ? f.faktor : f).join(', ')}</li>`;
+    }
+
+    // Verstärkermechanismen
+    text += `<li><strong>Mögliche Verstärkermechanismen:</strong> Sekundärer Krankheitsgewinn (z.B. Aufmerksamkeit, Vermeidung),
+             negative Verstärkung durch Angstreduktion bei Vermeidung, positive Verstärkung problematischer Verhaltensweisen
+             durch Umfeld (genauer zu explorieren)</li>`;
+
+    text += '</ul>';
+
+    return text;
+}
+
+function generateProtectiveFactors(resilienz, oeko) {
+    let text = '<p>Identifizierte Schutzfaktoren und Ressourcen:</p>';
+
+    text += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px;">';
+
+    // Individuelle Ressourcen
+    text += '<div style="background: white; padding: 12px; border-radius: 8px;">';
+    text += '<h4 style="margin: 0 0 8px; font-size: 0.9rem; color: #059669;">💪 Individuell</h4>';
+    if (resilienz.individuell && resilienz.individuell.length > 0) {
+        text += '<ul style="margin: 0; padding-left: 16px; font-size: 0.85rem;">' +
+                resilienz.individuell.map(r => '<li>' + r + '</li>').join('') + '</ul>';
+    } else {
+        text += '<p style="font-size: 0.85rem; color: #64748b;">Noch zu explorieren</p>';
+    }
+    text += '</div>';
+
+    // Familiäre Ressourcen
+    text += '<div style="background: white; padding: 12px; border-radius: 8px;">';
+    text += '<h4 style="margin: 0 0 8px; font-size: 0.9rem; color: #059669;">👨‍👩‍👧 Familiär</h4>';
+    if (resilienz.familiär && resilienz.familiär.length > 0) {
+        text += '<ul style="margin: 0; padding-left: 16px; font-size: 0.85rem;">' +
+                resilienz.familiär.map(r => '<li>' + r + '</li>').join('') + '</ul>';
+    } else {
+        text += '<p style="font-size: 0.85rem; color: #64748b;">Noch zu explorieren</p>';
+    }
+    text += '</div>';
+
+    // Soziale Ressourcen
+    text += '<div style="background: white; padding: 12px; border-radius: 8px;">';
+    text += '<h4 style="margin: 0 0 8px; font-size: 0.9rem; color: #059669;">🌍 Sozial</h4>';
+    if (resilienz.sozial && resilienz.sozial.length > 0) {
+        text += '<ul style="margin: 0; padding-left: 16px; font-size: 0.85rem;">' +
+                resilienz.sozial.map(r => '<li>' + r + '</li>').join('') + '</ul>';
+    } else {
+        text += '<p style="font-size: 0.85rem; color: #64748b;">Noch zu explorieren</p>';
+    }
+    text += '</div>';
+
+    text += '</div>';
+
+    if (resilienz.gesamtbewertung) {
+        text += `<p style="margin-top: 12px;"><strong>Gesamteinschätzung:</strong> ${resilienz.gesamtbewertung}</p>`;
+    }
+
+    return text;
+}
+
+function generateDiagnosticFormulation(hypothesen, entwicklung, risikoprofil) {
+    let text = '<p><strong>Arbeitshypothesen nach ICD-10/DSM-5:</strong></p>';
+
+    if (hypothesen.length > 0) {
+        text += '<table style="width: 100%; border-collapse: collapse; margin: 12px 0;">';
+        text += '<thead><tr style="background: #f1f5f9;">';
+        text += '<th style="padding: 8px; text-align: left; border-bottom: 2px solid #cbd5e1;">Diagnose</th>';
+        text += '<th style="padding: 8px; text-align: center; border-bottom: 2px solid #cbd5e1;">Konfidenz</th>';
+        text += '<th style="padding: 8px; text-align: left; border-bottom: 2px solid #cbd5e1;">Begründung</th>';
+        text += '</tr></thead><tbody>';
+
+        hypothesen.slice(0, 5).forEach((h, i) => {
+            const bgColor = i === 0 ? '#ecfdf5' : 'white';
+            text += `<tr style="background: ${bgColor};">`;
+            text += `<td style="padding: 8px; border-bottom: 1px solid #e2e8f0;"><strong>${h.label}</strong>${h.code ? ' (' + h.code + ')' : ''}</td>`;
+            text += `<td style="padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0;">${h.konfidenz}%</td>`;
+            text += `<td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem;">${h.begründung || h.beschreibung || '-'}</td>`;
+            text += '</tr>';
+        });
+
+        text += '</tbody></table>';
+    }
+
+    // Entwicklungsdiagnostik
+    if (entwicklung.einschätzung) {
+        text += `<p><strong>Entwicklungsdiagnostische Einordnung:</strong> ${entwicklung.einschätzung}</p>`;
+    }
+
+    // Risikoeinschätzung
+    if (risikoprofil.dringlichkeit) {
+        const dringlichkeitColor = risikoprofil.dringlichkeit === 'sofort' ? '#dc2626' :
+                                   risikoprofil.dringlichkeit === 'hoch' ? '#ea580c' : '#059669';
+        text += `<p><strong>Risikoeinschätzung:</strong> <span style="color: ${dringlichkeitColor}; font-weight: bold;">${risikoprofil.dringlichkeit.toUpperCase()}</span>`;
+        if (risikoprofil.akut && risikoprofil.akut.length > 0) {
+            text += ` - Akute Risiken: ${risikoprofil.akut.map(r => r.label).join(', ')}`;
+        }
+        text += '</p>';
+    }
+
+    return text;
+}
+
+function generateIntegratedHypothesis(grunddaten, hypothesen, bps, trauma, bindung, sys, resilienz) {
+    const alter = grunddaten.alter || '?';
+    const geschlecht = grunddaten.geschlecht === 'weiblich' ? 'das Mädchen' :
+                       grunddaten.geschlecht === 'männlich' ? 'der Junge' : 'das Kind/der Jugendliche';
+    const hauptdiagnose = hypothesen[0]?.label || 'die vorliegende Symptomatik';
+
+    let text = `<p>Im Sinne einer integrativen Fallhypothese lässt sich das klinische Bild wie folgt verstehen:</p>`;
+
+    text += `<p>${geschlecht.charAt(0).toUpperCase() + geschlecht.slice(1)} (${alter} Jahre) zeigt ${hauptdiagnose}`;
+
+    // Ätiologische Einbettung
+    const hasTrauma = trauma.relevant && trauma.aceScore > 0;
+    const hasBindungsprobleme = bindung.einschätzung?.muster?.toLowerCase().includes('unsicher') ||
+                                bindung.einschätzung?.muster?.toLowerCase().includes('desorganis');
+    const hasFamilydynamik = sys.aspekte && sys.aspekte.length > 0;
+
+    if (hasTrauma || hasBindungsprobleme || hasFamilydynamik) {
+        text += ', die sich ';
+        const explanations = [];
+
+        if (hasTrauma) {
+            explanations.push(`vor dem Hintergrund belastender Kindheitserfahrungen (ACE-Score: ${trauma.aceScore}/10)`);
+        }
+        if (hasBindungsprobleme) {
+            explanations.push(`bei ${bindung.einschätzung.muster}`);
+        }
+        if (hasFamilydynamik) {
+            explanations.push('im Kontext familiärer Belastungsfaktoren');
+        }
+
+        text += explanations.join(' und ') + ' entwickelt hat';
+    }
+    text += '.</p>';
+
+    // Aufrechterhaltung
+    text += `<p>Die Symptomatik wird vermutlich aufrechterhalten durch ein Zusammenspiel aus `;
+    const maintainers = [];
+
+    if ((bps.psychologisch || []).length > 0) {
+        maintainers.push('intrapsychischen Faktoren (dysfunktionale Kognitionen, maladaptive Copingstrategien)');
+    }
+    if (hasFamilydynamik) {
+        maintainers.push('familiären Interaktionsmustern');
+    }
+    if ((bps.sozial || []).some(s => (typeof s === 'object' ? s.faktor : s).toLowerCase().includes('schul') ||
+                                     (typeof s === 'object' ? s.faktor : s).toLowerCase().includes('peer'))) {
+        maintainers.push('schulischen/sozialen Stressoren');
+    }
+
+    text += maintainers.length > 0 ? maintainers.join(', ') : 'verschiedenen Faktoren (weiter zu explorieren)';
+    text += '.</p>';
+
+    // Ressourcen und Prognose
+    const totalRessourcen = (resilienz.individuell?.length || 0) + (resilienz.familiär?.length || 0) + (resilienz.sozial?.length || 0);
+    if (totalRessourcen > 0) {
+        text += `<p>Als protektive Faktoren können ${totalRessourcen} identifizierte Ressourcen genutzt werden, `;
+        text += 'was die Prognose bei adäquater Behandlung günstig beeinflusst.</p>';
+    }
+
+    return text;
+}
+
+function generateTreatmentImplications(hypothesen, bps, trauma, bindung, sys, grunddaten) {
+    const alter = parseInt(grunddaten.alter) || 12;
+    let text = '<p><strong>Aus der Fallkonzeption ergeben sich folgende Behandlungsimplikationen:</strong></p>';
+
+    text += '<div style="display: grid; gap: 12px; margin-top: 12px;">';
+
+    // 1. Setting
+    text += '<div style="background: white; padding: 12px; border-radius: 8px; border-left: 3px solid #3b82f6;">';
+    text += '<h4 style="margin: 0 0 8px; font-size: 0.9rem;">🏥 Setting</h4>';
+    text += `<p style="margin: 0; font-size: 0.85rem;">Empfohlen: ${alter < 12 ? 'Ambulante Kinder- und Jugendlichenpsychotherapie mit starker Elternarbeit' : 'Ambulante Psychotherapie, ggf. teilstationär bei schwerer Ausprägung'}.</p>`;
+    text += '</div>';
+
+    // 2. Therapieverfahren
+    text += '<div style="background: white; padding: 12px; border-radius: 8px; border-left: 3px solid #8b5cf6;">';
+    text += '<h4 style="margin: 0 0 8px; font-size: 0.9rem;">💭 Therapieverfahren</h4>';
+    text += '<ul style="margin: 0; padding-left: 16px; font-size: 0.85rem;">';
+
+    if (hypothesen.some(h => ['depression', 'angststörung', 'sozialePhobie'].includes(h.id))) {
+        text += '<li><strong>Kognitive Verhaltenstherapie (KVT):</strong> Evidenzbasiert für Angst und Depression im Kindes-/Jugendalter</li>';
+    }
+    if (trauma.relevant) {
+        text += '<li><strong>Traumafokussierte Therapie:</strong> TF-KVT, EMDR oder narrative Expositionstherapie</li>';
+    }
+    if (bindung.einschätzung?.muster?.toLowerCase().includes('unsicher')) {
+        text += '<li><strong>Bindungsbasierte Interventionen:</strong> Therapie muss sichere therapeutische Beziehung priorisieren</li>';
+    }
+    if (sys.familientherapie || (sys.aspekte && sys.aspekte.length > 2)) {
+        text += '<li><strong>Familientherapie:</strong> Systemische Arbeit zur Veränderung dysfunktionaler Muster</li>';
+    }
+    if (alter < 10) {
+        text += '<li><strong>Spieltherapie/Eltern-Kind-Therapie:</strong> Altersgerechte Verfahren</li>';
+    }
+
+    text += '</ul></div>';
+
+    // 3. Spezifische Interventionen
+    text += '<div style="background: white; padding: 12px; border-radius: 8px; border-left: 3px solid #059669;">';
+    text += '<h4 style="margin: 0 0 8px; font-size: 0.9rem;">🎯 Fokusthemen</h4>';
+    text += '<ul style="margin: 0; padding-left: 16px; font-size: 0.85rem;">';
+
+    if ((bps.psychologisch || []).some(p => (typeof p === 'object' ? p.faktor : p).toLowerCase().includes('selbstwert'))) {
+        text += '<li>Aufbau von Selbstwert und Selbstwirksamkeit</li>';
+    }
+    if ((bps.psychologisch || []).some(p => (typeof p === 'object' ? p.faktor : p).toLowerCase().includes('emotion'))) {
+        text += '<li>Training der Emotionsregulation (DBT-Skills)</li>';
+    }
+    if ((bps.sozial || []).some(s => (typeof s === 'object' ? s.faktor : s).toLowerCase().includes('sozial'))) {
+        text += '<li>Soziales Kompetenztraining</li>';
+    }
+    text += '<li>Psychoedukation für Kind/Jugendlichen und Eltern</li>';
+    text += '<li>Rückfallprophylaxe und Stabilisierung</li>';
+
+    text += '</ul></div>';
+
+    // 4. Elternarbeit
+    text += '<div style="background: white; padding: 12px; border-radius: 8px; border-left: 3px solid #f59e0b;">';
+    text += '<h4 style="margin: 0 0 8px; font-size: 0.9rem;">👨‍👩‍👧 Elternarbeit</h4>';
+    text += '<ul style="margin: 0; padding-left: 16px; font-size: 0.85rem;">';
+    text += '<li>Psychoedukation über Störungsbild und Behandlung</li>';
+    text += '<li>Elternberatung/-training zur Unterstützung des Therapieprozesses</li>';
+    if (alter < 12) {
+        text += '<li>Intensive Elterneinbindung (mind. 50% der Therapiezeit)</li>';
+    }
+    text += '</ul></div>';
+
+    text += '</div>';
+
+    return text;
+}
+
+function generatePrognosis(resilienz, risikoprofil, aceScore, hypothesen) {
+    const totalRessourcen = (resilienz.individuell?.length || 0) + (resilienz.familiär?.length || 0) + (resilienz.sozial?.length || 0);
+    const aceRisk = aceScore.score >= 4 ? 'hoch' : aceScore.score >= 2 ? 'moderat' : 'niedrig';
+    const chronicity = risikoprofil.chronisch?.length >= 3 ? 'chronisch' : 'akut';
+
+    let text = '<p><strong>Prognostische Faktoren:</strong></p>';
+
+    text += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;">';
+
+    // Günstige Faktoren
+    text += '<div style="background: #d1fae5; padding: 12px; border-radius: 8px;">';
+    text += '<h4 style="margin: 0 0 8px; color: #059669; font-size: 0.9rem;">✓ Günstig</h4>';
+    text += '<ul style="margin: 0; padding-left: 16px; font-size: 0.85rem;">';
+    if (totalRessourcen >= 5) text += '<li>Gute Ressourcenausstattung</li>';
+    if (aceScore.score < 4) text += '<li>Überschaubare Belastungsanamnese</li>';
+    if (hypothesen[0]?.konfidenz >= 70) text += '<li>Klares diagnostisches Bild</li>';
+    if (resilienz.familiär?.length >= 2) text += '<li>Familiäre Unterstützung vorhanden</li>';
+    text += '<li>Behandlungsmotivation (zu prüfen)</li>';
+    text += '</ul></div>';
+
+    // Ungünstige Faktoren
+    text += '<div style="background: #fee2e2; padding: 12px; border-radius: 8px;">';
+    text += '<h4 style="margin: 0 0 8px; color: #dc2626; font-size: 0.9rem;">✗ Ungünstig</h4>';
+    text += '<ul style="margin: 0; padding-left: 16px; font-size: 0.85rem;">';
+    if (aceScore.score >= 4) text += '<li>Hohe ACE-Belastung</li>';
+    if (chronicity === 'chronisch') text += '<li>Chronifizierungszeichen</li>';
+    if (risikoprofil.akut?.length > 0) text += '<li>Akute Risikofaktoren</li>';
+    if (hypothesen.length >= 3) text += '<li>Hohe Komorbidität</li>';
+    if (totalRessourcen < 3) text += '<li>Eingeschränkte Ressourcen</li>';
+    text += '</ul></div>';
+
+    text += '</div>';
+
+    // Gesamteinschätzung
+    let prognose = 'moderat';
+    if (totalRessourcen >= 5 && aceScore.score < 4 && risikoprofil.akut?.length === 0) {
+        prognose = 'günstig';
+    } else if (aceScore.score >= 6 || risikoprofil.akut?.length >= 2 || totalRessourcen < 2) {
+        prognose = 'vorsichtig';
+    }
+
+    const prognoseColor = prognose === 'günstig' ? '#059669' : prognose === 'vorsichtig' ? '#dc2626' : '#d97706';
+    text += `<p style="margin-top: 12px;"><strong>Gesamtprognose:</strong> <span style="color: ${prognoseColor}; font-weight: bold;">${prognose.toUpperCase()}</span> `;
+
+    if (prognose === 'günstig') {
+        text += '- Bei adäquater Behandlung und guter Compliance ist von einer deutlichen Symptomreduktion auszugehen.';
+    } else if (prognose === 'vorsichtig') {
+        text += '- Aufgrund der Belastungsfaktoren ist ein längerer Behandlungsverlauf zu erwarten. Engmaschige Verlaufskontrollen empfohlen.';
+    } else {
+        text += '- Bei kontinuierlicher Behandlung und Stärkung der Schutzfaktoren ist eine Stabilisierung erreichbar.';
+    }
+    text += '</p>';
+
+    return text;
+}
+
+/**
  * Render Multi-Model Synthesis
  */
 function renderSynthese(synthese) {
@@ -12017,6 +12524,7 @@ function renderSynthese(synthese) {
     if (!container || !synthese) return;
 
     const models = [
+        { key: 'integriert', icon: '🎯', title: 'Ganzheitliche Fallkonzeption' },
         { key: 'biopsychosozial', icon: '🧬', title: 'Bio-Psycho-Soziales Modell' },
         { key: 'systemisch', icon: '👨‍👩‍👧', title: 'Systemische Perspektive' },
         { key: 'trauma', icon: '💔', title: 'Trauma-Perspektive' },
@@ -12025,6 +12533,9 @@ function renderSynthese(synthese) {
         { key: 'oekologisch', icon: '🌍', title: 'Ökologisches Modell' },
         { key: 'resilienz', icon: '💪', title: 'Resilienz-Profil' }
     ];
+
+    // Store full synthese for integrated view
+    window.currentSynthese = synthese;
 
     let html = '<div class="synthese-tabs">';
     models.forEach((m, i) => {
@@ -12038,7 +12549,8 @@ function renderSynthese(synthese) {
     html += '</div><div class="synthese-content">';
 
     models.forEach((m, i) => {
-        const data = synthese[m.key];
+        // For integrated view, pass full synthese; otherwise pass specific model data
+        const data = m.key === 'integriert' ? synthese : synthese[m.key];
         html += `
             <div class="synthese-panel ${i === 0 ? 'active' : ''}" id="synthese-${m.key}">
                 ${renderSyntheseContent(m.key, data)}
@@ -12080,6 +12592,13 @@ function renderSyntheseContent(key, data) {
         if (!items || items.length === 0) return '<li class="empty-item">Keine Faktoren identifiziert</li>';
         return items.map(f => `<li>${formatFaktor(f)}</li>`).join('');
     };
+
+    // ============================================================
+    // GANZHEITLICHE FALLKONZEPTION (Integrierte Synthese)
+    // ============================================================
+    if (key === 'integriert') {
+        return renderIntegratedSynthesis(data);
+    }
 
     if (key === 'biopsychosozial') {
         // Count factors for visual sizing
