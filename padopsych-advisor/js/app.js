@@ -144,14 +144,36 @@ function initializeCaseData() {
 function generateDynamicForm() {
     const formContainer = document.getElementById('dynamic-form-container');
     if (!formContainer) {
-        console.error('dynamic-form-container not found');
+        console.error('[FORM] dynamic-form-container not found');
         return;
     }
 
+    console.log('[FORM] Checking CLINICAL_KNOWLEDGE...');
+    console.log('[FORM] typeof CLINICAL_KNOWLEDGE:', typeof CLINICAL_KNOWLEDGE);
+
     if (typeof CLINICAL_KNOWLEDGE === 'undefined') {
-        formContainer.innerHTML = '<div class="error-box">Wissensbasis nicht geladen</div>';
+        console.error('[FORM] CLINICAL_KNOWLEDGE is undefined!');
+        formContainer.innerHTML = `
+            <div style="padding: 40px; text-align: center; background: #fef2f2; border: 2px solid #ef4444; border-radius: 12px; margin: 20px;">
+                <h3 style="color: #ef4444; margin-bottom: 16px;">⚠️ Wissensbasis nicht geladen</h3>
+                <p style="margin-bottom: 12px;">Die Datei <code>clinical-knowledge.js</code> konnte nicht geladen werden.</p>
+                <p style="margin-bottom: 12px;"><strong>Mögliche Ursachen:</strong></p>
+                <ul style="text-align: left; max-width: 500px; margin: 0 auto 16px;">
+                    <li>Sie öffnen die Datei direkt im Browser (file://)</li>
+                    <li>Der Browser blockiert lokale JavaScript-Dateien</li>
+                </ul>
+                <p style="margin-bottom: 16px;"><strong>Lösung:</strong> Verwenden Sie einen lokalen Server:</p>
+                <code style="display: block; padding: 12px; background: #1e293b; color: #22c55e; border-radius: 8px; margin-bottom: 16px;">
+                    npx serve . <br>
+                    oder: python -m http.server 8000
+                </code>
+                <p>Dann öffnen Sie <a href="http://localhost:8000" style="color: #6366f1;">http://localhost:8000</a></p>
+            </div>
+        `;
         return;
     }
+
+    console.log('[FORM] CLINICAL_KNOWLEDGE loaded, sections:', Object.keys(CLINICAL_KNOWLEDGE));
 
     let html = '';
 
