@@ -7201,6 +7201,31 @@ const FamilyToolsModule = {
             <div class="family-tools-container">
                 <h3>🌳 Genogramm-Builder</h3>
 
+                <div class="tool-info-box scientific-box" style="margin-bottom: 20px;">
+                    <h4>📚 Was ist ein Genogramm?</h4>
+                    <p><strong>Entwickelt von Murray Bowen</strong> (1978) als Werkzeug der systemischen Familientherapie.</p>
+                    <div style="margin: 12px 0; font-size: 0.9rem;">
+                        <p><strong>Definition:</strong> Ein Genogramm ist eine grafische Darstellung der Familienstruktur über mindestens 3 Generationen. Es zeigt nicht nur Verwandtschaftsbeziehungen, sondern auch emotionale Muster, Krankheiten und Beziehungsqualitäten.</p>
+                        <p><strong>Standardsymbole (nach McGoldrick & Gerson):</strong></p>
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                            <li><strong>□ Quadrat:</strong> Männlich</li>
+                            <li><strong>○ Kreis:</strong> Weiblich</li>
+                            <li><strong>◇ Raute:</strong> Divers/Unbekannt</li>
+                            <li><strong>✕ durch Symbol:</strong> Verstorben</li>
+                            <li><strong>Doppelpfeil (⟁):</strong> Indexpatient (der Patient, um den es geht)</li>
+                            <li><strong>Schattierung:</strong> Psychische Erkrankung oder Sucht</li>
+                        </ul>
+                        <p><strong>Klinischer Nutzen:</strong></p>
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                            <li>Erkennen von <em>transgenerationalen Mustern</em> (z.B. Depression, Sucht, Suizide über Generationen)</li>
+                            <li>Visualisierung von <em>Familiendynamiken</em> und Beziehungsqualitäten</li>
+                            <li>Identifikation von <em>Ressourcen</em> und <em>Belastungen</em> im Familiensystem</li>
+                            <li>Grundlage für <em>systemische Hypothesen</em></li>
+                        </ul>
+                    </div>
+                    <p class="reference" style="font-size: 0.8rem; color: #64748b;">McGoldrick, M., Gerson, R. & Petry, S. (2020). Genograms: Assessment and Treatment (4th ed.). Norton.</p>
+                </div>
+
                 <div class="genogramm-toolbar">
                     <button type="button" onclick="FamilyToolsModule.addPerson('maennlich')" class="btn-tool">
                         □ Männlich
@@ -7301,6 +7326,24 @@ const FamilyToolsModule = {
         let html = `
             <div class="ressourcen-container">
                 <h3>💪 Familienressourcen-Assessment</h3>
+
+                <div class="tool-info-box scientific-box" style="margin-bottom: 20px;">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p><strong>Basiert auf der Family Resilience Framework</strong> (Walsh, 2006) und Ressourcenorientierung in der Familientherapie.</p>
+                    <div style="margin: 12px 0; font-size: 0.9rem;">
+                        <p><strong>Grundprinzip:</strong> Familien verfügen über Ressourcen auf verschiedenen Ebenen, die als Schutzfaktoren wirken und die Resilienz des Kindes stärken.</p>
+                        <p><strong>4 Ressourcen-Kategorien:</strong></p>
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                            <li><strong>🏠 Strukturell:</strong> Stabile Wohnsituation, finanzielle Sicherheit, Tagesstruktur</li>
+                            <li><strong>👨‍👩‍👧‍👦 Relational:</strong> Positive Eltern-Kind-Beziehung, Familienzusammenhalt, unterstützende Großeltern</li>
+                            <li><strong>💬 Kommunikativ:</strong> Offene Kommunikation, Problemlösefähigkeit, Konfliktkultur</li>
+                            <li><strong>🌍 Kulturell:</strong> Wertvorstellungen, Rituale, Zugehörigkeit zu Gemeinschaft</li>
+                        </ul>
+                        <p><strong>Klinischer Nutzen:</strong> Identifikation von Stärken für ressourcenorientierte Interventionen.</p>
+                    </div>
+                    <p class="reference" style="font-size: 0.8rem; color: #64748b;">Walsh, F. (2006). Strengthening Family Resilience (2nd ed.). Guilford Press.</p>
+                </div>
+
                 <p class="info-text">Erfassen Sie die vorhandenen Ressourcen in der Familie des Patienten.</p>
         `;
 
@@ -7341,6 +7384,31 @@ const FamilyToolsModule = {
         return `
             <div class="circumplex-container">
                 <h3>📐 Circumplex-Modell (nach Olson)</h3>
+
+                <div class="tool-info-box scientific-box" style="margin-bottom: 20px;">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p><strong>Entwickelt von David Olson</strong> (1979) als integratives Modell der Familienforschung.</p>
+                    <div style="margin: 12px 0; font-size: 0.9rem;">
+                        <p><strong>Grundprinzip:</strong> Familien lassen sich auf zwei Dimensionen beschreiben - Kohäsion und Flexibilität. Extreme Werte auf beiden Dimensionen sind dysfunktional, balancierte Werte optimal.</p>
+                        <p><strong>Dimension 1 - Kohäsion</strong> (emotionale Bindung):</p>
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                            <li><em>Losgelöst:</em> Wenig Bindung, Distanz, emotionale Kälte</li>
+                            <li><em>Getrennt:</em> Etwas Distanz, aber Bindung (balanciert)</li>
+                            <li><em>Verbunden:</em> Emotionale Nähe mit Eigenständigkeit (balanciert)</li>
+                            <li><em>Verstrickt:</em> Übermäßige Nähe, Enmeshment, fehlende Grenzen</li>
+                        </ul>
+                        <p><strong>Dimension 2 - Flexibilität</strong> (Anpassungsfähigkeit):</p>
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                            <li><em>Rigide:</em> Starre Regeln, autoritär, keine Veränderung</li>
+                            <li><em>Strukturiert:</em> Klare Regeln mit etwas Flexibilität (balanciert)</li>
+                            <li><em>Flexibel:</em> Geteilte Führung, demokratisch (balanciert)</li>
+                            <li><em>Chaotisch:</em> Keine Regeln, unvorhersehbar, führungslos</li>
+                        </ul>
+                        <p><strong>Familientypen:</strong> 16 mögliche Kombinationen - balancierte Familien zeigen bessere Anpassung.</p>
+                    </div>
+                    <p class="reference" style="font-size: 0.8rem; color: #64748b;">Olson, D.H. (2000). Circumplex Model of Marital and Family Systems. Journal of Family Therapy, 22(2), 144-167.</p>
+                </div>
+
                 <p class="info-text">Bewerten Sie Kohäsion und Flexibilität der Familie.</p>
 
                 <div class="circumplex-skala">
@@ -12026,6 +12094,20 @@ function renderSyntheseContent(key, data) {
         const sozialSize = 40 + (sozialCount / maxCount) * 30;
 
         return `
+            <div class="tool-info-box scientific-box" style="margin-bottom: 16px;">
+                <h4>📚 Bio-Psycho-Soziales Modell</h4>
+                <p><strong>Entwickelt von George Engel (1977)</strong> als Alternative zum rein biomedizinischen Krankheitsmodell.</p>
+                <div style="margin: 12px 0; font-size: 0.9rem;">
+                    <p><strong>Grundprinzip:</strong> Psychische Störungen entstehen durch das Zusammenwirken von biologischen, psychologischen und sozialen Faktoren. Keine Ebene allein erklärt die Entstehung oder Aufrechterhaltung.</p>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li><strong>🧬 Biologisch:</strong> Genetik, Neurobiologie, körperliche Erkrankungen, Medikamente, Schlaf, Ernährung</li>
+                        <li><strong>🧠 Psychologisch:</strong> Kognition, Emotion, Verhalten, Persönlichkeit, Coping-Strategien, Selbstbild</li>
+                        <li><strong>👥 Sozial:</strong> Familie, Peers, Schule, Kultur, sozioökonomischer Status, Traumata</li>
+                    </ul>
+                    <p><strong>Klinische Anwendung:</strong> Das Modell hilft bei der <em>ganzheitlichen Fallkonzeptualisierung</em> und verhindert einseitige Behandlungsansätze.</p>
+                </div>
+                <p class="reference" style="font-size: 0.8rem; color: #64748b;">Engel, G.L. (1977). The need for a new medical model. Science, 196(4286), 129-136.</p>
+            </div>
             <div class="bps-model-visual">
                 <!-- SVG Venn Diagram -->
                 <div style="display: flex; justify-content: center; margin-bottom: 20px;">
@@ -12094,6 +12176,22 @@ function renderSyntheseContent(key, data) {
         // Engine returns: { aspekte: [{name, inhalt, icon}], empfehlung, familientherapie }
         const aspekte = data.aspekte || [];
         return `
+            <div class="tool-info-box scientific-box" style="margin-bottom: 16px;">
+                <h4>📚 Systemische Perspektive</h4>
+                <p><strong>Basiert auf der Systemtheorie</strong> (von Bertalanffy, Bateson, Watzlawick) und der Familientherapie.</p>
+                <div style="margin: 12px 0; font-size: 0.9rem;">
+                    <p><strong>Grundprinzip:</strong> Das Kind ist Teil eines Systems (Familie, Schule, etc.). Symptome haben oft eine <em>Funktion</em> im System oder drücken systemische Spannungen aus.</p>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li><strong>Zirkuläre Kausalität:</strong> A beeinflusst B, B beeinflusst A (statt linear: A verursacht B)</li>
+                        <li><strong>Homöostase:</strong> Systeme streben nach Gleichgewicht - Symptome können stabilisierend wirken</li>
+                        <li><strong>Identifizierter Patient:</strong> Das "symptomtragende" Kind als Symptomträger des Familiensystems</li>
+                        <li><strong>Triangulation:</strong> Einbeziehung eines Dritten (oft Kind) in Elternkonflikte</li>
+                        <li><strong>Parentifizierung:</strong> Kind übernimmt Elternrolle</li>
+                    </ul>
+                    <p><strong>Klinische Anwendung:</strong> Erweitert den Blick von "Was ist mit dem Kind falsch?" zu "Was passiert im System?"</p>
+                </div>
+                <p class="reference" style="font-size: 0.8rem; color: #64748b;">Minuchin, S. (1974). Families and Family Therapy. Harvard University Press.</p>
+            </div>
             <div class="systemisch-content">
                 ${aspekte.length > 0 ? aspekte.map(a => `
                     <div class="sys-section">
@@ -12110,11 +12208,37 @@ function renderSyntheseContent(key, data) {
     if (key === 'trauma') {
         // Engine returns: { relevant, aceScore, traumatyp: [{typ, beschreibung}], reaktionsmuster: [{muster, zeichen, umgang}], trigger, empfehlungen, wichtig }
         if (data.relevant === false) {
-            return `<div class="trauma-content"><p class="empty-hint">${data.hinweis || 'Keine Traumatisierung dokumentiert.'}</p></div>`;
+            return `
+                <div class="tool-info-box scientific-box" style="margin-bottom: 16px;">
+                    <h4>📚 Trauma-Perspektive</h4>
+                    <p>Keine traumatische Belastung dokumentiert. Dennoch wichtig: Trauma kann verborgen sein oder erst später thematisiert werden.</p>
+                </div>
+                <div class="trauma-content"><p class="empty-hint">${data.hinweis || 'Keine Traumatisierung dokumentiert.'}</p></div>`;
         }
         const traumatypen = data.traumatyp || [];
         const reaktionsmuster = data.reaktionsmuster || [];
         return `
+            <div class="tool-info-box scientific-box" style="margin-bottom: 16px;">
+                <h4>📚 Trauma-Perspektive</h4>
+                <p><strong>Basiert auf der ACE-Studie</strong> (Felitti et al., 1998) und moderner Traumaforschung (van der Kolk, Perry).</p>
+                <div style="margin: 12px 0; font-size: 0.9rem;">
+                    <p><strong>ACE-Score (Adverse Childhood Experiences):</strong></p>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li>Erfasst 10 Kategorien belastender Kindheitserfahrungen</li>
+                        <li>ACE ≥4: Stark erhöhtes Risiko für psychische/körperliche Erkrankungen</li>
+                        <li>Dose-Response-Beziehung: Mehr ACEs = höheres Risiko</li>
+                    </ul>
+                    <p><strong>4F-Reaktionsmuster</strong> (Fight, Flight, Freeze, Fawn):</p>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li><strong>Fight (Kampf):</strong> Aggression, Wutausbrüche, Kontrolle</li>
+                        <li><strong>Flight (Flucht):</strong> Vermeidung, Rückzug, Hyperaktivität</li>
+                        <li><strong>Freeze (Erstarren):</strong> Dissoziation, Numbing, Hilflosigkeit</li>
+                        <li><strong>Fawn (Anpassen):</strong> People-Pleasing, Überanpassung, Selbstaufgabe</li>
+                    </ul>
+                    <p><strong>Trauma-Typen:</strong> Typ I (Einzelereignis) vs. Typ II (chronisch/komplex)</p>
+                </div>
+                <p class="reference" style="font-size: 0.8rem; color: #64748b;">Felitti, V.J. et al. (1998). ACE Study. Am J Prev Med. | Van der Kolk, B. (2014). The Body Keeps the Score.</p>
+            </div>
             <div class="trauma-content">
                 ${data.aceScore !== undefined ? `<div class="trauma-ace">ACE-Score: ${data.aceScore}/10</div>` : ''}
                 ${traumatypen.length > 0 ? `
@@ -12142,6 +12266,27 @@ function renderSyntheseContent(key, data) {
         const intervention = data.intervention || [];
 
         return `
+            <div class="tool-info-box scientific-box" style="margin-bottom: 16px;">
+                <h4>📚 Bindungstheorie</h4>
+                <p><strong>Begründet von John Bowlby</strong> (1969) und empirisch erforscht durch Mary Ainsworth (Strange Situation Test).</p>
+                <div style="margin: 12px 0; font-size: 0.9rem;">
+                    <p><strong>Grundprinzip:</strong> Die frühe Bindung zur Bezugsperson bildet ein <em>inneres Arbeitsmodell</em> für spätere Beziehungen.</p>
+                    <p><strong>Bindungsmuster nach Ainsworth & Main:</strong></p>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li><strong>Sicher (B):</strong> Vertrauen, offene Emotionsregulation, Exploration bei sicherer Basis</li>
+                        <li><strong>Unsicher-vermeidend (A):</strong> Pseudo-Autonomie, unterdrückte Bindungsbedürfnisse</li>
+                        <li><strong>Unsicher-ambivalent (C):</strong> Klammern, erhöhte Trennungsangst, Wut auf Bezugsperson</li>
+                        <li><strong>Desorganisiert (D):</strong> Widersprüchliches Verhalten, oft bei Trauma/Misshandlung</li>
+                    </ul>
+                    <p><strong>Klinische Relevanz:</strong></p>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li>Unsichere Bindung = Risikofaktor für psychische Störungen</li>
+                        <li>Bindung ist veränderbar durch korrigierende Beziehungserfahrungen</li>
+                        <li>Therapeutische Beziehung als "sichere Basis"</li>
+                    </ul>
+                </div>
+                <p class="reference" style="font-size: 0.8rem; color: #64748b;">Bowlby, J. (1969). Attachment and Loss. | Ainsworth, M. (1978). Patterns of Attachment.</p>
+            </div>
             <div class="bindung-content">
                 ${einschätzung.muster ? `
                     <div class="bindung-pattern" style="background:linear-gradient(135deg,#e0e7ff,#c7d2fe);padding:16px;border-radius:8px;margin-bottom:16px;">
@@ -12171,11 +12316,34 @@ function renderSyntheseContent(key, data) {
     if (key === 'entwicklung') {
         // Engine: { alter, entwicklungsphase, entwicklungsaufgaben:[], auffälligkeiten:[], einschätzung, empfehlung }
         if (data.relevant === false) {
-            return `<div class="entwicklung-content"><p class="empty-hint">${data.hinweis || 'Alter nicht angegeben.'}</p></div>`;
+            return `
+                <div class="tool-info-box scientific-box" style="margin-bottom: 16px;">
+                    <h4>📚 Entwicklungs-Perspektive</h4>
+                    <p>Alter nicht angegeben. Für eine entwicklungspsychologische Einordnung wird das Alter benötigt.</p>
+                </div>
+                <div class="entwicklung-content"><p class="empty-hint">${data.hinweis || 'Alter nicht angegeben.'}</p></div>`;
         }
         const aufgaben = data.entwicklungsaufgaben || [];
         const auffälligkeiten = data.auffälligkeiten || [];
         return `
+            <div class="tool-info-box scientific-box" style="margin-bottom: 16px;">
+                <h4>📚 Entwicklungs-Perspektive</h4>
+                <p><strong>Basiert auf Entwicklungspsychologie</strong> (Piaget, Erikson, Havighurst) und Entwicklungspsychopathologie.</p>
+                <div style="margin: 12px 0; font-size: 0.9rem;">
+                    <p><strong>Grundprinzip:</strong> Psychische Störungen müssen im Kontext der Entwicklungsphase verstanden werden. Was in einer Phase normal ist, kann in einer anderen auffällig sein.</p>
+                    <p><strong>Entwicklungsphasen nach Erikson:</strong></p>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li><strong>Säuglingsalter (0-1):</strong> Ur-Vertrauen vs. Misstrauen</li>
+                        <li><strong>Kleinkindalter (1-3):</strong> Autonomie vs. Scham/Zweifel</li>
+                        <li><strong>Spielalter (3-6):</strong> Initiative vs. Schuldgefühl</li>
+                        <li><strong>Schulalter (6-12):</strong> Werksinn vs. Minderwertigkeitsgefühl</li>
+                        <li><strong>Adoleszenz (12-18):</strong> Identität vs. Rollenkonfusion</li>
+                    </ul>
+                    <p><strong>Entwicklungsaufgaben</strong> (Havighurst): Altersspezifische Anforderungen, deren Bewältigung für gesunde Entwicklung wichtig ist.</p>
+                    <p><strong>Klinische Relevanz:</strong> Entwicklungsverzögerungen, -stillstand oder -regression als diagnostische Hinweise.</p>
+                </div>
+                <p class="reference" style="font-size: 0.8rem; color: #64748b;">Erikson, E. (1950). Childhood and Society. | Piaget, J. (1970). Meine Theorie der geistigen Entwicklung.</p>
+            </div>
             <div class="entwicklung-content">
                 ${data.entwicklungsphase ? `
                     <div class="entw-header" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);padding:16px;border-radius:8px;margin-bottom:16px;">
@@ -12204,6 +12372,26 @@ function renderSyntheseContent(key, data) {
         const radii = {makrosystem: 170, exosystem: 130, mesosystem: 90, mikrosystem: 50};
         const colors = {makrosystem: '#d1fae5', exosystem: '#fef3c7', mesosystem: '#dbeafe', mikrosystem: '#e0e7ff'};
         const strokeColors = {makrosystem: '#22c55e', exosystem: '#f59e0b', mesosystem: '#3b82f6', mikrosystem: '#6366f1'};
+
+        const infoBox = `
+            <div class="tool-info-box scientific-box" style="margin-bottom: 16px;">
+                <h4>📚 Ökologisches Modell (Bronfenbrenner)</h4>
+                <p><strong>Entwickelt von Urie Bronfenbrenner</strong> (1979) zur Beschreibung menschlicher Entwicklung im Kontext.</p>
+                <div style="margin: 12px 0; font-size: 0.9rem;">
+                    <p><strong>Grundprinzip:</strong> Das Kind entwickelt sich in verschachtelten Umweltsystemen, die sich gegenseitig beeinflussen.</p>
+                    <p><strong>Die 4 Systemebenen:</strong></p>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li><strong>🏠 Mikrosystem:</strong> Direkte Umgebung - Familie, Schule, Peers, Nachbarschaft. Hier finden Face-to-Face-Interaktionen statt.</li>
+                        <li><strong>🔗 Mesosystem:</strong> Verbindungen zwischen Mikrosystemen - z.B. Eltern-Lehrer-Kontakt, Abstimmung zwischen Therapie und Schule.</li>
+                        <li><strong>🏢 Exosystem:</strong> Indirekter Einfluss - Arbeitsplatz der Eltern, Nachbarschaft, Medien, Gesundheitssystem.</li>
+                        <li><strong>🌍 Makrosystem:</strong> Kulturelle/gesellschaftliche Ebene - Werte, Gesetze, Wirtschaft, politische Systeme.</li>
+                    </ul>
+                    <p><strong>+ Chronosystem:</strong> Zeitliche Dimension - Lebensübergänge, historische Ereignisse (z.B. Pandemie).</p>
+                    <p><strong>Klinische Anwendung:</strong> Hilft, Risiko- und Schutzfaktoren auf allen Ebenen zu identifizieren und Interventionen gezielt zu planen.</p>
+                </div>
+                <p class="reference" style="font-size: 0.8rem; color: #64748b;">Bronfenbrenner, U. (1979). The Ecology of Human Development. Harvard University Press.</p>
+            </div>
+        `;
 
         // Build SVG concentric circles
         let svgCircles = '';
@@ -12245,6 +12433,7 @@ function renderSyntheseContent(key, data) {
         });
 
         return `
+            ${infoBox}
             <div class="oeko-content">
                 <!-- SVG Bronfenbrenner Concentric Circles -->
                 <div style="display: flex; justify-content: center; margin-bottom: 20px;">
@@ -12289,6 +12478,21 @@ function renderSyntheseContent(key, data) {
         const total = individuell.length + familiär.length + sozial.length;
 
         return `
+            <div class="tool-info-box scientific-box" style="margin-bottom: 16px;">
+                <h4>📚 Resilienz-Perspektive</h4>
+                <p><strong>Basiert auf der Resilienzforschung</strong> (Werner & Smith, 1982; Masten, 2001; Rutter, 2012).</p>
+                <div style="margin: 12px 0; font-size: 0.9rem;">
+                    <p><strong>Definition:</strong> Resilienz = Die Fähigkeit, sich trotz widriger Umstände positiv zu entwickeln ("positive Anpassung trotz Risiko").</p>
+                    <p><strong>Schutzfaktoren auf 3 Ebenen:</strong></p>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li><strong>💪 Individuell:</strong> Intelligenz, Temperament, Selbstwirksamkeit, Problemlösefähigkeit, soziale Kompetenz</li>
+                        <li><strong>👨‍👩‍👧 Familiär:</strong> Mindestens eine stabile Bezugsperson, emotionale Wärme, klare Strukturen, positive Rollenmodelle</li>
+                        <li><strong>🌍 Sozial:</strong> Unterstützende Lehrer, Peers, Gemeinde, Zugang zu Ressourcen (Bildung, Gesundheit)</li>
+                    </ul>
+                    <p><strong>Klinische Relevanz:</strong> Resilienz ist kein festes Merkmal, sondern dynamisch und förderbar. Fokus auf Ressourcen statt nur auf Defizite.</p>
+                </div>
+                <p class="reference" style="font-size: 0.8rem; color: #64748b;">Werner, E. & Smith, R. (1982). Vulnerable but Invincible. | Masten, A. (2001). Ordinary Magic.</p>
+            </div>
             <div class="resilienz-content">
                 <div class="res-header" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:16px;border-radius:8px;margin-bottom:16px;text-align:center;">
                     <h4 style="margin:0;">Resilienz-Score: ${total} Schutzfaktoren</h4>
