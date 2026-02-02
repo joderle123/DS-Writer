@@ -3,348 +3,508 @@
  * SESSION TOOLS MODULE - Interaktive Werkzeuge für Therapiesitzungen
  * ============================================================================
  *
+ * Wissenschaftliche Grundlagen:
+ * - Linehan, M.M. (2015). DBT Skills Training Manual. Guilford Press.
+ * - Segal, Z.V., Williams, J.M.G., & Teasdale, J.D. (2013). MBCT for Depression.
+ * - Plutchik, R. (2001). The Nature of Emotions. American Scientist.
+ * - Gross, J.J. (2014). Handbook of Emotion Regulation. Guilford Press.
+ * - Koole, S.L. (2009). The psychology of emotion regulation. Cognition & Emotion.
+ *
  * ENTHALTENE TOOLS:
- * 1. Gefühlsthermometer
- * 2. Sorgenskala / Worry Scale
+ * 1. Gefühlsthermometer (Visual Analogue Scale)
+ * 2. Coping-Karten Generator (DBT-basiert)
  * 3. Stimmungstagebuch
- * 4. Coping-Karten Generator
- * 5. Emotionsrad
- * 6. Ampelsystem für Kinder
- * 7. Atem-/Entspannungsübungen
+ * 4. Emotionsrad (nach Plutchik)
+ * 5. Ampelsystem für Selbstregulation
+ * 6. Atemübungen (evidenzbasiert)
  */
 
-const SessionTools = {
+const SessionToolsModule = {
+
+    // ============================================================
+    // WISSENSCHAFTLICHE REFERENZEN
+    // ============================================================
+    references: {
+        emotionRegulation: {
+            title: 'Emotionsregulation',
+            sources: [
+                'Gross, J.J. (2014). Handbook of Emotion Regulation. Guilford Press.',
+                'Koole, S.L. (2009). The psychology of emotion regulation. Cognition & Emotion, 23(1), 4-41.',
+                'Thompson, R.A. (1994). Emotion regulation: A theme in search of definition.'
+            ]
+        },
+        dbtSkills: {
+            title: 'DBT-Skills',
+            sources: [
+                'Linehan, M.M. (2015). DBT Skills Training Manual. Guilford Press.',
+                'Rathus, J.H. & Miller, A.L. (2015). DBT Skills Manual for Adolescents.'
+            ]
+        },
+        breathingTechniques: {
+            title: 'Atemtechniken',
+            sources: [
+                'Brown, R.P. & Gerbarg, P.L. (2012). The Healing Power of the Breath. Shambhala.',
+                'Ma, X. et al. (2017). The Effect of Diaphragmatic Breathing. Frontiers in Psychology.',
+                'Zaccaro, A. et al. (2018). How Breath-Control Can Change Your Life. Frontiers in Human Neuroscience.'
+            ]
+        },
+        emotionWheel: {
+            title: 'Emotionsrad',
+            sources: [
+                'Plutchik, R. (2001). The Nature of Emotions. American Scientist, 89(4), 344-350.',
+                'Plutchik, R. & Kellerman, H. (1980). Emotion: Theory, Research, and Experience.'
+            ]
+        }
+    },
 
     // ============================================================
     // GEFÜHLSTHERMOMETER
     // ============================================================
 
-    emotionThermometer: {
-        name: "Gefühlsthermometer",
-        description: "Visuelles Tool zur Einschätzung der Gefühlsintensität",
-        ageRange: "5+ Jahre",
-
-        scales: {
-            general: {
-                name: "Allgemeines Befinden",
-                labels: [
-                    { value: 0, label: "Ganz schlecht", color: "#dc2626", emoji: "😢" },
-                    { value: 1, label: "Sehr schlecht", color: "#ea580c", emoji: "😞" },
-                    { value: 2, label: "Schlecht", color: "#f97316", emoji: "😔" },
-                    { value: 3, label: "Nicht so gut", color: "#fb923c", emoji: "😕" },
-                    { value: 4, label: "Geht so", color: "#fbbf24", emoji: "😐" },
-                    { value: 5, label: "Okay", color: "#facc15", emoji: "🙂" },
-                    { value: 6, label: "Ganz okay", color: "#a3e635", emoji: "😊" },
-                    { value: 7, label: "Gut", color: "#84cc16", emoji: "😀" },
-                    { value: 8, label: "Sehr gut", color: "#22c55e", emoji: "😁" },
-                    { value: 9, label: "Super gut", color: "#16a34a", emoji: "🤩" },
-                    { value: 10, label: "Fantastisch", color: "#15803d", emoji: "🥳" }
-                ]
-            },
-            anxiety: {
-                name: "Angst-Thermometer",
-                labels: [
-                    { value: 0, label: "Gar keine Angst", color: "#22c55e", emoji: "😌" },
-                    { value: 1, label: "Ganz kleine Angst", color: "#84cc16", emoji: "🙂" },
-                    { value: 2, label: "Ein bisschen Angst", color: "#a3e635", emoji: "😐" },
-                    { value: 3, label: "Etwas Angst", color: "#facc15", emoji: "😕" },
-                    { value: 4, label: "Merkbare Angst", color: "#fbbf24", emoji: "😟" },
-                    { value: 5, label: "Mittlere Angst", color: "#fb923c", emoji: "😧" },
-                    { value: 6, label: "Ziemliche Angst", color: "#f97316", emoji: "😨" },
-                    { value: 7, label: "Starke Angst", color: "#ea580c", emoji: "😰" },
-                    { value: 8, label: "Sehr starke Angst", color: "#dc2626", emoji: "😱" },
-                    { value: 9, label: "Extreme Angst", color: "#b91c1c", emoji: "🫣" },
-                    { value: 10, label: "Panik", color: "#991b1b", emoji: "💀" }
-                ]
-            },
-            anger: {
-                name: "Wut-Thermometer",
-                labels: [
-                    { value: 0, label: "Ganz ruhig", color: "#22c55e", emoji: "😌" },
-                    { value: 1, label: "Ruhig", color: "#84cc16", emoji: "🙂" },
-                    { value: 2, label: "Leicht genervt", color: "#a3e635", emoji: "😐" },
-                    { value: 3, label: "Genervt", color: "#facc15", emoji: "😒" },
-                    { value: 4, label: "Verärgert", color: "#fbbf24", emoji: "😠" },
-                    { value: 5, label: "Ärgerlich", color: "#fb923c", emoji: "😤" },
-                    { value: 6, label: "Ziemlich wütend", color: "#f97316", emoji: "😡" },
-                    { value: 7, label: "Sehr wütend", color: "#ea580c", emoji: "🤬" },
-                    { value: 8, label: "Total wütend", color: "#dc2626", emoji: "💢" },
-                    { value: 9, label: "Rasend", color: "#b91c1c", emoji: "🌋" },
-                    { value: 10, label: "Explodiere!", color: "#991b1b", emoji: "💥" }
-                ]
-            },
-            sadness: {
-                name: "Traurigkeits-Thermometer",
-                labels: [
-                    { value: 0, label: "Gar nicht traurig", color: "#22c55e", emoji: "😊" },
-                    { value: 1, label: "Kaum traurig", color: "#84cc16", emoji: "🙂" },
-                    { value: 2, label: "Ein bisschen traurig", color: "#a3e635", emoji: "😐" },
-                    { value: 3, label: "Etwas traurig", color: "#facc15", emoji: "😕" },
-                    { value: 4, label: "Traurig", color: "#fbbf24", emoji: "😔" },
-                    { value: 5, label: "Ziemlich traurig", color: "#fb923c", emoji: "😢" },
-                    { value: 6, label: "Sehr traurig", color: "#f97316", emoji: "😭" },
-                    { value: 7, label: "Richtig traurig", color: "#ea580c", emoji: "💔" },
-                    { value: 8, label: "Total traurig", color: "#dc2626", emoji: "😿" },
-                    { value: 9, label: "Verzweifelt", color: "#b91c1c", emoji: "🥀" },
-                    { value: 10, label: "Hoffnungslos", color: "#991b1b", emoji: "🖤" }
-                ]
+    thermometerScales: {
+        general: {
+            name: 'Allgemeines Befinden',
+            lowLabel: 'Sehr schlecht',
+            highLabel: 'Sehr gut',
+            interpretation: {
+                low: { range: [0, 3], text: 'Niedriges Wohlbefinden - Unterstützung empfohlen', color: '#ef4444' },
+                medium: { range: [4, 6], text: 'Moderates Wohlbefinden', color: '#f59e0b' },
+                high: { range: [7, 10], text: 'Gutes Wohlbefinden', color: '#22c55e' }
             }
         },
-
-        getReading(type, value) {
-            const scale = this.scales[type] || this.scales.general;
-            return scale.labels[Math.min(Math.max(0, value), 10)];
-        },
-
-        interpretReading(type, value) {
-            if (type === 'general') {
-                if (value <= 3) return { level: 'low', message: 'Es geht dir nicht gut. Lass uns schauen, was helfen kann.' };
-                if (value <= 6) return { level: 'medium', message: 'Es ist okay. Was könnte es besser machen?' };
-                return { level: 'high', message: 'Es geht dir gut! Was trägt dazu bei?' };
+        anxiety: {
+            name: 'Angst-Level',
+            lowLabel: 'Keine Angst',
+            highLabel: 'Extreme Angst',
+            interpretation: {
+                low: { range: [0, 3], text: 'Geringe Angst - normaler Bereich', color: '#22c55e' },
+                medium: { range: [4, 6], text: 'Moderate Angst - Coping-Strategien anwenden', color: '#f59e0b' },
+                high: { range: [7, 10], text: 'Hohe Angst - Intervention empfohlen', color: '#ef4444' }
             }
-            // For anxiety, anger, sadness - high = concerning
-            if (value <= 3) return { level: 'low', message: 'Das ist ein guter Bereich!' };
-            if (value <= 6) return { level: 'medium', message: 'Das ist spürbar. Kennst du Strategien, die helfen?' };
-            return { level: 'high', message: 'Das ist sehr stark. Lass uns gemeinsam überlegen, was hilft.' };
+        },
+        anger: {
+            name: 'Wut-Level',
+            lowLabel: 'Ganz ruhig',
+            highLabel: 'Extrem wütend',
+            interpretation: {
+                low: { range: [0, 3], text: 'Kontrollierter Bereich', color: '#22c55e' },
+                medium: { range: [4, 6], text: 'Erhöhte Erregung - Selbstregulation aktivieren', color: '#f59e0b' },
+                high: { range: [7, 10], text: 'Kritischer Bereich - Deeskalation nötig', color: '#ef4444' }
+            }
+        },
+        sadness: {
+            name: 'Traurigkeit',
+            lowLabel: 'Nicht traurig',
+            highLabel: 'Sehr traurig',
+            interpretation: {
+                low: { range: [0, 3], text: 'Geringe Traurigkeit', color: '#22c55e' },
+                medium: { range: [4, 6], text: 'Spürbare Traurigkeit - Aktivitätsaufbau empfohlen', color: '#f59e0b' },
+                high: { range: [7, 10], text: 'Starke Traurigkeit - vertiefte Exploration', color: '#ef4444' }
+            }
         }
     },
 
+    generateEmotionThermometerUI: function() {
+        return `
+            <div class="thermometer-container">
+                <div class="tool-info-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p>Das Gefühlsthermometer basiert auf der Visual Analogue Scale (VAS), einer validierten Methode
+                    zur subjektiven Einschätzung von Emotionsintensität (Gross, 2014). Es fördert die
+                    <strong>Emotionswahrnehmung</strong> - ein zentraler Aspekt der Emotionsregulation.</p>
+                </div>
+
+                <div class="thermometer-selector">
+                    <label>Welches Gefühl möchtest du messen?</label>
+                    <select id="thermometer-type" class="form-select" onchange="SessionToolsModule.updateThermometer()">
+                        <option value="general">😊 Allgemeines Befinden</option>
+                        <option value="anxiety">😰 Angst</option>
+                        <option value="anger">😤 Wut</option>
+                        <option value="sadness">😢 Traurigkeit</option>
+                    </select>
+                </div>
+
+                <div class="thermometer-visual">
+                    <div class="thermometer-scale" id="thermometer-scale">
+                        <div class="thermometer-fill" id="thermometer-fill" style="height: 50%;"></div>
+                        <div class="thermometer-marker" id="thermometer-marker" style="bottom: 50%;"></div>
+                    </div>
+                    <div class="thermometer-labels">
+                        <span class="label-top" id="thermometer-high-label">Sehr gut</span>
+                        <span class="label-mid">5</span>
+                        <span class="label-bottom" id="thermometer-low-label">Sehr schlecht</span>
+                    </div>
+                    <div class="thermometer-input">
+                        <input type="range" id="thermometer-value" min="0" max="10" value="5"
+                               orient="vertical" class="vertical-slider"
+                               oninput="SessionToolsModule.updateThermometerDisplay(this.value)">
+                    </div>
+                </div>
+
+                <div class="thermometer-result">
+                    <div class="current-value">
+                        <span id="thermometer-number" class="big-number">5</span>
+                        <span class="value-label">von 10</span>
+                    </div>
+                    <div id="thermometer-interpretation" class="interpretation-box">
+                        Bewege den Regler, um dein Gefühl einzuschätzen.
+                    </div>
+                </div>
+
+                <div class="thermometer-actions">
+                    <button type="button" class="btn btn-primary" onclick="SessionToolsModule.saveThermometerReading()">
+                        💾 Eintrag speichern
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="SessionToolsModule.showThermometerHistory()">
+                        📊 Verlauf anzeigen
+                    </button>
+                </div>
+
+                <div id="thermometer-history" style="display:none; margin-top:20px;"></div>
+
+                <div class="reference-footer">
+                    <small>Referenz: Gross, J.J. (2014). Handbook of Emotion Regulation. Guilford Press.</small>
+                </div>
+            </div>
+        `;
+    },
+
+    updateThermometer: function() {
+        const type = document.getElementById('thermometer-type')?.value || 'general';
+        const scale = this.thermometerScales[type];
+
+        document.getElementById('thermometer-high-label').textContent = scale.highLabel;
+        document.getElementById('thermometer-low-label').textContent = scale.lowLabel;
+
+        const currentValue = document.getElementById('thermometer-value')?.value || 5;
+        this.updateThermometerDisplay(currentValue);
+    },
+
+    updateThermometerDisplay: function(value) {
+        const numValue = parseInt(value);
+        const type = document.getElementById('thermometer-type')?.value || 'general';
+        const scale = this.thermometerScales[type];
+
+        // Update visual
+        const percentage = numValue * 10;
+        const fill = document.getElementById('thermometer-fill');
+        const marker = document.getElementById('thermometer-marker');
+        const numberDisplay = document.getElementById('thermometer-number');
+
+        if (fill) fill.style.height = percentage + '%';
+        if (marker) marker.style.bottom = percentage + '%';
+        if (numberDisplay) numberDisplay.textContent = numValue;
+
+        // Update color based on interpretation
+        let interpretation = scale.interpretation.medium;
+        if (numValue <= 3) interpretation = scale.interpretation.low;
+        else if (numValue >= 7) interpretation = scale.interpretation.high;
+
+        if (fill) fill.style.backgroundColor = interpretation.color;
+
+        // For inverted scales (anxiety, anger, sadness), swap colors
+        if (type !== 'general') {
+            if (numValue <= 3) interpretation = scale.interpretation.low;
+            else if (numValue >= 7) interpretation = scale.interpretation.high;
+        }
+
+        const interpBox = document.getElementById('thermometer-interpretation');
+        if (interpBox) {
+            interpBox.innerHTML = `<span style="color:${interpretation.color}">${interpretation.text}</span>`;
+        }
+    },
+
+    thermometerHistory: [],
+
+    saveThermometerReading: function() {
+        const type = document.getElementById('thermometer-type')?.value || 'general';
+        const value = parseInt(document.getElementById('thermometer-value')?.value || 5);
+
+        const entry = {
+            timestamp: new Date().toISOString(),
+            type: type,
+            typeName: this.thermometerScales[type].name,
+            value: value
+        };
+
+        this.thermometerHistory.push(entry);
+
+        try {
+            localStorage.setItem('padopsych_thermometer_history', JSON.stringify(this.thermometerHistory));
+        } catch(e) {}
+
+        this.showThermometerHistory();
+        alert('Eintrag gespeichert!');
+    },
+
+    showThermometerHistory: function() {
+        try {
+            const stored = localStorage.getItem('padopsych_thermometer_history');
+            if (stored) this.thermometerHistory = JSON.parse(stored);
+        } catch(e) {}
+
+        const container = document.getElementById('thermometer-history');
+        if (!container) return;
+
+        container.style.display = 'block';
+
+        if (this.thermometerHistory.length === 0) {
+            container.innerHTML = '<p>Noch keine Einträge vorhanden.</p>';
+            return;
+        }
+
+        const recent = this.thermometerHistory.slice(-10).reverse();
+
+        container.innerHTML = `
+            <h4>📊 Letzte Einträge</h4>
+            <table class="history-table">
+                <thead>
+                    <tr><th>Datum</th><th>Typ</th><th>Wert</th></tr>
+                </thead>
+                <tbody>
+                    ${recent.map(e => `
+                        <tr>
+                            <td>${new Date(e.timestamp).toLocaleString('de-DE')}</td>
+                            <td>${e.typeName}</td>
+                            <td><strong>${e.value}</strong>/10</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    },
+
     // ============================================================
-    // COPING-KARTEN GENERATOR
+    // COPING-KARTEN (DBT-basiert)
     // ============================================================
 
-    copingCards: {
-        categories: {
-            calm: {
-                name: "Beruhigen",
-                icon: "🧘",
-                color: "#3b82f6",
-                strategies: [
-                    { name: "Tiefes Atmen", instructions: "Atme 4 Sekunden ein, halte 4 Sekunden, atme 6 Sekunden aus", emoji: "🌬️" },
-                    { name: "5-4-3-2-1 Übung", instructions: "Nenne 5 Dinge die du siehst, 4 die du hörst, 3 die du fühlst, 2 die du riechst, 1 das du schmeckst", emoji: "👀" },
-                    { name: "Körper-Scan", instructions: "Spüre von Kopf bis Fuß, wo du Anspannung merkst, und lass sie los", emoji: "🧍" },
-                    { name: "Musik hören", instructions: "Höre ein ruhiges Lied, das du magst", emoji: "🎵" },
-                    { name: "Warm duschen", instructions: "Warmes Wasser hilft, Anspannung loszulassen", emoji: "🚿" },
-                    { name: "Kuscheltier/Decke", instructions: "Etwas Weiches festhalten kann beruhigen", emoji: "🧸" },
-                    { name: "Butterfly Hug", instructions: "Kreuze die Arme über der Brust und klopfe abwechselnd sanft", emoji: "🦋" }
-                ]
-            },
-            distract: {
-                name: "Ablenken",
-                icon: "🎯",
-                color: "#8b5cf6",
-                strategies: [
-                    { name: "Rückwärts zählen", instructions: "Zähle von 100 in 7er-Schritten rückwärts", emoji: "🔢" },
-                    { name: "Kategorien-Spiel", instructions: "Nenne 5 Automarken, 5 Tiere, 5 Städte...", emoji: "📝" },
-                    { name: "Puzzle/Sudoku", instructions: "Löse ein Rätsel, das deine Aufmerksamkeit braucht", emoji: "🧩" },
-                    { name: "Aufräumen", instructions: "Räume eine Schublade oder deinen Schreibtisch auf", emoji: "🗂️" },
-                    { name: "Malen/Zeichnen", instructions: "Male etwas - egal was, Hauptsache Farben auf Papier", emoji: "🎨" },
-                    { name: "Spaziergang", instructions: "Geh raus und achte auf alles, was du siehst", emoji: "🚶" },
-                    { name: "Mit jemandem reden", instructions: "Ruf jemanden an und rede über was anderes", emoji: "📱" }
-                ]
-            },
-            express: {
-                name: "Ausdrücken",
-                icon: "💬",
-                color: "#ec4899",
-                strategies: [
-                    { name: "Gefühle aufschreiben", instructions: "Schreib alles auf, was du fühlst - ohne zu überlegen", emoji: "📓" },
-                    { name: "Zeichnen/Malen", instructions: "Male dein Gefühl - Farben, Formen, egal was", emoji: "🖍️" },
-                    { name: "Schreien ins Kissen", instructions: "Hol ein Kissen und schrei hinein - das ist okay!", emoji: "😤" },
-                    { name: "Bewegung", instructions: "Springe, tanze, renne - lass die Energie raus", emoji: "💃" },
-                    { name: "Mit jemandem reden", instructions: "Erzähl jemandem, wie es dir geht", emoji: "🗣️" },
-                    { name: "Brief schreiben", instructions: "Schreib einen Brief (musst du nicht abschicken)", emoji: "✉️" },
-                    { name: "Knete/Stressball", instructions: "Drücke und forme etwas mit deinen Händen", emoji: "🫳" }
-                ]
-            },
-            body: {
-                name: "Körper",
-                icon: "💪",
-                color: "#22c55e",
-                strategies: [
-                    { name: "Kaltes Wasser", instructions: "Halte die Hände unter kaltes Wasser oder leg dir kaltes auf die Stirn", emoji: "🧊" },
-                    { name: "Progressive Muskelentspannung", instructions: "Spanne jeden Muskel 5 Sek. an, dann 10 Sek. entspannen", emoji: "💪" },
-                    { name: "Sport/Bewegung", instructions: "Hampelmänner, Liegestütze, Treppen laufen", emoji: "🏃" },
-                    { name: "Stretching", instructions: "Dehne dich sanft für 5 Minuten", emoji: "🤸" },
-                    { name: "Etwas Saures essen", instructions: "Ein Bonbon oder Zitrone kann erden", emoji: "🍋" },
-                    { name: "Gesicht waschen", instructions: "Wasche dein Gesicht mit kaltem Wasser", emoji: "💦" },
-                    { name: "Draußen sein", instructions: "Geh nach draußen, atme frische Luft", emoji: "🌳" }
-                ]
-            },
-            think: {
-                name: "Denken",
-                icon: "🧠",
-                color: "#f59e0b",
-                strategies: [
-                    { name: "Gedanken prüfen", instructions: "Ist dieser Gedanke wirklich wahr? Was würde ein Freund sagen?", emoji: "🤔" },
-                    { name: "Positive Selbstgespräche", instructions: "Sag dir: 'Das geht vorbei', 'Ich schaffe das'", emoji: "💬" },
-                    { name: "Perspektive wechseln", instructions: "Wie würde ich das in einem Jahr sehen?", emoji: "🔮" },
-                    { name: "Dankbarkeit", instructions: "Nenne 3 Dinge, für die du dankbar bist", emoji: "🙏" },
-                    { name: "Problem lösen", instructions: "Was genau ist das Problem? Was könnte ich tun?", emoji: "💡" },
-                    { name: "Akzeptanz", instructions: "Es ist okay, so zu fühlen. Gefühle kommen und gehen.", emoji: "🌊" },
-                    { name: "Achtsamkeit", instructions: "Konzentriere dich nur auf diesen Moment, jetzt", emoji: "🧘" }
-                ]
-            }
+    copingCategories: {
+        tipp: {
+            name: 'TIPP-Skills',
+            icon: '🧊',
+            color: '#3b82f6',
+            description: 'Schnelle körperliche Regulation (nach Linehan)',
+            strategies: [
+                { name: 'Temperatur', instruction: 'Kaltes Wasser ins Gesicht oder Eiswürfel halten (aktiviert Tauchreflex)', emoji: '🧊' },
+                { name: 'Intensive Bewegung', instruction: 'Kurze intensive Bewegung (Hampelmänner, Treppen laufen) für 5-10 Min', emoji: '🏃' },
+                { name: 'Paced Breathing', instruction: 'Ausatmen länger als Einatmen (z.B. 4 ein, 6 aus)', emoji: '🌬️' },
+                { name: 'Progressive Muskelentspannung', instruction: 'Muskeln 5 Sek. anspannen, 10 Sek. entspannen', emoji: '💪' }
+            ]
         },
+        accepts: {
+            name: 'ACCEPTS-Skills',
+            icon: '🎯',
+            color: '#8b5cf6',
+            description: 'Ablenkung bei Krisen (nach Linehan)',
+            strategies: [
+                { name: 'Activities', instruction: 'Aktivitäten: Sport, Spaziergang, Spiel, Hobby', emoji: '🚴' },
+                { name: 'Contributing', instruction: 'Anderen helfen: Freundlichkeit, Hilfsbereitschaft', emoji: '🤝' },
+                { name: 'Comparisons', instruction: 'Vergleiche: Wie war es früher? Wie geht es anderen?', emoji: '⚖️' },
+                { name: 'Emotions', instruction: 'Andere Gefühle erzeugen: Lustiger Film, Musik', emoji: '🎵' },
+                { name: 'Push away', instruction: 'Wegschieben: Mental in eine Schublade legen', emoji: '📦' },
+                { name: 'Thoughts', instruction: 'Andere Gedanken: Rätsel, Zählen, Kategorien-Spiel', emoji: '🧩' },
+                { name: 'Sensations', instruction: 'Körperempfindungen: Saures essen, Eiswürfel, Duft', emoji: '🍋' }
+            ]
+        },
+        improve: {
+            name: 'IMPROVE-Skills',
+            icon: '✨',
+            color: '#ec4899',
+            description: 'Moment verbessern (nach Linehan)',
+            strategies: [
+                { name: 'Imagery', instruction: 'Vorstellung: Sicheren Ort visualisieren', emoji: '🏝️' },
+                { name: 'Meaning', instruction: 'Sinn finden: Was kann ich daraus lernen?', emoji: '💡' },
+                { name: 'Prayer/Meditation', instruction: 'Meditation, Gebet, Achtsamkeit', emoji: '🧘' },
+                { name: 'Relaxation', instruction: 'Entspannung: Atemübung, PMR', emoji: '😌' },
+                { name: 'One thing', instruction: 'Eine Sache auf einmal, im Moment sein', emoji: '🎯' },
+                { name: 'Vacation', instruction: 'Kurze Auszeit nehmen (mental oder real)', emoji: '🌴' },
+                { name: 'Encouragement', instruction: 'Selbstermutigung: "Ich schaffe das"', emoji: '💪' }
+            ]
+        },
+        wise: {
+            name: 'WISE MIND',
+            icon: '🧠',
+            color: '#22c55e',
+            description: 'Balance zwischen Emotion und Verstand',
+            strategies: [
+                { name: 'Beobachten', instruction: 'Beobachte deine Gedanken und Gefühle ohne zu urteilen', emoji: '👁️' },
+                { name: 'Beschreiben', instruction: 'Beschreibe was du erlebst: "Ich bemerke..."', emoji: '📝' },
+                { name: 'Teilnehmen', instruction: 'Sei ganz bei dem was du tust', emoji: '🙌' },
+                { name: 'Nicht-Urteilen', instruction: 'Bewerte nicht, beobachte nur', emoji: '☯️' },
+                { name: 'Fokussieren', instruction: 'Mache eine Sache achtsam', emoji: '🔍' }
+            ]
+        }
+    },
 
-        generateCard(category, strategyIndex) {
-            const cat = this.categories[category];
-            if (!cat || !cat.strategies[strategyIndex]) return null;
+    generateCopingCardsUI: function() {
+        let categoriesHtml = '';
 
-            const strategy = cat.strategies[strategyIndex];
+        Object.entries(this.copingCategories).forEach(([key, cat]) => {
+            categoriesHtml += `
+                <div class="coping-category" style="border-left: 4px solid ${cat.color};">
+                    <div class="category-header" onclick="SessionToolsModule.toggleCopingCategory('${key}')">
+                        <span class="category-icon">${cat.icon}</span>
+                        <div class="category-info">
+                            <h4>${cat.name}</h4>
+                            <p>${cat.description}</p>
+                        </div>
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="category-strategies" id="coping-${key}" style="display:none;">
+                        ${cat.strategies.map((s, i) => `
+                            <div class="strategy-card" style="border-left: 3px solid ${cat.color};">
+                                <div class="strategy-header">
+                                    <span class="strategy-emoji">${s.emoji}</span>
+                                    <strong>${s.name}</strong>
+                                </div>
+                                <p class="strategy-instruction">${s.instruction}</p>
+                                <button type="button" class="btn-tiny" onclick="SessionToolsModule.addToPersonalDeck('${key}', ${i})">
+                                    ➕ Zu meinem Deck
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
 
-            return {
-                category: cat.name,
+        return `
+            <div class="coping-cards-container">
+                <div class="tool-info-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p>Die Coping-Karten basieren auf der <strong>Dialektisch-Behavioralen Therapie (DBT)</strong>
+                    nach Marsha Linehan. DBT-Skills sind evidenzbasierte Strategien zur Emotionsregulation,
+                    Stresstoleranz und zwischenmenschlichen Fertigkeiten mit hoher Wirksamkeit bei
+                    Jugendlichen (Rathus & Miller, 2015).</p>
+                </div>
+
+                <div class="coping-categories">
+                    ${categoriesHtml}
+                </div>
+
+                <div class="personal-deck-section">
+                    <h4>🃏 Mein persönliches Coping-Deck</h4>
+                    <div id="personal-deck" class="personal-deck">
+                        <p class="placeholder-text">Klicke auf "Zu meinem Deck" um Strategien hinzuzufügen</p>
+                    </div>
+                    <div class="deck-actions">
+                        <button type="button" class="btn btn-secondary" onclick="SessionToolsModule.printPersonalDeck()">
+                            🖨️ Deck drucken
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="SessionToolsModule.clearPersonalDeck()">
+                            🗑️ Deck leeren
+                        </button>
+                    </div>
+                </div>
+
+                <div class="reference-footer">
+                    <small>Referenz: Linehan, M.M. (2015). DBT Skills Training Manual. Guilford Press. |
+                    Rathus, J.H. & Miller, A.L. (2015). DBT Skills Manual for Adolescents.</small>
+                </div>
+            </div>
+        `;
+    },
+
+    personalDeck: [],
+
+    toggleCopingCategory: function(key) {
+        const el = document.getElementById(`coping-${key}`);
+        if (el) {
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+    },
+
+    addToPersonalDeck: function(categoryKey, strategyIndex) {
+        const cat = this.copingCategories[categoryKey];
+        const strategy = cat.strategies[strategyIndex];
+
+        // Check if already in deck
+        const exists = this.personalDeck.some(s =>
+            s.categoryKey === categoryKey && s.strategyIndex === strategyIndex
+        );
+
+        if (!exists) {
+            this.personalDeck.push({
+                categoryKey,
+                strategyIndex,
+                categoryName: cat.name,
                 categoryIcon: cat.icon,
                 color: cat.color,
-                name: strategy.name,
-                emoji: strategy.emoji,
-                instructions: strategy.instructions,
-                printable: this.formatForPrint(strategy, cat)
-            };
-        },
-
-        generatePersonalDeck(selectedStrategies) {
-            return selectedStrategies.map(s => this.generateCard(s.category, s.index));
-        },
-
-        formatForPrint(strategy, category) {
-            return `
-┌─────────────────────────────────────┐
-│  ${category.icon} ${category.name.toUpperCase().padEnd(28)} │
-├─────────────────────────────────────┤
-│                                     │
-│      ${strategy.emoji}                          │
-│                                     │
-│  ${strategy.name.padEnd(33)} │
-│                                     │
-│  ${this.wrapText(strategy.instructions, 33)} │
-│                                     │
-└─────────────────────────────────────┘
-            `;
-        },
-
-        wrapText(text, width) {
-            const words = text.split(' ');
-            const lines = [];
-            let currentLine = '';
-
-            words.forEach(word => {
-                if ((currentLine + ' ' + word).trim().length <= width) {
-                    currentLine = (currentLine + ' ' + word).trim();
-                } else {
-                    if (currentLine) lines.push(currentLine.padEnd(width));
-                    currentLine = word;
-                }
+                ...strategy
             });
-            if (currentLine) lines.push(currentLine.padEnd(width));
-
-            return lines.join('\n│  ');
-        },
-
-        getAllStrategies() {
-            const all = [];
-            Object.entries(this.categories).forEach(([catKey, cat]) => {
-                cat.strategies.forEach((strategy, index) => {
-                    all.push({
-                        category: catKey,
-                        categoryName: cat.name,
-                        index,
-                        ...strategy
-                    });
-                });
-            });
-            return all;
+            this.renderPersonalDeck();
         }
     },
 
-    // ============================================================
-    // AMPELSYSTEM FÜR KINDER
-    // ============================================================
+    renderPersonalDeck: function() {
+        const container = document.getElementById('personal-deck');
+        if (!container) return;
 
-    trafficLight: {
-        name: "Gefühls-Ampel",
-        description: "Einfaches System zur Selbstregulation für jüngere Kinder",
-        ageRange: "5-12 Jahre",
-
-        zones: {
-            green: {
-                name: "Grün - Alles gut!",
-                color: "#22c55e",
-                emoji: "🟢",
-                signs: [
-                    "Ich bin ruhig",
-                    "Ich kann gut denken",
-                    "Ich kann gut zuhören",
-                    "Mein Körper ist entspannt"
-                ],
-                actions: [
-                    "Weitermachen wie bisher",
-                    "Gute Entscheidungen treffen",
-                    "Lernen und spielen"
-                ]
-            },
-            yellow: {
-                name: "Gelb - Vorsicht!",
-                color: "#fbbf24",
-                emoji: "🟡",
-                signs: [
-                    "Ich werde unruhig",
-                    "Mein Herz schlägt schneller",
-                    "Ich werde lauter",
-                    "Ich kann mich nicht gut konzentrieren"
-                ],
-                actions: [
-                    "STOPP - Kurz anhalten",
-                    "3 tiefe Atemzüge",
-                    "Zähle bis 10",
-                    "Bitte um eine Pause"
-                ],
-                strategies: ["calm", "distract"]
-            },
-            red: {
-                name: "Rot - Stopp!",
-                color: "#ef4444",
-                emoji: "🔴",
-                signs: [
-                    "Ich bin sehr wütend/traurig/ängstlich",
-                    "Ich will schreien oder hauen",
-                    "Ich kann nicht mehr denken",
-                    "Mein Körper ist ganz angespannt"
-                ],
-                actions: [
-                    "STOPP - Nichts tun!",
-                    "Aus der Situation gehen (wenn möglich)",
-                    "Hilfe holen",
-                    "Beruhigungs-Strategie anwenden"
-                ],
-                strategies: ["calm", "body"]
-            }
-        },
-
-        assess(currentState) {
-            if (currentState.calmness >= 7 && currentState.control >= 7) {
-                return 'green';
-            } else if (currentState.calmness >= 4 || currentState.control >= 4) {
-                return 'yellow';
-            } else {
-                return 'red';
-            }
-        },
-
-        getStrategiesForZone(zone) {
-            const zoneData = this.zones[zone];
-            if (!zoneData || !zoneData.strategies) return [];
-
-            let strategies = [];
-            zoneData.strategies.forEach(catKey => {
-                const cat = SessionTools.copingCards.categories[catKey];
-                if (cat) {
-                    strategies = strategies.concat(cat.strategies.slice(0, 3)); // Top 3 from each
-                }
-            });
-            return strategies;
+        if (this.personalDeck.length === 0) {
+            container.innerHTML = '<p class="placeholder-text">Klicke auf "Zu meinem Deck" um Strategien hinzuzufügen</p>';
+            return;
         }
+
+        container.innerHTML = this.personalDeck.map((s, i) => `
+            <div class="deck-card" style="border-color: ${s.color};">
+                <div class="deck-card-header">
+                    <span>${s.emoji} ${s.name}</span>
+                    <button type="button" class="btn-tiny" onclick="SessionToolsModule.removeFromDeck(${i})">×</button>
+                </div>
+                <p class="deck-card-instruction">${s.instruction}</p>
+                <span class="deck-card-category">${s.categoryIcon} ${s.categoryName}</span>
+            </div>
+        `).join('');
+    },
+
+    removeFromDeck: function(index) {
+        this.personalDeck.splice(index, 1);
+        this.renderPersonalDeck();
+    },
+
+    clearPersonalDeck: function() {
+        if (confirm('Deck wirklich leeren?')) {
+            this.personalDeck = [];
+            this.renderPersonalDeck();
+        }
+    },
+
+    printPersonalDeck: function() {
+        if (this.personalDeck.length === 0) {
+            alert('Deck ist leer');
+            return;
+        }
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html><head><title>Mein Coping-Deck</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                .card { border: 2px solid #333; border-radius: 8px; padding: 16px; margin: 10px;
+                        display: inline-block; width: 200px; vertical-align: top; page-break-inside: avoid; }
+                .card h3 { margin: 0 0 10px 0; font-size: 14px; }
+                .card p { margin: 0; font-size: 12px; }
+                .card .category { font-size: 10px; color: #666; margin-top: 10px; }
+                @media print { .card { break-inside: avoid; } }
+            </style>
+            </head><body>
+            <h1>🃏 Mein Coping-Deck</h1>
+            <p>Basierend auf DBT-Skills (Linehan, 2015)</p>
+            ${this.personalDeck.map(s => `
+                <div class="card" style="border-color: ${s.color};">
+                    <h3>${s.emoji} ${s.name}</h3>
+                    <p>${s.instruction}</p>
+                    <div class="category">${s.categoryIcon} ${s.categoryName}</div>
+                </div>
+            `).join('')}
+            <p style="margin-top:30px;font-size:10px;color:#666;">
+                Referenz: Linehan, M.M. (2015). DBT Skills Training Manual. Guilford Press.
+            </p>
+            </body></html>
+        `);
+        printWindow.document.close();
+        printWindow.onload = function() { printWindow.print(); };
     },
 
     // ============================================================
@@ -352,266 +512,594 @@ const SessionTools = {
     // ============================================================
 
     breathingExercises: {
-        exercises: {
-            basic: {
-                name: "Grundübung",
-                description: "Einfaches tiefes Atmen",
-                steps: [
-                    { phase: "einatmen", duration: 4, instruction: "Tief durch die Nase einatmen" },
-                    { phase: "halten", duration: 2, instruction: "Kurz halten" },
-                    { phase: "ausatmen", duration: 6, instruction: "Langsam durch den Mund ausatmen" }
-                ],
-                cycles: 5,
-                ageRange: "5+ Jahre"
-            },
-            boxBreathing: {
-                name: "Box-Atmung",
-                description: "4-4-4-4 Technik für Fokus",
-                steps: [
-                    { phase: "einatmen", duration: 4, instruction: "Einatmen" },
-                    { phase: "halten", duration: 4, instruction: "Halten" },
-                    { phase: "ausatmen", duration: 4, instruction: "Ausatmen" },
-                    { phase: "halten", duration: 4, instruction: "Halten" }
-                ],
-                cycles: 4,
-                ageRange: "8+ Jahre"
-            },
-            fourSevenEight: {
-                name: "4-7-8 Atmung",
-                description: "Beruhigende Technik für Schlaf und Angst",
-                steps: [
-                    { phase: "einatmen", duration: 4, instruction: "Durch die Nase einatmen" },
-                    { phase: "halten", duration: 7, instruction: "Atem anhalten" },
-                    { phase: "ausatmen", duration: 8, instruction: "Mit Geräusch durch den Mund ausatmen" }
-                ],
-                cycles: 4,
-                ageRange: "10+ Jahre"
-            },
-            bunnyBreathing: {
-                name: "Hasen-Atmung",
-                description: "Spielerisch für kleine Kinder",
-                steps: [
-                    { phase: "einatmen", duration: 1, instruction: "Schnüffeln wie ein Hase - schnell schnüffeln" },
-                    { phase: "einatmen", duration: 1, instruction: "Nochmal schnüffeln" },
-                    { phase: "einatmen", duration: 1, instruction: "Und nochmal" },
-                    { phase: "ausatmen", duration: 4, instruction: "Laaaang ausatmen" }
-                ],
-                cycles: 5,
-                ageRange: "4-8 Jahre"
-            },
-            starBreathing: {
-                name: "Stern-Atmung",
-                description: "Mit dem Finger einem Stern folgen",
-                instructions: "Zeichne einen Stern. Beim Hochgehen = einatmen, beim Runtergehen = ausatmen",
-                visualAid: true,
-                ageRange: "5-10 Jahre"
-            }
+        diaphragmatic: {
+            name: 'Zwerchfellatmung',
+            description: 'Grundlegende Bauchatmung zur Aktivierung des Parasympathikus',
+            ageRange: '6+ Jahre',
+            evidence: 'Evidenzgrad: Hoch (Ma et al., 2017)',
+            steps: [
+                { phase: 'einatmen', duration: 4, instruction: 'Durch die Nase einatmen, Bauch hebt sich' },
+                { phase: 'ausatmen', duration: 6, instruction: 'Langsam durch den Mund ausatmen, Bauch senkt sich' }
+            ],
+            cycles: 10
         },
-
-        getExerciseForAge(age) {
-            if (age < 6) return this.exercises.bunnyBreathing;
-            if (age < 10) return this.exercises.starBreathing;
-            return this.exercises.boxBreathing;
+        boxBreathing: {
+            name: 'Box-Atmung (4-4-4-4)',
+            description: 'Strukturierte Technik für Fokus und Stressreduktion',
+            ageRange: '8+ Jahre',
+            evidence: 'Verwendet von US Navy SEALs, evidenzbasiert',
+            steps: [
+                { phase: 'einatmen', duration: 4, instruction: '4 Sekunden einatmen' },
+                { phase: 'halten', duration: 4, instruction: '4 Sekunden halten' },
+                { phase: 'ausatmen', duration: 4, instruction: '4 Sekunden ausatmen' },
+                { phase: 'halten', duration: 4, instruction: '4 Sekunden halten' }
+            ],
+            cycles: 4
         },
-
-        getTotalDuration(exercise) {
-            const cycleDuration = exercise.steps.reduce((sum, step) => sum + step.duration, 0);
-            return cycleDuration * exercise.cycles;
+        fourSevenEight: {
+            name: '4-7-8 Atmung',
+            description: 'Beruhigende Technik nach Dr. Andrew Weil',
+            ageRange: '10+ Jahre',
+            evidence: 'Klinisch empfohlen für Angst und Schlafprobleme',
+            steps: [
+                { phase: 'einatmen', duration: 4, instruction: 'Durch die Nase einatmen' },
+                { phase: 'halten', duration: 7, instruction: 'Atem anhalten' },
+                { phase: 'ausatmen', duration: 8, instruction: 'Mit Geräusch durch den Mund ausatmen' }
+            ],
+            cycles: 4
+        },
+        starBreathing: {
+            name: 'Stern-Atmung',
+            description: 'Kinderfreundliche visuelle Atemübung',
+            ageRange: '5-10 Jahre',
+            evidence: 'Angepasst für jüngere Kinder',
+            visual: true,
+            instruction: 'Fahre mit dem Finger den Stern nach: Hoch = einatmen, Runter = ausatmen'
         }
+    },
+
+    generateBreathingExercisesUI: function() {
+        let exercisesHtml = '';
+
+        Object.entries(this.breathingExercises).forEach(([key, ex]) => {
+            exercisesHtml += `
+                <div class="breathing-exercise-card">
+                    <h4>${ex.name}</h4>
+                    <p class="exercise-description">${ex.description}</p>
+                    <div class="exercise-meta">
+                        <span class="age-range">👶 ${ex.ageRange}</span>
+                        <span class="evidence">${ex.evidence}</span>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="SessionToolsModule.startBreathingExercise('${key}')">
+                        ▶️ Übung starten
+                    </button>
+                </div>
+            `;
+        });
+
+        return `
+            <div class="breathing-container">
+                <div class="tool-info-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p>Kontrolliertes Atmen aktiviert den <strong>Parasympathikus</strong> (Vagusnerv) und reduziert
+                    nachweislich Stress, Angst und körperliche Anspannung. Eine Meta-Analyse (Zaccaro et al., 2018)
+                    zeigt signifikante Effekte auf HRV, Cortisol und subjektives Wohlbefinden.</p>
+                </div>
+
+                <div class="breathing-exercises-grid">
+                    ${exercisesHtml}
+                </div>
+
+                <div id="breathing-animation" class="breathing-animation-container" style="display:none;">
+                    <div class="animation-header">
+                        <h3 id="breathing-title">Atemübung</h3>
+                        <button type="button" class="btn-close" onclick="SessionToolsModule.stopBreathingExercise()">✕</button>
+                    </div>
+                    <div class="breathing-circle" id="breathing-circle">
+                        <span id="breathing-instruction">Bereit?</span>
+                    </div>
+                    <div class="breathing-progress">
+                        <span>Zyklus: <span id="breathing-cycle">0</span> / <span id="breathing-total">0</span></span>
+                    </div>
+                    <div class="breathing-timer" id="breathing-timer">0</div>
+                </div>
+
+                <div class="reference-footer">
+                    <small>Referenzen: Ma, X. et al. (2017). The Effect of Diaphragmatic Breathing. Frontiers in Psychology. |
+                    Zaccaro, A. et al. (2018). How Breath-Control Can Change Your Life. Frontiers in Human Neuroscience.</small>
+                </div>
+            </div>
+        `;
+    },
+
+    breathingInterval: null,
+    breathingTimeout: null,
+
+    startBreathingExercise: function(key) {
+        const exercise = this.breathingExercises[key];
+        if (!exercise || !exercise.steps) {
+            alert('Diese Übung hat ein visuelles Format. Folge der Anleitung: ' + (exercise.instruction || ''));
+            return;
+        }
+
+        const container = document.getElementById('breathing-animation');
+        const circle = document.getElementById('breathing-circle');
+        const instruction = document.getElementById('breathing-instruction');
+        const cycleDisplay = document.getElementById('breathing-cycle');
+        const totalDisplay = document.getElementById('breathing-total');
+        const timerDisplay = document.getElementById('breathing-timer');
+        const titleDisplay = document.getElementById('breathing-title');
+
+        if (!container) return;
+
+        container.style.display = 'block';
+        titleDisplay.textContent = exercise.name;
+        totalDisplay.textContent = exercise.cycles;
+
+        let currentCycle = 0;
+        let currentStep = 0;
+
+        const runStep = () => {
+            if (currentCycle >= exercise.cycles) {
+                this.stopBreathingExercise();
+                instruction.textContent = 'Fertig! Gut gemacht! 🎉';
+                return;
+            }
+
+            const step = exercise.steps[currentStep];
+            instruction.textContent = step.instruction;
+
+            // Animate circle
+            if (step.phase === 'einatmen') {
+                circle.style.transform = 'scale(1.3)';
+                circle.style.backgroundColor = '#22c55e';
+            } else if (step.phase === 'ausatmen') {
+                circle.style.transform = 'scale(1)';
+                circle.style.backgroundColor = '#3b82f6';
+            } else {
+                circle.style.backgroundColor = '#f59e0b';
+            }
+
+            // Countdown
+            let remaining = step.duration;
+            timerDisplay.textContent = remaining;
+
+            this.breathingInterval = setInterval(() => {
+                remaining--;
+                timerDisplay.textContent = remaining;
+                if (remaining <= 0) {
+                    clearInterval(this.breathingInterval);
+                }
+            }, 1000);
+
+            this.breathingTimeout = setTimeout(() => {
+                currentStep++;
+                if (currentStep >= exercise.steps.length) {
+                    currentStep = 0;
+                    currentCycle++;
+                    cycleDisplay.textContent = currentCycle;
+                }
+                runStep();
+            }, step.duration * 1000);
+        };
+
+        cycleDisplay.textContent = '0';
+        runStep();
+    },
+
+    stopBreathingExercise: function() {
+        clearInterval(this.breathingInterval);
+        clearTimeout(this.breathingTimeout);
+        const container = document.getElementById('breathing-animation');
+        if (container) container.style.display = 'none';
     },
 
     // ============================================================
     // STIMMUNGSTAGEBUCH
     // ============================================================
 
-    moodDiary: {
-        fields: [
-            { id: 'date', type: 'date', label: 'Datum' },
-            { id: 'time', type: 'time', label: 'Uhrzeit' },
-            { id: 'mood', type: 'thermometer', label: 'Stimmung (0-10)', scale: 'general' },
-            { id: 'energy', type: 'slider', label: 'Energie (0-10)' },
-            { id: 'anxiety', type: 'thermometer', label: 'Angst (0-10)', scale: 'anxiety' },
-            { id: 'situation', type: 'text', label: 'Was ist passiert?' },
-            { id: 'thoughts', type: 'text', label: 'Was habe ich gedacht?' },
-            { id: 'coping', type: 'text', label: 'Was habe ich gemacht?' },
-            { id: 'helpful', type: 'boolean', label: 'Hat es geholfen?' }
-        ],
+    moodEntries: [],
 
-        createEntry(data) {
-            return {
-                id: Date.now().toString(),
-                timestamp: new Date().toISOString(),
-                ...data
+    generateMoodDiaryUI: function() {
+        return `
+            <div class="mood-diary-container">
+                <div class="tool-info-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p>Das Stimmungstagebuch ist eine zentrale Technik der <strong>Kognitiven Verhaltenstherapie (KVT)</strong>.
+                    Das Selbstmonitoring von Stimmung, Gedanken und Verhalten erhöht die Selbstwahrnehmung und
+                    ermöglicht das Erkennen von Mustern und Auslösern (Beck, 2011).</p>
+                </div>
+
+                <div class="mood-entry-form">
+                    <h4>📝 Neuer Eintrag</h4>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Datum:</label>
+                            <input type="date" id="mood-date" class="form-input" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="form-group">
+                            <label>Uhrzeit:</label>
+                            <input type="time" id="mood-time" class="form-input" value="${new Date().toTimeString().slice(0,5)}">
+                        </div>
+                    </div>
+
+                    <div class="mood-sliders">
+                        <div class="mood-slider-group">
+                            <label>😊 Stimmung: <span id="mood-value-display">5</span>/10</label>
+                            <input type="range" id="mood-value" min="0" max="10" value="5"
+                                   oninput="document.getElementById('mood-value-display').textContent = this.value">
+                        </div>
+                        <div class="mood-slider-group">
+                            <label>⚡ Energie: <span id="energy-value-display">5</span>/10</label>
+                            <input type="range" id="energy-value" min="0" max="10" value="5"
+                                   oninput="document.getElementById('energy-value-display').textContent = this.value">
+                        </div>
+                        <div class="mood-slider-group">
+                            <label>😰 Angst: <span id="anxiety-value-display">3</span>/10</label>
+                            <input type="range" id="anxiety-value" min="0" max="10" value="3"
+                                   oninput="document.getElementById('anxiety-value-display').textContent = this.value">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📍 Situation / Was ist passiert?</label>
+                        <textarea id="mood-situation" class="form-textarea" rows="2" placeholder="Beschreibe kurz die Situation..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>💭 Gedanken</label>
+                        <textarea id="mood-thoughts" class="form-textarea" rows="2" placeholder="Was hast du gedacht?"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🛠️ Was hast du gemacht? (Coping)</label>
+                        <textarea id="mood-coping" class="form-textarea" rows="2" placeholder="Welche Strategie hast du angewendet?"></textarea>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="SessionToolsModule.saveMoodEntry()">
+                        💾 Eintrag speichern
+                    </button>
+                </div>
+
+                <div class="mood-history-section">
+                    <h4>📊 Meine Einträge</h4>
+                    <div id="mood-history"></div>
+                </div>
+
+                <div class="reference-footer">
+                    <small>Referenz: Beck, J.S. (2011). Cognitive Behavior Therapy: Basics and Beyond. Guilford Press.</small>
+                </div>
+            </div>
+        `;
+    },
+
+    saveMoodEntry: function() {
+        const entry = {
+            id: Date.now().toString(),
+            timestamp: new Date().toISOString(),
+            date: document.getElementById('mood-date')?.value,
+            time: document.getElementById('mood-time')?.value,
+            mood: parseInt(document.getElementById('mood-value')?.value || 5),
+            energy: parseInt(document.getElementById('energy-value')?.value || 5),
+            anxiety: parseInt(document.getElementById('anxiety-value')?.value || 3),
+            situation: document.getElementById('mood-situation')?.value || '',
+            thoughts: document.getElementById('mood-thoughts')?.value || '',
+            coping: document.getElementById('mood-coping')?.value || ''
+        };
+
+        this.moodEntries.push(entry);
+
+        try {
+            localStorage.setItem('padopsych_mood_diary', JSON.stringify(this.moodEntries));
+        } catch(e) {}
+
+        // Clear form
+        document.getElementById('mood-situation').value = '';
+        document.getElementById('mood-thoughts').value = '';
+        document.getElementById('mood-coping').value = '';
+
+        this.renderMoodHistory();
+        alert('Eintrag gespeichert!');
+    },
+
+    renderMoodHistory: function() {
+        try {
+            const stored = localStorage.getItem('padopsych_mood_diary');
+            if (stored) this.moodEntries = JSON.parse(stored);
+        } catch(e) {}
+
+        const container = document.getElementById('mood-history');
+        if (!container) return;
+
+        if (this.moodEntries.length === 0) {
+            container.innerHTML = '<p class="placeholder-text">Noch keine Einträge vorhanden.</p>';
+            return;
+        }
+
+        const recent = this.moodEntries.slice(-7).reverse();
+
+        container.innerHTML = `
+            <div class="mood-entries-list">
+                ${recent.map(e => `
+                    <div class="mood-entry-card">
+                        <div class="entry-header">
+                            <span class="entry-date">${e.date} ${e.time}</span>
+                            <div class="entry-values">
+                                <span class="mood-badge" style="background:${this.getMoodColor(e.mood)}">😊 ${e.mood}</span>
+                                <span class="energy-badge">⚡ ${e.energy}</span>
+                                <span class="anxiety-badge" style="background:${this.getMoodColor(10 - e.anxiety)}">😰 ${e.anxiety}</span>
+                            </div>
+                        </div>
+                        ${e.situation ? `<p><strong>Situation:</strong> ${e.situation}</p>` : ''}
+                        ${e.thoughts ? `<p><strong>Gedanken:</strong> ${e.thoughts}</p>` : ''}
+                        ${e.coping ? `<p><strong>Coping:</strong> ${e.coping}</p>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    },
+
+    getMoodColor: function(value) {
+        if (value <= 3) return '#fee2e2';
+        if (value <= 6) return '#fef3c7';
+        return '#d1fae5';
+    },
+
+    // ============================================================
+    // EMOTIONSRAD (nach Plutchik)
+    // ============================================================
+
+    emotionWheel: {
+        joy: { name: 'Freude', color: '#fbbf24', emoji: '😊', opposite: 'sadness',
+            secondary: ['Begeisterung', 'Stolz', 'Optimismus', 'Dankbarkeit', 'Zufriedenheit'] },
+        sadness: { name: 'Traurigkeit', color: '#3b82f6', emoji: '😢', opposite: 'joy',
+            secondary: ['Einsamkeit', 'Enttäuschung', 'Hoffnungslosigkeit', 'Verletzung', 'Sehnsucht'] },
+        anger: { name: 'Wut', color: '#ef4444', emoji: '😠', opposite: 'fear',
+            secondary: ['Ärger', 'Frustration', 'Eifersucht', 'Empörung', 'Verachtung'] },
+        fear: { name: 'Angst', color: '#8b5cf6', emoji: '😨', opposite: 'anger',
+            secondary: ['Nervosität', 'Unsicherheit', 'Panik', 'Sorge', 'Hilflosigkeit'] },
+        surprise: { name: 'Überraschung', color: '#ec4899', emoji: '😲', opposite: 'anticipation',
+            secondary: ['Erstaunen', 'Verwirrung', 'Schock', 'Faszination'] },
+        disgust: { name: 'Ekel', color: '#22c55e', emoji: '🤢', opposite: 'trust',
+            secondary: ['Abscheu', 'Ablehnung', 'Verachtung'] }
+    },
+
+    generateEmotionWheelUI: function() {
+        let wheelHtml = '';
+
+        Object.entries(this.emotionWheel).forEach(([key, emotion]) => {
+            wheelHtml += `
+                <div class="emotion-wheel-segment" style="background-color: ${emotion.color}20; border-color: ${emotion.color};"
+                     onclick="SessionToolsModule.selectPrimaryEmotion('${key}')">
+                    <span class="emotion-emoji">${emotion.emoji}</span>
+                    <span class="emotion-name">${emotion.name}</span>
+                </div>
+            `;
+        });
+
+        return `
+            <div class="emotion-wheel-container">
+                <div class="tool-info-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p>Das Emotionsrad basiert auf <strong>Robert Plutchiks Theorie der Grundemotionen</strong> (2001).
+                    Es unterscheidet 6-8 primäre Emotionen, die sich in Intensität und Kombination variieren.
+                    Das Rad hilft beim <strong>differenzierten Benennen</strong> von Gefühlen - eine Kernkompetenz
+                    der emotionalen Intelligenz und Voraussetzung für effektive Emotionsregulation.</p>
+                </div>
+
+                <h4>Wähle dein Grundgefühl:</h4>
+                <div class="emotion-wheel-grid">
+                    ${wheelHtml}
+                </div>
+
+                <div id="emotion-secondary" class="emotion-secondary-panel" style="display:none;">
+                    <h4>Genauer: Welche Variante passt besser?</h4>
+                    <div id="emotion-secondary-options" class="secondary-options"></div>
+                </div>
+
+                <div id="emotion-result" class="emotion-result" style="display:none;">
+                    <h4>Dein Gefühl:</h4>
+                    <div id="emotion-result-content"></div>
+                    <p class="emotion-tip" id="emotion-tip"></p>
+                </div>
+
+                <div class="reference-footer">
+                    <small>Referenz: Plutchik, R. (2001). The Nature of Emotions. American Scientist, 89(4), 344-350.</small>
+                </div>
+            </div>
+        `;
+    },
+
+    selectedEmotion: null,
+
+    selectPrimaryEmotion: function(key) {
+        const emotion = this.emotionWheel[key];
+        this.selectedEmotion = { primary: key, ...emotion };
+
+        const secondaryPanel = document.getElementById('emotion-secondary');
+        const optionsContainer = document.getElementById('emotion-secondary-options');
+
+        if (secondaryPanel && optionsContainer) {
+            secondaryPanel.style.display = 'block';
+
+            optionsContainer.innerHTML = emotion.secondary.map(sec => `
+                <button type="button" class="btn btn-secondary emotion-secondary-btn"
+                        style="border-color: ${emotion.color};"
+                        onclick="SessionToolsModule.selectSecondaryEmotion('${sec}')">
+                    ${sec}
+                </button>
+            `).join('');
+        }
+
+        // Show basic result
+        this.showEmotionResult(emotion.name, emotion);
+    },
+
+    selectSecondaryEmotion: function(secondary) {
+        const emotion = this.selectedEmotion;
+        this.showEmotionResult(secondary, emotion);
+    },
+
+    showEmotionResult: function(emotionName, emotionData) {
+        const resultPanel = document.getElementById('emotion-result');
+        const resultContent = document.getElementById('emotion-result-content');
+        const tipElement = document.getElementById('emotion-tip');
+
+        if (resultPanel && resultContent) {
+            resultPanel.style.display = 'block';
+            resultContent.innerHTML = `
+                <div class="result-emotion" style="background-color: ${emotionData.color}20; border-color: ${emotionData.color};">
+                    <span class="result-emoji">${emotionData.emoji}</span>
+                    <span class="result-name">${emotionName}</span>
+                    <span class="result-primary">(${emotionData.name})</span>
+                </div>
+            `;
+
+            // Give a tip based on emotion
+            const tips = {
+                joy: 'Genieße dieses Gefühl! Was hat dazu beigetragen?',
+                sadness: 'Traurigkeit ist okay. Was brauchst du gerade? Vielleicht Trost oder Ruhe?',
+                anger: 'Wut zeigt, dass dir etwas wichtig ist. Atme tief durch, bevor du handelst.',
+                fear: 'Angst will dich schützen. Ist die Gefahr real? Was kannst du tun?',
+                surprise: 'Überraschung braucht Zeit zur Verarbeitung. Nimm dir einen Moment.',
+                disgust: 'Ekel zeigt Grenzen auf. Was möchtest du vermeiden?'
             };
-        },
 
-        analyzeEntries(entries, days = 7) {
-            const cutoff = new Date();
-            cutoff.setDate(cutoff.getDate() - days);
-
-            const recent = entries.filter(e => new Date(e.timestamp) >= cutoff);
-
-            if (recent.length === 0) return null;
-
-            const avgMood = recent.reduce((sum, e) => sum + (e.mood || 0), 0) / recent.length;
-            const avgAnxiety = recent.reduce((sum, e) => sum + (e.anxiety || 0), 0) / recent.length;
-            const avgEnergy = recent.reduce((sum, e) => sum + (e.energy || 0), 0) / recent.length;
-
-            // Find patterns
-            const lowMoodEntries = recent.filter(e => e.mood <= 3);
-            const highAnxietyEntries = recent.filter(e => e.anxiety >= 7);
-
-            return {
-                period: `Letzte ${days} Tage`,
-                entryCount: recent.length,
-                averages: {
-                    mood: Math.round(avgMood * 10) / 10,
-                    anxiety: Math.round(avgAnxiety * 10) / 10,
-                    energy: Math.round(avgEnergy * 10) / 10
-                },
-                lowMoodCount: lowMoodEntries.length,
-                highAnxietyCount: highAnxietyEntries.length,
-                commonSituations: this.findCommonPatterns(recent, 'situation'),
-                helpfulStrategies: recent.filter(e => e.helpful).map(e => e.coping).filter(Boolean)
-            };
-        },
-
-        findCommonPatterns(entries, field) {
-            const counts = {};
-            entries.forEach(e => {
-                if (e[field]) {
-                    // Very simple pattern matching - in production use NLP
-                    const key = e[field].toLowerCase().substring(0, 30);
-                    counts[key] = (counts[key] || 0) + 1;
-                }
-            });
-            return Object.entries(counts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 3)
-                .map(([pattern, count]) => ({ pattern, count }));
+            tipElement.textContent = tips[emotionData.opposite ? this.selectedEmotion.primary : 'joy'] || '';
         }
     },
 
     // ============================================================
-    // EMOTIONSRAD
+    // AMPELSYSTEM
     // ============================================================
 
-    emotionWheel: {
-        name: "Emotionsrad",
-        description: "Hilft beim Erkennen und Benennen von Gefühlen",
+    generateTrafficLightUI: function() {
+        return `
+            <div class="traffic-light-container">
+                <div class="tool-info-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p>Das Ampelsystem ist eine vereinfachte Form des <strong>Zones of Regulation</strong>-Konzepts
+                    (Kuypers, 2011). Es hilft Kindern, ihren emotionalen Zustand zu erkennen und passende
+                    Selbstregulationsstrategien anzuwenden - ein wichtiger Baustein der emotionalen Kompetenz.</p>
+                </div>
 
-        primaryEmotions: {
-            joy: {
-                name: "Freude",
-                color: "#fbbf24",
-                emoji: "😊",
-                secondary: [
-                    { name: "glücklich", tertiary: ["froh", "zufrieden", "begeistert"] },
-                    { name: "stolz", tertiary: ["selbstbewusst", "erfolgreich"] },
-                    { name: "optimistisch", tertiary: ["hoffnungsvoll", "zuversichtlich"] },
-                    { name: "aufgeregt", tertiary: ["gespannt", "enthusiastisch"] },
-                    { name: "dankbar", tertiary: ["wertschätzend", "berührt"] }
-                ]
-            },
-            sadness: {
-                name: "Traurigkeit",
-                color: "#3b82f6",
-                emoji: "😢",
-                secondary: [
-                    { name: "traurig", tertiary: ["niedergeschlagen", "bedrückt"] },
-                    { name: "einsam", tertiary: ["allein", "isoliert", "verlassen"] },
-                    { name: "enttäuscht", tertiary: ["frustriert", "desillusioniert"] },
-                    { name: "hoffnungslos", tertiary: ["verzweifelt", "resigniert"] },
-                    { name: "verletzt", tertiary: ["gekränkt", "betroffen"] }
-                ]
-            },
-            anger: {
-                name: "Wut",
-                color: "#ef4444",
-                emoji: "😠",
-                secondary: [
-                    { name: "wütend", tertiary: ["ärgerlich", "gereizt", "genervt"] },
-                    { name: "frustriert", tertiary: ["ungeduldig", "blockiert"] },
-                    { name: "beleidigt", tertiary: ["gekränkt", "empört"] },
-                    { name: "eifersüchtig", tertiary: ["neidisch", "missgünstig"] },
-                    { name: "aggressiv", tertiary: ["kämpferisch", "feindselig"] }
-                ]
-            },
-            fear: {
-                name: "Angst",
-                color: "#8b5cf6",
-                emoji: "😨",
-                secondary: [
-                    { name: "ängstlich", tertiary: ["besorgt", "nervös", "aufgeregt"] },
-                    { name: "unsicher", tertiary: ["zweifelnd", "unentschlossen"] },
-                    { name: "hilflos", tertiary: ["machtlos", "überwältigt"] },
-                    { name: "panisch", tertiary: ["erschrocken", "schockiert"] },
-                    { name: "bedroht", tertiary: ["gefährdet", "verwundbar"] }
-                ]
-            },
-            surprise: {
-                name: "Überraschung",
-                color: "#ec4899",
-                emoji: "😲",
-                secondary: [
-                    { name: "überrascht", tertiary: ["erstaunt", "verblüfft"] },
-                    { name: "verwirrt", tertiary: ["perplex", "desorientiert"] },
-                    { name: "fasziniert", tertiary: ["neugierig", "interessiert"] }
-                ]
-            },
-            disgust: {
-                name: "Ekel",
-                color: "#22c55e",
-                emoji: "🤢",
-                secondary: [
-                    { name: "angewidert", tertiary: ["abgestoßen", "empört"] },
-                    { name: "verächtlich", tertiary: ["geringschätzig", "abwertend"] }
-                ]
-            }
+                <div class="traffic-light-visual">
+                    <div class="traffic-light">
+                        <div class="light green" id="light-green" onclick="SessionToolsModule.selectZone('green')">🟢</div>
+                        <div class="light yellow" id="light-yellow" onclick="SessionToolsModule.selectZone('yellow')">🟡</div>
+                        <div class="light red" id="light-red" onclick="SessionToolsModule.selectZone('red')">🔴</div>
+                    </div>
+                </div>
+
+                <div class="zone-selector">
+                    <h4>Wie fühlst du dich gerade?</h4>
+                    <p>Klicke auf die passende Ampelfarbe</p>
+                </div>
+
+                <div id="zone-details" class="zone-details" style="display:none;"></div>
+
+                <div class="zone-legend">
+                    <div class="legend-item green-zone">
+                        <span class="legend-color" style="background:#22c55e;"></span>
+                        <div>
+                            <strong>Grün - Alles gut!</strong>
+                            <p>Ich bin ruhig, kann gut denken und gut zuhören.</p>
+                        </div>
+                    </div>
+                    <div class="legend-item yellow-zone">
+                        <span class="legend-color" style="background:#fbbf24;"></span>
+                        <div>
+                            <strong>Gelb - Vorsicht!</strong>
+                            <p>Ich werde unruhig, mein Herz schlägt schneller, ich kann mich nicht gut konzentrieren.</p>
+                        </div>
+                    </div>
+                    <div class="legend-item red-zone">
+                        <span class="legend-color" style="background:#ef4444;"></span>
+                        <div>
+                            <strong>Rot - Stopp!</strong>
+                            <p>Ich bin sehr aufgeregt/wütend/ängstlich, ich kann nicht mehr gut denken.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reference-footer">
+                    <small>Referenz: Kuypers, L. (2011). The Zones of Regulation. Think Social Publishing.</small>
+                </div>
+            </div>
+        `;
+    },
+
+    zoneStrategies: {
+        green: {
+            title: '🟢 Du bist in der grünen Zone - Super!',
+            message: 'Du bist ruhig und bereit zu lernen und zu spielen.',
+            strategies: [
+                'Weitermachen wie bisher',
+                'Gute Entscheidungen treffen',
+                'Anderen helfen',
+                'Neue Dinge ausprobieren'
+            ]
         },
-
-        findEmotion(word) {
-            const lowWord = word.toLowerCase();
-
-            for (const [key, primary] of Object.entries(this.primaryEmotions)) {
-                if (primary.name.toLowerCase() === lowWord) {
-                    return { level: 'primary', emotion: primary };
-                }
-
-                for (const secondary of primary.secondary) {
-                    if (secondary.name.toLowerCase() === lowWord) {
-                        return { level: 'secondary', emotion: secondary, primary: primary };
-                    }
-
-                    for (const tertiary of secondary.tertiary) {
-                        if (tertiary.toLowerCase() === lowWord) {
-                            return { level: 'tertiary', emotion: tertiary, secondary: secondary, primary: primary };
-                        }
-                    }
-                }
-            }
-
-            return null;
+        yellow: {
+            title: '🟡 Du bist in der gelben Zone - Aufpassen!',
+            message: 'Du merkst, dass du unruhiger wirst. Zeit für eine Strategie!',
+            strategies: [
+                'STOPP - Kurz anhalten',
+                '3 tiefe Atemzüge nehmen',
+                'Langsam bis 10 zählen',
+                'Um eine kurze Pause bitten',
+                'Sich bewegen (Hampelmänner)',
+                'Etwas Kaltes trinken'
+            ]
         },
+        red: {
+            title: '🔴 Du bist in der roten Zone - Stopp!',
+            message: 'Du brauchst jetzt Hilfe, dich zu beruhigen. Das ist okay!',
+            strategies: [
+                'STOPP - Nichts tun oder sagen!',
+                'Aus der Situation gehen (wenn möglich)',
+                'Einen Erwachsenen um Hilfe bitten',
+                'Ins Kissen atmen oder schreien',
+                'Kaltes Wasser ins Gesicht',
+                'Sich in eine Decke wickeln'
+            ]
+        }
+    },
 
-        getAllEmotionWords() {
-            const words = [];
-            Object.values(this.primaryEmotions).forEach(primary => {
-                words.push(primary.name);
-                primary.secondary.forEach(secondary => {
-                    words.push(secondary.name);
-                    words.push(...secondary.tertiary);
-                });
-            });
-            return words;
+    selectZone: function(zone) {
+        // Reset all lights
+        document.querySelectorAll('.traffic-light .light').forEach(l => l.classList.remove('active'));
+
+        // Activate selected
+        const light = document.getElementById(`light-${zone}`);
+        if (light) light.classList.add('active');
+
+        // Show strategies
+        const details = document.getElementById('zone-details');
+        const zoneData = this.zoneStrategies[zone];
+
+        if (details && zoneData) {
+            details.style.display = 'block';
+            details.innerHTML = `
+                <div class="zone-info zone-${zone}">
+                    <h4>${zoneData.title}</h4>
+                    <p>${zoneData.message}</p>
+                    <h5>Was du tun kannst:</h5>
+                    <ul>
+                        ${zoneData.strategies.map(s => `<li>${s}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
         }
     }
 };
 
-// Export
+// Export für globalen Zugriff
 if (typeof window !== 'undefined') {
-    window.SessionTools = SessionTools;
+    window.SessionToolsModule = SessionToolsModule;
 }
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SessionTools;
+    module.exports = SessionToolsModule;
 }

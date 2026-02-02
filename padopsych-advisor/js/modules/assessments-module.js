@@ -583,6 +583,485 @@ const AssessmentsModule = {
         }
 
         return recommendations;
+    },
+
+    // ============================================================
+    // UI GENERATOR FUNCTIONS
+    // ============================================================
+
+    generateSDQUI: function() {
+        const sdq = this.SDQ;
+        const itemsHtml = sdq.items.map((item, idx) => `
+            <div class="assessment-item" data-item-id="${item.id}">
+                <div class="item-number">${idx + 1}</div>
+                <div class="item-text">${item.text}</div>
+                <div class="item-options">
+                    ${sdq.responseOptions.map(opt => `
+                        <label class="radio-option">
+                            <input type="radio" name="${item.id}" value="${opt.value}"
+                                   onchange="AssessmentsModule.handleSDQResponse('${item.id}', ${opt.value})">
+                            <span class="radio-label">${opt.label}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="assessment-container sdq-assessment">
+                <div class="tool-info-box scientific-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p><strong>SDQ - Strengths and Difficulties Questionnaire</strong></p>
+                    <p>Entwickelt von <strong>Robert Goodman (1997)</strong>, Journal of Child Psychology and Psychiatry.</p>
+                    <ul>
+                        <li>Validiert für <strong>4-17 Jahre</strong></li>
+                        <li>In über <strong>40 Sprachen</strong> verfügbar</li>
+                        <li>Deutsche Normen: <strong>Woerner et al. (2004)</strong></li>
+                        <li>Erfasst: Emotionale Probleme, Verhaltensauffälligkeiten, Hyperaktivität, Peer-Probleme, Prosoziales Verhalten</li>
+                    </ul>
+                    <p class="reference">Quelle: <a href="https://www.sdqinfo.org" target="_blank">www.sdqinfo.org</a> (kostenlos für nicht-kommerzielle Nutzung)</p>
+                </div>
+
+                <div class="assessment-header">
+                    <h3>${sdq.info.name}</h3>
+                    <div class="assessment-meta">
+                        <span class="badge">Altersbereich: ${sdq.info.ageRange}</span>
+                        <span class="badge">Dauer: ${sdq.info.duration}</span>
+                        <span class="badge">${sdq.info.license}</span>
+                    </div>
+                </div>
+
+                <div class="version-selector">
+                    <label>Version auswählen:</label>
+                    <select id="sdq-version" onchange="AssessmentsModule.setSDQVersion(this.value)">
+                        <option value="parent">Elternfragebogen (4-17 Jahre)</option>
+                        <option value="self">Selbstbericht (11-17 Jahre)</option>
+                        <option value="teacher">Lehrerfragebogen (4-17 Jahre)</option>
+                    </select>
+                </div>
+
+                <div class="assessment-instructions">
+                    <p>Bitte kreuzen Sie für jede Aussage an, ob diese auf das Kind/den Jugendlichen zutrifft.</p>
+                </div>
+
+                <div class="assessment-items">
+                    ${itemsHtml}
+                </div>
+
+                <div class="assessment-actions">
+                    <button class="btn btn-primary" onclick="AssessmentsModule.calculateAndShowSDQResults()">
+                        <i class="fas fa-calculator"></i> Auswerten
+                    </button>
+                    <button class="btn btn-secondary" onclick="AssessmentsModule.resetSDQ()">
+                        <i class="fas fa-redo"></i> Zurücksetzen
+                    </button>
+                    <button class="btn btn-outline" onclick="AssessmentsModule.exportSDQ()">
+                        <i class="fas fa-download"></i> Exportieren
+                    </button>
+                </div>
+
+                <div id="sdq-results" class="assessment-results" style="display:none;"></div>
+            </div>
+        `;
+    },
+
+    generateSCAREDUI: function() {
+        const scared = this.SCARED;
+
+        return `
+            <div class="assessment-container scared-assessment">
+                <div class="tool-info-box scientific-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p><strong>SCARED - Screen for Child Anxiety Related Disorders</strong></p>
+                    <p>Entwickelt von <strong>Birmaher et al. (1997)</strong>, Journal of the American Academy of Child & Adolescent Psychiatry.</p>
+                    <ul>
+                        <li><strong>41 Items</strong>, validiert für <strong>8-18 Jahre</strong></li>
+                        <li>Erfasst 5 Subskalen: Panikstörung, Generalisierte Angst, Trennungsangst, Soziale Angst, Schulangst</li>
+                        <li>Cut-off für klinisch relevante Angst: <strong>≥25 Punkte</strong></li>
+                        <li>Sensitivität: <strong>71%</strong>, Spezifität: <strong>67%</strong></li>
+                    </ul>
+                    <p class="reference">Kostenlos für klinische und Forschungszwecke verfügbar.</p>
+                </div>
+
+                <div class="assessment-header">
+                    <h3>${scared.info.name}</h3>
+                    <div class="assessment-meta">
+                        <span class="badge">Altersbereich: ${scared.info.ageRange}</span>
+                        <span class="badge">Dauer: ${scared.info.duration}</span>
+                        <span class="badge">Cut-off: ≥${scared.info.cutoff}</span>
+                    </div>
+                </div>
+
+                <div class="subscales-overview">
+                    <h4>Subskalen des SCARED</h4>
+                    <div class="subscales-grid">
+                        ${Object.entries(scared.subscales).map(([key, scale]) => `
+                            <div class="subscale-card">
+                                <div class="subscale-name">${scale.name}</div>
+                                <div class="subscale-info">
+                                    <span>${scale.items} Items</span>
+                                    <span>Cut-off: ≥${scale.cutoff}</span>
+                                </div>
+                                <div class="subscale-description">${scale.description}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="sample-items">
+                    <h4>Beispiel-Items (zur Veranschaulichung)</h4>
+                    ${scared.sampleItems.map((item, idx) => `
+                        <div class="sample-item">
+                            <span class="item-num">${idx + 1}.</span>
+                            <span class="item-text">"${item.text}"</span>
+                            <span class="item-subscale badge">${scared.subscales[item.subscale].name}</span>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="assessment-input-section">
+                    <h4>Manuelle Eingabe der Subskalen-Scores</h4>
+                    <p class="hint">Tragen Sie die berechneten Subskalen-Werte ein:</p>
+
+                    <div class="subscale-inputs">
+                        ${Object.entries(scared.subscales).map(([key, scale]) => `
+                            <div class="subscale-input">
+                                <label>${scale.name}:</label>
+                                <input type="number" id="scared-${key}" min="0" max="${scale.items * 2}"
+                                       placeholder="0-${scale.items * 2}">
+                                <span class="cutoff-hint">Cut-off: ${scale.cutoff}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="assessment-actions">
+                    <button class="btn btn-primary" onclick="AssessmentsModule.calculateAndShowSCAREDResults()">
+                        <i class="fas fa-calculator"></i> Auswerten
+                    </button>
+                    <button class="btn btn-outline" onclick="AssessmentsModule.exportSCARED()">
+                        <i class="fas fa-download"></i> Bericht erstellen
+                    </button>
+                </div>
+
+                <div id="scared-results" class="assessment-results" style="display:none;"></div>
+            </div>
+        `;
+    },
+
+    generatePHQAUI: function() {
+        const phq = this.PHQ_A;
+        const itemsHtml = phq.items.map((item, idx) => `
+            <div class="assessment-item ${item.critical ? 'critical-item' : ''}" data-item-id="${item.id}">
+                <div class="item-number">${idx + 1}</div>
+                <div class="item-text">
+                    ${item.text}
+                    ${item.critical ? '<span class="critical-badge">⚠️ Kritisches Item</span>' : ''}
+                </div>
+                <div class="item-options phq-options">
+                    ${phq.responseOptions.map(opt => `
+                        <label class="radio-option">
+                            <input type="radio" name="${item.id}" value="${opt.value}"
+                                   onchange="AssessmentsModule.handlePHQResponse('${item.id}', ${opt.value})">
+                            <span class="radio-label">${opt.label}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="assessment-container phq-assessment">
+                <div class="tool-info-box scientific-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p><strong>PHQ-A - Patient Health Questionnaire für Adoleszente</strong></p>
+                    <p>Adaptiert aus dem <strong>PHQ-9 (Kroenke et al., 2001)</strong>, JAMA.</p>
+                    <ul>
+                        <li>9 Items basierend auf <strong>DSM-Kriterien</strong> für Depression</li>
+                        <li>Validiert für <strong>11-17 Jahre</strong></li>
+                        <li><strong>Item 9</strong> erfasst Suizidgedanken - bei positiver Antwort: Safety Assessment!</li>
+                        <li>Public Domain - kostenlos verwendbar</li>
+                    </ul>
+                    <p class="reference">Quelle: Kroenke, K., Spitzer, R.L., & Williams, J.B. (2001). The PHQ-9: Validity of a brief depression severity measure.</p>
+                </div>
+
+                <div class="assessment-header">
+                    <h3>${phq.info.name}</h3>
+                    <div class="assessment-meta">
+                        <span class="badge">Altersbereich: ${phq.info.ageRange}</span>
+                        <span class="badge">Dauer: ${phq.info.duration}</span>
+                        <span class="badge">${phq.info.license}</span>
+                    </div>
+                </div>
+
+                <div class="severity-legend">
+                    <h4>Schweregrad-Einteilung</h4>
+                    <div class="severity-scale">
+                        ${Object.entries(phq.cutoffs).map(([key, data]) => `
+                            <div class="severity-item" style="background-color: ${data.color}20; border-left: 4px solid ${data.color}">
+                                <strong>${data.min}-${data.max}</strong>: ${data.label}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="assessment-instructions">
+                    <p><strong>Instruktion:</strong> "Wie oft haben dich die folgenden Probleme in den <u>letzten 2 Wochen</u> belastet?"</p>
+                </div>
+
+                <div class="assessment-items">
+                    ${itemsHtml}
+                </div>
+
+                <div class="impact-question">
+                    <h4>Funktionelle Beeinträchtigung</h4>
+                    <p>${phq.impactQuestion.text}</p>
+                    <div class="impact-options">
+                        ${phq.impactQuestion.options.map((opt, idx) => `
+                            <label class="radio-option">
+                                <input type="radio" name="phq-impact" value="${idx}">
+                                <span class="radio-label">${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="assessment-actions">
+                    <button class="btn btn-primary" onclick="AssessmentsModule.calculateAndShowPHQResults()">
+                        <i class="fas fa-calculator"></i> Auswerten
+                    </button>
+                    <button class="btn btn-secondary" onclick="AssessmentsModule.resetPHQ()">
+                        <i class="fas fa-redo"></i> Zurücksetzen
+                    </button>
+                    <button class="btn btn-outline" onclick="AssessmentsModule.exportPHQ()">
+                        <i class="fas fa-download"></i> Bericht erstellen
+                    </button>
+                </div>
+
+                <div id="phq-results" class="assessment-results" style="display:none;"></div>
+            </div>
+        `;
+    },
+
+    // Helper functions for UI
+    sdqResponses: {},
+    phqResponses: {},
+    currentSDQVersion: 'parent',
+
+    setSDQVersion: function(version) {
+        this.currentSDQVersion = version;
+    },
+
+    handleSDQResponse: function(itemId, value) {
+        this.sdqResponses[itemId] = value;
+    },
+
+    handlePHQResponse: function(itemId, value) {
+        this.phqResponses[itemId] = value;
+
+        // Check for item 9 (suicidality)
+        if (itemId === 'phq_09' && value > 0) {
+            this.showSuicidalityWarning();
+        }
+    },
+
+    showSuicidalityWarning: function() {
+        const warningHtml = `
+            <div class="critical-warning-modal">
+                <div class="warning-content">
+                    <h3>⚠️ Suizidalitäts-Screening positiv</h3>
+                    <p>Der Patient/Die Patientin hat bei Item 9 (Suizidgedanken) eine positive Antwort gegeben.</p>
+                    <p><strong>Empfehlung:</strong></p>
+                    <ul>
+                        <li>Führen Sie ein ausführliches Suizidalitäts-Assessment durch</li>
+                        <li>Nutzen Sie das Safety-Modul für das C-SSRS-basierte Screening</li>
+                        <li>Erstellen Sie bei Bedarf einen Safety Plan</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="this.parentElement.parentElement.remove()">Verstanden</button>
+                    <button class="btn btn-danger" onclick="loadClinicalTool('safety', 'screening')">→ Zum Safety-Modul</button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', warningHtml);
+    },
+
+    calculateAndShowSDQResults: function() {
+        const results = this.SDQ.calculateScores(this.sdqResponses, this.currentSDQVersion);
+        const report = this.SDQ.generateReport(results, { name: 'Patient' });
+
+        const categoryColors = { normal: '#10b981', borderline: '#f59e0b', abnormal: '#ef4444' };
+        const categoryLabels = { normal: 'Unauffällig', borderline: 'Grenzwertig', abnormal: 'Auffällig' };
+
+        const resultsHtml = `
+            <div class="results-card">
+                <h4>SDQ Ergebnisse</h4>
+                <div class="results-grid">
+                    ${Object.entries(results).filter(([key]) => !['externalizing', 'internalizing'].includes(key)).map(([scale, data]) => `
+                        <div class="result-item" style="border-left: 4px solid ${categoryColors[data.category] || '#666'}">
+                            <div class="result-label">${this.getScaleLabel(scale)}</div>
+                            <div class="result-score">${data.score}/${data.max}</div>
+                            <div class="result-category" style="color: ${categoryColors[data.category] || '#666'}">
+                                ${categoryLabels[data.category] || data.category}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="interpretation-section">
+                    <h5>Interpretation</h5>
+                    <ul>
+                        ${report.interpretation.map(i => `<li>${i}</li>`).join('')}
+                    </ul>
+                </div>
+
+                ${report.recommendations.length > 0 ? `
+                    <div class="recommendations-section">
+                        <h5>Empfehlungen</h5>
+                        ${report.recommendations.map(rec => `
+                            <div class="recommendation-item">
+                                <strong>Priorität ${rec.priority}:</strong> ${rec.action}
+                                ${rec.instruments ? `<br><small>Instrumente: ${rec.instruments.join(', ')}</small>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        document.getElementById('sdq-results').innerHTML = resultsHtml;
+        document.getElementById('sdq-results').style.display = 'block';
+    },
+
+    getScaleLabel: function(scale) {
+        const labels = {
+            emotional: 'Emotionale Probleme',
+            conduct: 'Verhaltensprobleme',
+            hyperactivity: 'Hyperaktivität',
+            peer: 'Peer-Probleme',
+            prosocial: 'Prosoziales Verhalten',
+            total: 'Gesamtproblemwert'
+        };
+        return labels[scale] || scale;
+    },
+
+    calculateAndShowSCAREDResults: function() {
+        const subscaleScores = {};
+        let totalScore = 0;
+
+        Object.keys(this.SCARED.subscales).forEach(key => {
+            const input = document.getElementById(`scared-${key}`);
+            const value = parseInt(input?.value) || 0;
+            subscaleScores[key] = value;
+            totalScore += value;
+        });
+
+        const results = this.SCARED.interpret(totalScore, subscaleScores);
+
+        const resultsHtml = `
+            <div class="results-card">
+                <h4>SCARED Ergebnisse</h4>
+                <div class="total-score ${results.isAboveCutoff ? 'above-cutoff' : 'below-cutoff'}">
+                    <span class="score-value">${totalScore}</span>
+                    <span class="score-label">Gesamtscore (Cut-off: ≥25)</span>
+                    <span class="score-status">${results.isAboveCutoff ? '⚠️ Über Cut-off' : '✓ Unter Cut-off'}</span>
+                </div>
+
+                <div class="subscale-results">
+                    <h5>Subskalen-Ergebnisse</h5>
+                    ${Object.entries(results.subscaleResults).map(([key, data]) => `
+                        <div class="subscale-result ${data.elevated ? 'elevated' : ''}">
+                            <span class="subscale-name">${data.name}</span>
+                            <span class="subscale-score">${data.score}/${this.SCARED.subscales[key].items * 2}</span>
+                            <span class="subscale-cutoff">Cut-off: ${data.cutoff}</span>
+                            ${data.elevated ? '<span class="elevated-badge">Erhöht</span>' : ''}
+                        </div>
+                    `).join('')}
+                </div>
+
+                ${results.likelyDisorders.length > 0 ? `
+                    <div class="likely-disorders">
+                        <h5>Hinweise auf mögliche Störungen</h5>
+                        <ul>
+                            ${results.likelyDisorders.map(d => `<li>${d}</li>`).join('')}
+                        </ul>
+                        <p class="note"><strong>Hinweis:</strong> Dieses Screening ersetzt keine klinische Diagnostik!</p>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        document.getElementById('scared-results').innerHTML = resultsHtml;
+        document.getElementById('scared-results').style.display = 'block';
+    },
+
+    calculateAndShowPHQResults: function() {
+        const results = this.PHQ_A.calculateScore(this.phqResponses);
+        const report = this.PHQ_A.generateReport(results, { name: 'Patient' });
+
+        const resultsHtml = `
+            <div class="results-card ${results.requiresSafetyAssessment ? 'safety-alert' : ''}">
+                ${results.requiresSafetyAssessment ? `
+                    <div class="safety-warning">
+                        ⚠️ SUIZIDALITÄTS-ASSESSMENT ERFORDERLICH
+                        <button class="btn btn-danger btn-sm" onclick="loadClinicalTool('safety', 'screening')">
+                            → Safety-Modul öffnen
+                        </button>
+                    </div>
+                ` : ''}
+
+                <h4>PHQ-A Ergebnisse</h4>
+                <div class="phq-score-display" style="background-color: ${results.severity.color}20; border-color: ${results.severity.color}">
+                    <div class="score-value">${results.totalScore}/27</div>
+                    <div class="score-label">${results.severity.label}</div>
+                </div>
+
+                <div class="interpretation-section">
+                    <h5>Interpretation</h5>
+                    <p>${report.interpretation}</p>
+                </div>
+
+                <div class="recommendations-section">
+                    <h5>Empfehlungen</h5>
+                    <ul>
+                        ${report.recommendations.map(r => `<li>${r}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('phq-results').innerHTML = resultsHtml;
+        document.getElementById('phq-results').style.display = 'block';
+    },
+
+    resetSDQ: function() {
+        this.sdqResponses = {};
+        document.querySelectorAll('.sdq-assessment input[type="radio"]').forEach(input => input.checked = false);
+        document.getElementById('sdq-results').style.display = 'none';
+    },
+
+    resetPHQ: function() {
+        this.phqResponses = {};
+        document.querySelectorAll('.phq-assessment input[type="radio"]').forEach(input => input.checked = false);
+        document.getElementById('phq-results').style.display = 'none';
+    },
+
+    exportSDQ: function() {
+        const results = this.SDQ.calculateScores(this.sdqResponses, this.currentSDQVersion);
+        const report = this.SDQ.generateReport(results, { name: 'Patient' });
+        console.log('SDQ Export:', report);
+        alert('Export-Funktion: Bericht wurde in der Konsole ausgegeben. Integration in Dokumentationssystem folgt.');
+    },
+
+    exportSCARED: function() {
+        console.log('SCARED Export');
+        alert('Export-Funktion: Bericht wird erstellt...');
+    },
+
+    exportPHQ: function() {
+        const results = this.PHQ_A.calculateScore(this.phqResponses);
+        const report = this.PHQ_A.generateReport(results, { name: 'Patient' });
+        console.log('PHQ-A Export:', report);
+        alert('Export-Funktion: Bericht wurde in der Konsole ausgegeben. Integration in Dokumentationssystem folgt.');
     }
 };
 

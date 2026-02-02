@@ -651,6 +651,561 @@ const TreatmentModule = {
                 trend: change > 0 ? 'improving' : change < 0 ? 'worsening' : 'stable'
             };
         }
+    },
+
+    // ============================================================
+    // UI GENERATOR FUNCTIONS
+    // ============================================================
+
+    currentGoals: [],
+    currentTreatmentPlan: null,
+
+    generateSMARTGoalUI: function() {
+        const templates = this.smartGoals.templates;
+
+        const templateOptions = Object.entries(templates).map(([key, template]) => `
+            <option value="${key}">${this.getTemplateLabel(key)}</option>
+        `).join('');
+
+        return `
+            <div class="smart-goal-container">
+                <div class="tool-info-box scientific-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p><strong>SMART-Ziele in der Psychotherapie</strong></p>
+                    <ul>
+                        <li><strong>S</strong>pezifisch - Konkret und eindeutig formuliert</li>
+                        <li><strong>M</strong>essbar - Fortschritt kann gemessen werden</li>
+                        <li><strong>A</strong>ttraktiv/Akzeptiert - Vom Patienten gewollt</li>
+                        <li><strong>R</strong>ealistisch - Erreichbar mit vorhandenen Ressourcen</li>
+                        <li><strong>T</strong>erminiert - Mit klarem Zeitrahmen</li>
+                    </ul>
+                    <p class="reference">Basierend auf: Locke, E.A., & Latham, G.P. (2002). Building a practically useful theory of goal setting. American Psychologist, 57(9), 705-717.</p>
+                </div>
+
+                <div class="goal-generator-header">
+                    <h3>SMART-Ziel Generator</h3>
+                </div>
+
+                <div class="goal-template-selector">
+                    <label>Zieltyp auswählen:</label>
+                    <select id="goal-template" onchange="TreatmentModule.showGoalTemplate(this.value)">
+                        <option value="">-- Bitte wählen --</option>
+                        ${templateOptions}
+                    </select>
+                </div>
+
+                <div id="goal-template-form" class="goal-form" style="display:none;">
+                    <!-- Dynamic form will be inserted here -->
+                </div>
+
+                <div class="current-goals-section">
+                    <h4>Aktuelle Therapieziele</h4>
+                    <div id="current-goals-list" class="goals-list">
+                        ${this.renderCurrentGoals()}
+                    </div>
+                </div>
+
+                <div class="goal-examples">
+                    <h4>Beispiele für SMART-Ziele</h4>
+                    <div class="examples-grid">
+                        ${Object.entries(templates).slice(0, 3).map(([key, template]) => `
+                            <div class="example-card">
+                                <div class="example-type">${this.getTemplateLabel(key)}</div>
+                                <div class="example-text">"${template.examples[0]?.output || ''}"</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    generateTherapyModulesUI: function() {
+        const modulesHtml = Object.entries(this.therapyModules).map(([key, module]) => `
+            <div class="therapy-module-card" data-diagnosis="${key}">
+                <div class="module-header">
+                    <h4>${module.name}</h4>
+                    <div class="module-meta">
+                        <span class="badge icd">${module.icd10}</span>
+                        <span class="badge evidence">${module.evidenceLevel}</span>
+                    </div>
+                </div>
+                <div class="module-components">
+                    ${module.components.map(comp => `
+                        <div class="component-item priority-${comp.priority}">
+                            <div class="component-header">
+                                <span class="component-name">${comp.name}</span>
+                                <span class="priority-badge">
+                                    ${typeof comp.priority === 'number' ? `P${comp.priority}` : comp.priority}
+                                </span>
+                            </div>
+                            ${comp.programs ? `
+                                <div class="evidence-programs">
+                                    ${comp.programs.map(p => `
+                                        <span class="program-badge" title="Evidenz: ${p.evidence}">
+                                            ${p.name} <small>(${p.evidence})</small>
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            ${comp.content ? `
+                                <ul class="component-content">
+                                    ${comp.content.slice(0, 4).map(c => `<li>${c}</li>`).join('')}
+                                </ul>
+                            ` : ''}
+                            ${comp.duration ? `<div class="component-duration">Dauer: ${comp.duration}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                ${module.note ? `<div class="module-note"><i class="fas fa-info-circle"></i> ${module.note}</div>` : ''}
+                ${module.contraindications ? `
+                    <div class="contraindications">
+                        <strong>Kontraindikationen:</strong>
+                        <ul>${module.contraindications.map(c => `<li>${c}</li>`).join('')}</ul>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+
+        return `
+            <div class="therapy-modules-container">
+                <div class="tool-info-box scientific-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p><strong>Evidenzbasierte Behandlungsmodule</strong></p>
+                    <p>Die Behandlungsempfehlungen basieren auf:</p>
+                    <ul>
+                        <li><strong>AWMF S3-Leitlinien</strong> für Kinder- und Jugendpsychiatrie</li>
+                        <li><strong>NICE Guidelines</strong> (National Institute for Health and Care Excellence)</li>
+                        <li><strong>APA Practice Guidelines</strong> (American Psychiatric Association)</li>
+                        <li><strong>Cochrane Reviews</strong> für Kinder-/Jugendpsychiatrie</li>
+                    </ul>
+                    <p class="reference">Evidenzlevel: stark = RCTs/Meta-Analysen, moderat = kontrollierte Studien, gering = Expertenkonsens</p>
+                </div>
+
+                <div class="modules-header">
+                    <h3>Therapiemodule nach Diagnose</h3>
+                    <div class="filter-buttons">
+                        <button class="btn btn-sm active" onclick="TreatmentModule.filterModules('all')">Alle</button>
+                        <button class="btn btn-sm" onclick="TreatmentModule.filterModules('ADHS')">ADHS</button>
+                        <button class="btn btn-sm" onclick="TreatmentModule.filterModules('Angststörung')">Angst</button>
+                        <button class="btn btn-sm" onclick="TreatmentModule.filterModules('Depression')">Depression</button>
+                        <button class="btn btn-sm" onclick="TreatmentModule.filterModules('Trauma')">Trauma</button>
+                    </div>
+                </div>
+
+                <div class="modules-grid">
+                    ${modulesHtml}
+                </div>
+            </div>
+        `;
+    },
+
+    generateTreatmentPlanUI: function() {
+        return `
+            <div class="treatment-plan-container">
+                <div class="tool-info-box scientific-box">
+                    <h4>📚 Wissenschaftlicher Hintergrund</h4>
+                    <p><strong>Strukturierte Behandlungsplanung</strong></p>
+                    <ul>
+                        <li>Phasenmodell der Psychotherapie (Grawe, 1998)</li>
+                        <li>Stepped-Care-Ansatz (NICE Guidelines)</li>
+                        <li>Multimodale Behandlung (AACAP Practice Parameters)</li>
+                        <li>Individuelle Anpassung an Patientenbedürfnisse</li>
+                    </ul>
+                </div>
+
+                <div class="plan-header">
+                    <h3>Behandlungsplan erstellen</h3>
+                </div>
+
+                <div class="plan-form">
+                    <div class="form-section">
+                        <h4>Patientendaten</h4>
+                        <div class="form-row">
+                            <label>Name/Code:</label>
+                            <input type="text" id="tp-patient-name" placeholder="Patientencode">
+                        </div>
+                        <div class="form-row">
+                            <label>Alter:</label>
+                            <input type="number" id="tp-patient-age" placeholder="Jahre">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Diagnosen auswählen</h4>
+                        <div class="diagnosis-checkboxes">
+                            ${Object.keys(this.therapyModules).map(dx => `
+                                <label class="diagnosis-checkbox">
+                                    <input type="checkbox" name="diagnosis" value="${dx}">
+                                    <span>${dx} (${this.therapyModules[dx].icd10})</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Zusätzliche Angaben</h4>
+                        <div class="form-row">
+                            <label>
+                                <input type="checkbox" id="tp-acute-needs">
+                                Akute Stabilisierung erforderlich
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <label>Besondere Berücksichtigungen:</label>
+                            <textarea id="tp-special-needs" rows="3" placeholder="Z.B. Komorbiditäten, familiäre Situation, Schulprobleme..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="TreatmentModule.generatePlan()">
+                            <i class="fas fa-clipboard-list"></i> Behandlungsplan generieren
+                        </button>
+                    </div>
+                </div>
+
+                <div id="generated-plan" class="generated-plan" style="display:none;"></div>
+            </div>
+        `;
+    },
+
+    // Helper functions
+    getTemplateLabel: function(key) {
+        const labels = {
+            behaviorReduction: 'Verhaltensreduktion',
+            behaviorIncrease: 'Verhaltensaufbau',
+            emotionRegulation: 'Emotionsregulation',
+            schoolAttendance: 'Schulbesuch',
+            socialSkills: 'Soziale Kompetenz',
+            selfEsteem: 'Selbstwert'
+        };
+        return labels[key] || key;
+    },
+
+    showGoalTemplate: function(templateKey) {
+        const formContainer = document.getElementById('goal-template-form');
+        if (!templateKey) {
+            formContainer.style.display = 'none';
+            return;
+        }
+
+        const template = this.smartGoals.templates[templateKey];
+        if (!template) return;
+
+        const fieldsHtml = template.fields.map(field => `
+            <div class="form-row">
+                <label>${this.getFieldLabel(field)}:</label>
+                <input type="text" id="goal-${field}" placeholder="${this.getFieldPlaceholder(field, templateKey)}">
+            </div>
+        `).join('');
+
+        formContainer.innerHTML = `
+            <div class="template-info">
+                <h4>${this.getTemplateLabel(templateKey)}</h4>
+                <p class="template-pattern"><strong>Muster:</strong> ${template.template}</p>
+            </div>
+
+            <div class="patient-name-field">
+                <label>Patient/in:</label>
+                <input type="text" id="goal-patient-name" placeholder="Name des Patienten">
+            </div>
+
+            ${fieldsHtml}
+
+            <div class="example-preview">
+                <h5>Beispiel:</h5>
+                <p class="example-text">"${template.examples[0]?.output || ''}"</p>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="TreatmentModule.createGoal('${templateKey}')">
+                    <i class="fas fa-plus"></i> Ziel erstellen
+                </button>
+                <button class="btn btn-secondary" onclick="TreatmentModule.previewGoal('${templateKey}')">
+                    <i class="fas fa-eye"></i> Vorschau
+                </button>
+            </div>
+
+            <div id="goal-preview" class="goal-preview" style="display:none;"></div>
+        `;
+
+        formContainer.style.display = 'block';
+    },
+
+    getFieldLabel: function(field) {
+        const labels = {
+            behavior: 'Verhalten',
+            current: 'Aktuelle Häufigkeit',
+            target: 'Zielhäufigkeit',
+            timeframe: 'Zeitraum',
+            measure: 'Messmethode',
+            context: 'Kontext/Situation',
+            strategy: 'Strategie',
+            trigger: 'Auslöser',
+            emotion: 'Emotion',
+            firstStep: 'Erster Schritt',
+            targetGroup: 'Zielgruppe',
+            frequency: 'Häufigkeit',
+            count: 'Anzahl',
+            aspect: 'Aspekt',
+            method: 'Methode'
+        };
+        return labels[field] || field;
+    },
+
+    getFieldPlaceholder: function(field, templateKey) {
+        const template = this.smartGoals.templates[templateKey];
+        if (template?.examples?.[0]?.input?.[field]) {
+            return `z.B. "${template.examples[0].input[field]}"`;
+        }
+        return '';
+    },
+
+    previewGoal: function(templateKey) {
+        const inputs = {};
+        const template = this.smartGoals.templates[templateKey];
+
+        template.fields.forEach(field => {
+            const input = document.getElementById(`goal-${field}`);
+            inputs[field] = input?.value || `[${field}]`;
+        });
+
+        const patientName = document.getElementById('goal-patient-name')?.value || '[Name]';
+        const goal = this.smartGoals.generateGoal(templateKey, inputs, patientName);
+
+        const previewDiv = document.getElementById('goal-preview');
+        previewDiv.innerHTML = `
+            <h5>Vorschau:</h5>
+            <p class="goal-text">"${goal.goal}"</p>
+            <div class="smart-validation">
+                <h6>SMART-Prüfung:</h6>
+                ${this.renderSMARTValidation(goal.goal)}
+            </div>
+        `;
+        previewDiv.style.display = 'block';
+    },
+
+    renderSMARTValidation: function(goalText) {
+        const validation = this.smartGoals.validateSMART(goalText);
+        return Object.entries(validation).map(([criterion, data]) => `
+            <div class="validation-item ${data.met ? 'met' : 'not-met'}">
+                <span class="criterion">${criterion.toUpperCase()}</span>
+                <span class="status">${data.met ? '✓' : '○'}</span>
+                ${!data.met ? `<span class="hint">${data.hint}</span>` : ''}
+            </div>
+        `).join('');
+    },
+
+    createGoal: function(templateKey) {
+        const inputs = {};
+        const template = this.smartGoals.templates[templateKey];
+
+        template.fields.forEach(field => {
+            const input = document.getElementById(`goal-${field}`);
+            inputs[field] = input?.value || '';
+        });
+
+        const patientName = document.getElementById('goal-patient-name')?.value || 'Patient';
+        const goal = this.smartGoals.generateGoal(templateKey, inputs, patientName);
+
+        if (goal) {
+            this.currentGoals.push(goal);
+            this.saveGoals();
+            this.refreshGoalsList();
+            alert('Ziel wurde erstellt und gespeichert.');
+
+            // Reset form
+            template.fields.forEach(field => {
+                const input = document.getElementById(`goal-${field}`);
+                if (input) input.value = '';
+            });
+        }
+    },
+
+    renderCurrentGoals: function() {
+        // Load from localStorage
+        const saved = localStorage.getItem('treatmentGoals');
+        if (saved) {
+            this.currentGoals = JSON.parse(saved);
+        }
+
+        if (this.currentGoals.length === 0) {
+            return '<p class="no-goals">Noch keine Therapieziele erstellt.</p>';
+        }
+
+        return this.currentGoals.map((goal, idx) => `
+            <div class="goal-item" data-index="${idx}">
+                <div class="goal-status ${goal.status}">${goal.status === 'active' ? '🟢' : goal.status === 'completed' ? '✅' : '⏸️'}</div>
+                <div class="goal-content">
+                    <p class="goal-text">"${goal.goal}"</p>
+                    <div class="goal-meta">
+                        <span class="goal-type">${this.getTemplateLabel(goal.type)}</span>
+                        <span class="goal-date">Erstellt: ${new Date(goal.createdAt).toLocaleDateString('de-DE')}</span>
+                    </div>
+                </div>
+                <div class="goal-actions">
+                    <button class="btn btn-sm" onclick="TreatmentModule.toggleGoalStatus(${idx})">Status</button>
+                    <button class="btn btn-sm btn-danger" onclick="TreatmentModule.deleteGoal(${idx})">×</button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    refreshGoalsList: function() {
+        const list = document.getElementById('current-goals-list');
+        if (list) {
+            list.innerHTML = this.renderCurrentGoals();
+        }
+    },
+
+    saveGoals: function() {
+        localStorage.setItem('treatmentGoals', JSON.stringify(this.currentGoals));
+    },
+
+    toggleGoalStatus: function(index) {
+        const statuses = ['active', 'completed', 'paused'];
+        const currentStatus = this.currentGoals[index].status;
+        const nextIndex = (statuses.indexOf(currentStatus) + 1) % statuses.length;
+        this.currentGoals[index].status = statuses[nextIndex];
+        this.saveGoals();
+        this.refreshGoalsList();
+    },
+
+    deleteGoal: function(index) {
+        if (confirm('Ziel wirklich löschen?')) {
+            this.currentGoals.splice(index, 1);
+            this.saveGoals();
+            this.refreshGoalsList();
+        }
+    },
+
+    filterModules: function(diagnosis) {
+        const cards = document.querySelectorAll('.therapy-module-card');
+        const buttons = document.querySelectorAll('.filter-buttons .btn');
+
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        cards.forEach(card => {
+            if (diagnosis === 'all' || card.dataset.diagnosis === diagnosis) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    },
+
+    generatePlan: function() {
+        const patientInfo = {
+            name: document.getElementById('tp-patient-name')?.value || 'Patient',
+            age: parseInt(document.getElementById('tp-patient-age')?.value) || null
+        };
+
+        const diagnoses = [];
+        document.querySelectorAll('input[name="diagnosis"]:checked').forEach(cb => {
+            diagnoses.push({ category: cb.value, icd10: this.therapyModules[cb.value]?.icd10 });
+        });
+
+        if (diagnoses.length === 0) {
+            alert('Bitte mindestens eine Diagnose auswählen.');
+            return;
+        }
+
+        const preferences = {
+            acuteNeeds: document.getElementById('tp-acute-needs')?.checked || false,
+            specialNeeds: document.getElementById('tp-special-needs')?.value || ''
+        };
+
+        const plan = this.generateTreatmentPlan(diagnoses, patientInfo, preferences);
+        this.currentTreatmentPlan = plan;
+
+        this.renderGeneratedPlan(plan);
+    },
+
+    renderGeneratedPlan: function(plan) {
+        const phasesHtml = plan.phases.map((phase, idx) => `
+            <div class="phase-card">
+                <div class="phase-header">
+                    <span class="phase-number">${idx + 1}</span>
+                    <h4>${phase.name}</h4>
+                    <span class="phase-duration">${phase.duration}</span>
+                </div>
+                <div class="phase-focus"><strong>Fokus:</strong> ${phase.focus}</div>
+                ${phase.goals ? `
+                    <div class="phase-goals">
+                        <strong>Ziele:</strong>
+                        <ul>${phase.goals.map(g => `<li>${g}</li>`).join('')}</ul>
+                    </div>
+                ` : ''}
+                ${phase.interventions ? `
+                    <div class="phase-interventions">
+                        <strong>Interventionen:</strong>
+                        ${phase.interventions.map(int => `
+                            <div class="intervention-item">
+                                <span class="intervention-name">${int.name}</span>
+                                ${int.duration ? `<span class="intervention-duration">${int.duration}</span>` : ''}
+                                ${int.target ? `<span class="intervention-target">Ziel: ${int.target.join(', ')}</span>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+
+        const planHtml = `
+            <div class="plan-card">
+                <div class="plan-header-info">
+                    <h4>Behandlungsplan für: ${plan.patient.name}</h4>
+                    <p>Erstellt am: ${new Date(plan.createdAt).toLocaleDateString('de-DE')}</p>
+                    <p>Diagnosen: ${plan.diagnoses.map(d => `${d.category} (${d.icd10})`).join(', ')}</p>
+                </div>
+
+                <div class="phases-timeline">
+                    <h4>Behandlungsphasen</h4>
+                    ${phasesHtml}
+                </div>
+
+                <div class="plan-actions">
+                    <button class="btn btn-primary" onclick="TreatmentModule.saveTreatmentPlan()">
+                        <i class="fas fa-save"></i> Speichern
+                    </button>
+                    <button class="btn btn-secondary" onclick="TreatmentModule.printTreatmentPlan()">
+                        <i class="fas fa-print"></i> Drucken
+                    </button>
+                    <button class="btn btn-outline" onclick="TreatmentModule.exportTreatmentPlan()">
+                        <i class="fas fa-download"></i> Exportieren
+                    </button>
+                </div>
+            </div>
+        `;
+
+        const container = document.getElementById('generated-plan');
+        container.innerHTML = planHtml;
+        container.style.display = 'block';
+    },
+
+    saveTreatmentPlan: function() {
+        if (this.currentTreatmentPlan) {
+            localStorage.setItem('currentTreatmentPlan', JSON.stringify(this.currentTreatmentPlan));
+            alert('Behandlungsplan wurde gespeichert.');
+        }
+    },
+
+    printTreatmentPlan: function() {
+        window.print();
+    },
+
+    exportTreatmentPlan: function() {
+        if (this.currentTreatmentPlan) {
+            const dataStr = JSON.stringify(this.currentTreatmentPlan, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `behandlungsplan_${this.currentTreatmentPlan.patient.name}_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
     }
 };
 
