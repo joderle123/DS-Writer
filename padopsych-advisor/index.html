@@ -810,6 +810,25 @@
                     <p>ACE-Score, Risikoprofil, diagnostische Hypothesen und 7 theoretische Perspektiven</p>
                 </div>
 
+                <!-- Clinical Disclaimer -->
+                <div class="clinical-disclaimer" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <h4 style="margin: 0 0 8px; color: #92400e; font-size: 1rem;">⚠️ Wichtiger Hinweis zur klinischen Einordnung</h4>
+                    <p style="margin: 0; font-size: 0.9rem; color: #78350f; line-height: 1.5;">
+                        Dieses Tool ist ein <strong>Screening- und Strukturierungsinstrument</strong> zur Unterstützung der klinischen Arbeit.
+                        Die angezeigten <strong>"Verdachtsgrade"</strong> basieren auf Symptom-Checklisten und ersetzen <strong>NICHT</strong>:
+                    </p>
+                    <ul style="margin: 8px 0 0; padding-left: 20px; font-size: 0.85rem; color: #78350f;">
+                        <li>Strukturierte klinische Interviews (K-SADS, Kinder-DIPS)</li>
+                        <li>Verhaltensbeobachtung und testpsychologische Diagnostik</li>
+                        <li>Körperliche/neurologische Untersuchung</li>
+                        <li>Fremdanamnese mit standardisierten Instrumenten</li>
+                        <li>Die klinische Urteilsbildung des Fachpersonals</li>
+                    </ul>
+                    <p style="margin: 8px 0 0; font-size: 0.85rem; color: #92400e; font-style: italic;">
+                        Die Ergebnisse dienen der <strong>Hypothesengenerierung</strong> und müssen durch umfassende Diagnostik validiert werden.
+                    </p>
+                </div>
+
                 <div class="analysis-container">
                     <!-- ACE Score -->
                     <div class="analysis-section">
@@ -1468,13 +1487,32 @@
         risikoSchutz: {
             label: "Risiko- & Schutzfaktoren",
             subsections: {
-                akuteRisiken: {
-                    label: "Akute Risikofaktoren",
+                suizidalitaet: {
+                    label: "⚠️ Suizidalitäts-Screening (C-SSRS-basiert)",
                     checkboxes: [
-                        { id: "suizidgedanken", label: "Suizidgedanken (aktuell)", severity: "critical" },
-                        { id: "suizidplanung", label: "Suizidplanung/-vorbereitung", severity: "critical" },
+                        // Stufe 1: Suizidale Ideation
+                        { id: "suizidWunschTot", label: "Wunsch, tot zu sein (passiv)", severity: "high" },
+                        { id: "suizidgedanken", label: "Suizidgedanken (aktiv, unspezifisch)", severity: "critical" },
+                        { id: "suizidMethode", label: "Gedanken an Methode (ohne Plan)", severity: "critical" },
+                        { id: "suizidAbsicht", label: "Absicht ohne konkreten Plan", severity: "critical" },
+                        { id: "suizidplanung", label: "Konkreter Plan mit Absicht", severity: "critical" },
+                        // Stufe 2: Suizidales Verhalten
                         { id: "suizidversuchVorher", label: "Früherer Suizidversuch", severity: "high" },
-                        { id: "selbstverletzung", label: "Selbstverletzendes Verhalten", severity: "high" },
+                        { id: "suizidVorbereitung", label: "Vorbereitende Handlungen", severity: "critical" },
+                        { id: "suizidAbgebrochen", label: "Abgebrochener Versuch", severity: "critical" },
+                        { id: "suizidUnterbrochen", label: "Unterbrochener Versuch (durch andere)", severity: "critical" }
+                    ],
+                    fields: {
+                        suizidFrequenz: { type: "select", label: "Häufigkeit der Gedanken", options: ["Selten/einmalig", "Gelegentlich (1-2x/Woche)", "Regelmäßig (mehrmals/Woche)", "Täglich", "Mehrmals täglich/Anhaltend"] },
+                        suizidKontrolle: { type: "select", label: "Kontrollierbarkeit", options: ["Volle Kontrolle", "Meist kontrollierbar", "Schwer kontrollierbar", "Keine Kontrolle"] },
+                        suizidSchutzfaktoren: { type: "select", label: "Schutzfaktoren gegen Handeln", options: ["Starke Gründe zu leben", "Einige Gründe zu leben", "Wenige Gründe", "Keine Gründe zu leben"] }
+                    },
+                    textfield: { id: "suizidalitaetDetails", label: "Details zu Suizidalität (Situation, Auslöser, Plan)" }
+                },
+                akuteRisiken: {
+                    label: "Weitere akute Risikofaktoren",
+                    checkboxes: [
+                        { id: "selbstverletzung", label: "Nicht-suizidales selbstverletzendes Verhalten (NSSV)", severity: "high" },
                         { id: "fremdgefährdung", label: "Fremdgefährdung", severity: "critical" },
                         { id: "weglaufen", label: "Weglaufen/Entweichen", severity: "medium" },
                         { id: "substanzAkut", label: "Akuter Substanzkonsum", severity: "high" }
@@ -1535,6 +1573,28 @@
                         { id: "religiöseSpirituelle", label: "Religiöse/spirituelle Einbindung", positive: true }
                     ],
                     textfield: { id: "ressourcenUmfeldDetails", label: "Weitere Ressourcen beschreiben" }
+                },
+                globalFunktionsniveau: {
+                    label: "Globales Funktionsniveau (CGAS)",
+                    fields: {
+                        cgasScore: {
+                            type: "select",
+                            label: "CGAS-Rating (1-100)",
+                            options: [
+                                "91-100: Hervorragende Funktion in allen Bereichen",
+                                "81-90: Gute Funktion, nur minimale Symptome",
+                                "71-80: Leichte Beeinträchtigung in einem Bereich",
+                                "61-70: Mäßige Schwierigkeiten in einem Bereich",
+                                "51-60: Variable Funktion mit intermittierenden Schwierigkeiten",
+                                "41-50: Mäßige Beeinträchtigung in mehreren Bereichen",
+                                "31-40: Deutliche Beeinträchtigung in mehreren Bereichen",
+                                "21-30: Schwere Beeinträchtigung, kann nicht in allen Bereichen funktionieren",
+                                "11-20: Braucht beträchtliche Aufsicht",
+                                "1-10: Braucht ständige Aufsicht/Betreuung"
+                            ]
+                        }
+                    },
+                    textfield: { id: "cgasDetails", label: "Begründung des CGAS-Ratings" }
                 }
             }
         },
@@ -2088,11 +2148,21 @@ const ClinicalEngine = {
         const chronisch = [];
         const schutz = [];
 
-        // Akute Risiken
+        // Akute Risiken (inkl. C-SSRS-basierte Suizidalitätserfassung)
         const akuteRisikoItems = [
-            { id: 'suizidgedanken', label: 'Suizidgedanken', severity: 'critical' },
-            { id: 'suizidplanung', label: 'Suizidplanung', severity: 'critical' },
-            { id: 'selbstverletzung', label: 'Selbstverletzendes Verhalten', severity: 'high' },
+            // Suizidale Ideation (aufsteigend nach Schweregrad)
+            { id: 'suizidWunschTot', label: 'Passiver Todeswunsch', severity: 'high' },
+            { id: 'suizidgedanken', label: 'Aktive Suizidgedanken', severity: 'critical' },
+            { id: 'suizidMethode', label: 'Gedanken an Methode', severity: 'critical' },
+            { id: 'suizidAbsicht', label: 'Suizidabsicht (ohne Plan)', severity: 'critical' },
+            { id: 'suizidplanung', label: 'Konkreter Suizidplan', severity: 'critical' },
+            // Suizidales Verhalten
+            { id: 'suizidversuchVorher', label: 'Früherer Suizidversuch', severity: 'high' },
+            { id: 'suizidVorbereitung', label: 'Vorbereitende Handlungen', severity: 'critical' },
+            { id: 'suizidAbgebrochen', label: 'Abgebrochener Suizidversuch', severity: 'critical' },
+            { id: 'suizidUnterbrochen', label: 'Unterbrochener Suizidversuch', severity: 'critical' },
+            // Weitere akute Risiken
+            { id: 'selbstverletzung', label: 'NSSV (Selbstverletzung)', severity: 'high' },
             { id: 'fremdgefährdung', label: 'Fremdgefährdung', severity: 'critical' },
             { id: 'substanzAkut', label: 'Akuter Substanzkonsum', severity: 'high' }
         ];
@@ -2129,14 +2199,31 @@ const ClinicalEngine = {
             }
         });
 
-        // Dringlichkeitsstufe bestimmen
+        // Suizidalitäts-Assessment (C-SSRS-basiert)
+        const suizidalitaet = this.assessSuizidalitaet(caseData);
+
+        // Dringlichkeitsstufe bestimmen (inkl. Suizidalität)
         let dringlichkeit = 'normal';
-        if (akut.some(r => r.severity === 'critical')) {
+        if (suizidalitaet.stufe >= 4 || akut.some(r => r.severity === 'critical')) {
             dringlichkeit = 'sofort';
-        } else if (akut.length > 0) {
+        } else if (suizidalitaet.stufe >= 2 || akut.length > 0) {
             dringlichkeit = 'hoch';
-        } else if (chronisch.length >= 3) {
+        } else if (suizidalitaet.stufe >= 1 || chronisch.length >= 3) {
             dringlichkeit = 'erhöht';
+        }
+
+        // CGAS Score extrahieren
+        const cgasValue = caseData.risikoSchutz?.globalFunktionsniveau?.cgasScore || '';
+        let cgasScore = null;
+        let cgasInterpretation = '';
+
+        if (cgasValue) {
+            // Parse CGAS value from the select option (format: "91-100: Description")
+            const cgasMatch = cgasValue.match(/^(\d+)-(\d+)/);
+            if (cgasMatch) {
+                cgasScore = Math.round((parseInt(cgasMatch[1]) + parseInt(cgasMatch[2])) / 2);
+                cgasInterpretation = this.interpretCGAS(cgasScore);
+            }
         }
 
         return {
@@ -2145,8 +2232,167 @@ const ClinicalEngine = {
             schutzfaktoren: schutz,
             dringlichkeit,
             bilanz: schutz.length - (akut.length * 2 + chronisch.length),
-            warnung: akut.length > 0 ? this.generateRisikoWarnung(akut) : null
+            warnung: akut.length > 0 ? this.generateRisikoWarnung(akut) : null,
+            suizidalitaet,
+            cgas: cgasScore ? {
+                score: cgasScore,
+                range: cgasValue,
+                interpretation: cgasInterpretation
+            } : null
         };
+    },
+
+    assessSuizidalitaet(caseData) {
+        // C-SSRS-basierte Suizidalitätsbewertung
+        // Stufe 0: Keine Suizidalität
+        // Stufe 1: Passiver Todeswunsch
+        // Stufe 2: Aktive Suizidgedanken ohne Methode
+        // Stufe 3: Methode/Plan ohne Absicht
+        // Stufe 4: Plan mit Absicht
+        // Stufe 5: Suizidales Verhalten (Versuch/Vorbereitung)
+
+        let stufe = 0;
+        const identifiziert = [];
+        const schutzfaktoren = [];
+
+        // Ideation prüfen (aufsteigend)
+        if (caseData.checkboxes?.suizidWunschTot) {
+            stufe = Math.max(stufe, 1);
+            identifiziert.push('Passiver Todeswunsch');
+        }
+        if (caseData.checkboxes?.suizidgedanken) {
+            stufe = Math.max(stufe, 2);
+            identifiziert.push('Aktive Suizidgedanken');
+        }
+        if (caseData.checkboxes?.suizidMethode) {
+            stufe = Math.max(stufe, 3);
+            identifiziert.push('Gedanken an Methode');
+        }
+        if (caseData.checkboxes?.suizidAbsicht) {
+            stufe = Math.max(stufe, 4);
+            identifiziert.push('Suizidabsicht');
+        }
+        if (caseData.checkboxes?.suizidplanung) {
+            stufe = Math.max(stufe, 5);
+            identifiziert.push('Konkreter Plan');
+        }
+
+        // Verhalten prüfen (höchste Stufe)
+        if (caseData.checkboxes?.suizidVorbereitung ||
+            caseData.checkboxes?.suizidAbgebrochen ||
+            caseData.checkboxes?.suizidUnterbrochen) {
+            stufe = 5;
+            if (caseData.checkboxes?.suizidVorbereitung) identifiziert.push('Vorbereitende Handlungen');
+            if (caseData.checkboxes?.suizidAbgebrochen) identifiziert.push('Abgebrochener Versuch');
+            if (caseData.checkboxes?.suizidUnterbrochen) identifiziert.push('Unterbrochener Versuch');
+        }
+
+        // Frühere Versuche
+        if (caseData.checkboxes?.suizidversuchVorher) {
+            stufe = Math.max(stufe, 3); // Erhöht Risiko signifikant
+            identifiziert.push('Früherer Suizidversuch');
+        }
+
+        // Zusatzinfos aus Formularfeldern
+        const frequenz = caseData.risikoSchutz?.suizidalitaet?.suizidFrequenz || '';
+        const kontrolle = caseData.risikoSchutz?.suizidalitaet?.suizidKontrolle || '';
+        const schutz = caseData.risikoSchutz?.suizidalitaet?.suizidSchutzfaktoren || '';
+
+        // Intensität modifizieren basierend auf Zusatzinfos
+        let intensitaet = 'unbekannt';
+        if (frequenz.includes('Täglich') || frequenz.includes('Mehrmals')) {
+            intensitaet = 'hoch';
+            stufe = Math.min(5, stufe + 1);
+        } else if (frequenz.includes('Regelmäßig')) {
+            intensitaet = 'mittel';
+        } else if (frequenz) {
+            intensitaet = 'niedrig';
+        }
+
+        // Schutzfaktoren
+        if (schutz.includes('Starke Gründe')) {
+            schutzfaktoren.push('Starke Gründe zu leben');
+        } else if (schutz.includes('Keine Gründe')) {
+            stufe = Math.min(5, stufe + 1);
+        }
+
+        return {
+            stufe,
+            stufenBezeichnung: this.getSuizidStufeBezeichnung(stufe),
+            identifiziert,
+            frequenz,
+            kontrolle,
+            intensitaet,
+            schutzfaktoren,
+            empfehlungen: this.getSuizidEmpfehlungen(stufe),
+            cssrsKategorie: stufe === 0 ? 'Keine' :
+                           stufe <= 2 ? 'Suizidale Ideation (niedrig)' :
+                           stufe <= 4 ? 'Suizidale Ideation (hoch)' :
+                           'Suizidales Verhalten'
+        };
+    },
+
+    getSuizidStufeBezeichnung(stufe) {
+        const bezeichnungen = [
+            'Keine akute Suizidalität',
+            'Passiver Todeswunsch (Stufe 1)',
+            'Aktive Suizidgedanken ohne Methode (Stufe 2)',
+            'Suizidgedanken mit Methode/Plan (Stufe 3)',
+            'Suizidabsicht mit Plan (Stufe 4)',
+            'Suizidales Verhalten / Akute Krise (Stufe 5)'
+        ];
+        return bezeichnungen[stufe] || bezeichnungen[0];
+    },
+
+    getSuizidEmpfehlungen(stufe) {
+        if (stufe >= 5) {
+            return [
+                '🚨 SOFORTIGE psychiatrische Notfallaufnahme erwägen',
+                'Kontinuierliche 1:1-Überwachung',
+                'Mittel zur Selbstverletzung entfernen',
+                'Angehörige informieren (Waffenschrank, Medikamente)',
+                'Non-Suizid-Vereinbarung NICHT ausreichend'
+            ];
+        }
+        if (stufe >= 4) {
+            return [
+                '⚠️ Notfalltermin innerhalb 24h',
+                'Erweiterte Suizidanamnese durchführen',
+                'Safety Plan erstellen',
+                'Täglicher telefonischer Kontakt',
+                'Stationäre Aufnahme besprechen'
+            ];
+        }
+        if (stufe >= 2) {
+            return [
+                'Engmaschige ambulante Anbindung',
+                'Suizidalität in jeder Sitzung thematisieren',
+                'Safety Plan erarbeiten',
+                'Krisentelefon besprechen',
+                'Angehörige einbeziehen'
+            ];
+        }
+        if (stufe >= 1) {
+            return [
+                'Regelmäßige Exploration der Suizidalität',
+                'Ressourcen stärken',
+                'Krisenintervention besprechen'
+            ];
+        }
+        return ['Routinemäßiges Screening fortführen'];
+    },
+
+    interpretCGAS(score) {
+        if (score >= 91) return 'Hervorragende Funktion in allen Bereichen (Heim, Schule, Peers). Aktiv in außerschulischen Aktivitäten, sozial angepasst.';
+        if (score >= 81) return 'Gute Funktion in allen Bereichen. Nur minimale oder vorübergehende Symptome, die erwartbare Reaktionen auf Stress darstellen.';
+        if (score >= 71) return 'Leichte Beeinträchtigung in nur einem Bereich. Symptome verursachen nur geringfügige funktionelle Einschränkungen.';
+        if (score >= 61) return 'Mäßige Schwierigkeiten in einem Bereich (Schule, Familie ODER Peers). Aber Funktion in anderen Bereichen erhalten.';
+        if (score >= 51) return 'Variable Funktion mit wechselnden Schwierigkeiten in mehreren Bereichen. Leistungsfähigkeit schwankt.';
+        if (score >= 41) return 'Mäßige Beeinträchtigung in den meisten sozialen Bereichen oder schwere Beeinträchtigung in einem Bereich.';
+        if (score >= 31) return 'Deutliche Beeinträchtigung in mehreren Bereichen. Kann Anforderungen in Schule und Familie nicht konsistent erfüllen.';
+        if (score >= 21) return 'Schwere Beeinträchtigung. Kann nicht in fast allen Bereichen funktionieren oder gefährdet sich/andere.';
+        if (score >= 11) return 'Braucht beträchtliche Aufsicht um Selbst-/Fremdgefährdung zu verhindern oder basale persönliche Hygiene aufrechtzuerhalten.';
+        return 'Braucht ständige Aufsicht (24h Betreuung). Erhebliche Gefahr für Selbst-/Fremdgefährdung oder schwere Selbstvernachlässigung.';
     },
 
     generateRisikoWarnung(akuteRisiken) {
@@ -2176,20 +2422,20 @@ const ClinicalEngine = {
         for (const [id, hypo] of Object.entries(CLINICAL_KNOWLEDGE.diagnoseHypothesen)) {
             const evaluation = this.evaluateHypothese(hypo, checkedSymptoms, caseData);
 
-            if (evaluation.konfidenz > 15 || evaluation.erfuellteKriterien.length >= 2) {
+            if (evaluation.verdachtsgrad > 15 || evaluation.erfuellteKriterien.length >= 2) {
                 results.push({
                     id,
                     label: hypo.label,
                     icd10: hypo.icd10,
-                    konfidenz: evaluation.konfidenz,
+                    verdachtsgrad: evaluation.verdachtsgrad,
                     erfuellteKriterien: evaluation.erfuellteKriterien,
                     differentialHints: hypo.differentialHints || [],
-                    interpretation: this.getHypotheseInterpretation(evaluation.konfidenz, hypo.label)
+                    interpretation: this.getHypotheseInterpretation(evaluation.verdachtsgrad, hypo.label)
                 });
             }
         }
 
-        return results.sort((a, b) => b.konfidenz - a.konfidenz);
+        return results.sort((a, b) => b.verdachtsgrad - a.verdachtsgrad);
     },
 
     evaluateHypothese(hypo, symptoms, caseData) {
@@ -2262,22 +2508,22 @@ const ClinicalEngine = {
             if (!allGroupsMet) score *= 0.5;
         }
 
-        const konfidenz = Math.min(95, Math.max(0, Math.round((score / Math.max(maxScore, 1)) * 100)));
+        const verdachtsgrad = Math.min(95, Math.max(0, Math.round((score / Math.max(maxScore, 1)) * 100)));
 
-        return { konfidenz, erfuellteKriterien: erfuellt };
+        return { verdachtsgrad, erfuellteKriterien: erfuellt };
     },
 
-    getHypotheseInterpretation(konfidenz, label) {
-        if (konfidenz >= 70) {
-            return `Deutliche Hinweise auf ${label}. Gezielte Diagnostik und Behandlungsplanung empfohlen.`;
+    getHypotheseInterpretation(verdachtsgrad, label) {
+        if (verdachtsgrad >= 70) {
+            return `Starker Verdacht auf ${label}. Gezielte Diagnostik und Behandlungsplanung empfohlen.`;
         }
-        if (konfidenz >= 45) {
-            return `Relevante Hinweise auf ${label}. Vertiefte Exploration und differentialdiagnostische Abklärung empfohlen.`;
+        if (verdachtsgrad >= 45) {
+            return `Mittlerer Verdacht auf ${label}. Vertiefte Exploration und differentialdiagnostische Abklärung empfohlen.`;
         }
-        if (konfidenz >= 25) {
-            return `Einzelne Hinweise auf ${label}. Im Verlauf beobachten, bei Zunahme der Symptomatik abklären.`;
+        if (verdachtsgrad >= 25) {
+            return `Leichter Verdacht auf ${label}. Im Verlauf beobachten, bei Zunahme der Symptomatik abklären.`;
         }
-        return `Geringe Hinweise. Differentialdiagnostisch im Blick behalten.`;
+        return `Geringer Verdacht. Differentialdiagnostisch im Blick behalten.`;
     },
 
     // ============================================================
@@ -3003,7 +3249,7 @@ const ClinicalEngine = {
 
         // Haupthypothese
         if (topHypo) {
-            text += `\n\nDie Analyse ergibt mit ${topHypo.konfidenz}% Konfidenz Hinweise auf ${topHypo.label}`;
+            text += `\n\nDas Screening ergibt einen Verdachtsgrad von ${topHypo.verdachtsgrad}% für ${topHypo.label}`;
             if (hypothesen.length > 1) {
                 text += `, differentialdiagnostisch sind ${hypothesen.slice(1, 3).map(h => h.label).join(' und ')} zu erwägen`;
             }
@@ -11924,7 +12170,48 @@ function renderRisikoprofil(profil) {
     // akut items are objects with 'label' property, chronisch and schutz are strings
     const formatAkut = (items) => items.map(r => typeof r === 'object' ? r.label : r);
 
+    // Suizidalitäts-Box erstellen
+    let suizidBox = '';
+    if (profil.suizidalitaet && profil.suizidalitaet.stufe > 0) {
+        const stufe = profil.suizidalitaet.stufe;
+        const bgColor = stufe >= 5 ? '#fef2f2' : stufe >= 4 ? '#fff7ed' : stufe >= 2 ? '#fefce8' : '#f0fdf4';
+        const borderColor = stufe >= 5 ? '#dc2626' : stufe >= 4 ? '#ea580c' : stufe >= 2 ? '#eab308' : '#22c55e';
+        const textColor = stufe >= 5 ? '#991b1b' : stufe >= 4 ? '#9a3412' : stufe >= 2 ? '#854d0e' : '#166534';
+
+        suizidBox = `
+            <div style="background: ${bgColor}; border: 2px solid ${borderColor}; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <span style="font-size: 1.5em;">${stufe >= 5 ? '🚨' : stufe >= 4 ? '⚠️' : '⚡'}</span>
+                    <div>
+                        <h4 style="margin: 0; color: ${textColor};">Suizidalitäts-Screening (C-SSRS-basiert)</h4>
+                        <p style="margin: 4px 0 0; font-weight: 600; color: ${textColor};">${profil.suizidalitaet.stufenBezeichnung}</p>
+                    </div>
+                </div>
+
+                ${profil.suizidalitaet.identifiziert.length > 0 ? `
+                    <div style="margin-bottom: 12px;">
+                        <strong>Identifizierte Indikatoren:</strong>
+                        <ul style="margin: 4px 0 0; padding-left: 20px;">
+                            ${profil.suizidalitaet.identifiziert.map(i => `<li>${i}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                ${profil.suizidalitaet.frequenz ? `<p style="margin: 4px 0;"><strong>Häufigkeit:</strong> ${profil.suizidalitaet.frequenz}</p>` : ''}
+                ${profil.suizidalitaet.kontrolle ? `<p style="margin: 4px 0;"><strong>Kontrollierbarkeit:</strong> ${profil.suizidalitaet.kontrolle}</p>` : ''}
+
+                <div style="background: white; border-radius: 8px; padding: 12px; margin-top: 12px;">
+                    <strong style="color: ${textColor};">Empfehlungen:</strong>
+                    <ul style="margin: 8px 0 0; padding-left: 20px;">
+                        ${profil.suizidalitaet.empfehlungen.map(e => `<li>${e}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+    }
+
     container.innerHTML = `
+        ${suizidBox}
         <div class="risiko-grid">
             ${profil.akut && profil.akut.length > 0 ? `
                 <div class="risiko-section critical">
@@ -11980,9 +12267,10 @@ function renderHypothesen(hypothesen) {
                     <span class="hypothesis-icd">${hypo.icd10 || ''}</span>
                 </div>
                 <div class="hypothesis-score">
-                    <span class="confidence-value">${hypo.konfidenz}%</span>
+                    <span class="confidence-label" style="font-size: 0.7rem; color: #64748b;">Verdachtsgrad</span>
+                    <span class="confidence-value">${hypo.verdachtsgrad}%</span>
                     <div class="confidence-bar">
-                        <div class="confidence-fill" style="width: ${hypo.konfidenz}%"></div>
+                        <div class="confidence-fill" style="width: ${hypo.verdachtsgrad}%"></div>
                     </div>
                 </div>
                 <span class="expand-icon">▼</span>
@@ -12137,7 +12425,7 @@ function generateDescriptiveSummary(grunddaten, hypothesen, bps) {
     text += `das/der wegen <strong>${anlass}</strong> vorgestellt wird.</p>`;
 
     if (hypothesen.length > 0) {
-        text += `<p>Die klinische Analyse ergibt <strong>Hinweise auf ${hypothesen[0].label}</strong> (Konfidenz: ${hypothesen[0].konfidenz}%). `;
+        text += `<p>Das Screening ergibt <strong>Verdacht auf ${hypothesen[0].label}</strong> (Verdachtsgrad: ${hypothesen[0].verdachtsgrad}%). `;
         if (hypothesen.length > 1) {
             text += `Differentialdiagnostisch sind <strong>${hypothesen.slice(1, 4).map(h => h.label).join(', ')}</strong> zu erwägen.</p>`;
         } else {
@@ -12304,7 +12592,7 @@ function generateDiagnosticFormulation(hypothesen, entwicklung, risikoprofil) {
         text += '<table style="width: 100%; border-collapse: collapse; margin: 12px 0;">';
         text += '<thead><tr style="background: #f1f5f9;">';
         text += '<th style="padding: 8px; text-align: left; border-bottom: 2px solid #cbd5e1;">Diagnose</th>';
-        text += '<th style="padding: 8px; text-align: center; border-bottom: 2px solid #cbd5e1;">Konfidenz</th>';
+        text += '<th style="padding: 8px; text-align: center; border-bottom: 2px solid #cbd5e1;">Verdachtsgrad</th>';
         text += '<th style="padding: 8px; text-align: left; border-bottom: 2px solid #cbd5e1;">Begründung</th>';
         text += '</tr></thead><tbody>';
 
@@ -12312,7 +12600,7 @@ function generateDiagnosticFormulation(hypothesen, entwicklung, risikoprofil) {
             const bgColor = i === 0 ? '#ecfdf5' : 'white';
             text += `<tr style="background: ${bgColor};">`;
             text += `<td style="padding: 8px; border-bottom: 1px solid #e2e8f0;"><strong>${h.label}</strong>${h.code ? ' (' + h.code + ')' : ''}</td>`;
-            text += `<td style="padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0;">${h.konfidenz}%</td>`;
+            text += `<td style="padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0;">${h.verdachtsgrad}%</td>`;
             text += `<td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem;">${h.begründung || h.beschreibung || '-'}</td>`;
             text += '</tr>';
         });
@@ -12334,6 +12622,21 @@ function generateDiagnosticFormulation(hypothesen, entwicklung, risikoprofil) {
             text += ` - Akute Risiken: ${risikoprofil.akut.map(r => r.label).join(', ')}`;
         }
         text += '</p>';
+    }
+
+    // CGAS (Globales Funktionsniveau)
+    if (risikoprofil.cgas) {
+        const cgasColor = risikoprofil.cgas.score >= 71 ? '#059669' :
+                          risikoprofil.cgas.score >= 51 ? '#d97706' :
+                          risikoprofil.cgas.score >= 31 ? '#ea580c' : '#dc2626';
+        text += `
+            <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 12px 16px; border-radius: 8px; margin-top: 12px; border-left: 4px solid ${cgasColor};">
+                <p style="margin: 0 0 8px;"><strong>📊 Globales Funktionsniveau (CGAS):</strong>
+                    <span style="font-size: 1.2em; font-weight: bold; color: ${cgasColor};">${risikoprofil.cgas.score}</span>/100
+                </p>
+                <p style="margin: 0; font-size: 0.9rem; color: #475569;">${risikoprofil.cgas.interpretation}</p>
+            </div>
+        `;
     }
 
     return text;
@@ -12475,8 +12778,27 @@ function generatePrognosis(resilienz, risikoprofil, aceScore, hypothesen) {
     const totalRessourcen = (resilienz.individuell?.length || 0) + (resilienz.familiär?.length || 0) + (resilienz.sozial?.length || 0);
     const aceRisk = aceScore.score >= 4 ? 'hoch' : aceScore.score >= 2 ? 'moderat' : 'niedrig';
     const chronicity = risikoprofil.chronisch?.length >= 3 ? 'chronisch' : 'akut';
+    const cgasScore = risikoprofil.cgas?.score || null;
 
     let text = '<p><strong>Prognostische Faktoren:</strong></p>';
+
+    // CGAS Display if available
+    if (cgasScore) {
+        const cgasColor = cgasScore >= 71 ? '#059669' : cgasScore >= 51 ? '#d97706' : cgasScore >= 31 ? '#ea580c' : '#dc2626';
+        const cgasBarWidth = cgasScore + '%';
+        text += `
+            <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 2px solid ${cgasColor};">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: 600;">📊 CGAS (Children's Global Assessment Scale)</span>
+                    <span style="font-size: 1.5em; font-weight: bold; color: ${cgasColor};">${cgasScore}/100</span>
+                </div>
+                <div style="background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden;">
+                    <div style="background: linear-gradient(90deg, ${cgasColor}, ${cgasColor}99); width: ${cgasBarWidth}; height: 100%; border-radius: 8px; transition: width 0.5s;"></div>
+                </div>
+                <p style="margin: 8px 0 0; font-size: 0.85rem; color: #64748b;">${risikoprofil.cgas.interpretation}</p>
+            </div>
+        `;
+    }
 
     text += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;">';
 
@@ -12484,9 +12806,10 @@ function generatePrognosis(resilienz, risikoprofil, aceScore, hypothesen) {
     text += '<div style="background: #d1fae5; padding: 12px; border-radius: 8px;">';
     text += '<h4 style="margin: 0 0 8px; color: #059669; font-size: 0.9rem;">✓ Günstig</h4>';
     text += '<ul style="margin: 0; padding-left: 16px; font-size: 0.85rem;">';
+    if (cgasScore >= 61) text += '<li>Erhaltenes Funktionsniveau (CGAS ≥61)</li>';
     if (totalRessourcen >= 5) text += '<li>Gute Ressourcenausstattung</li>';
     if (aceScore.score < 4) text += '<li>Überschaubare Belastungsanamnese</li>';
-    if (hypothesen[0]?.konfidenz >= 70) text += '<li>Klares diagnostisches Bild</li>';
+    if (hypothesen[0]?.verdachtsgrad >= 70) text += '<li>Klares diagnostisches Bild</li>';
     if (resilienz.familiär?.length >= 2) text += '<li>Familiäre Unterstützung vorhanden</li>';
     text += '<li>Behandlungsmotivation (zu prüfen)</li>';
     text += '</ul></div>';
@@ -12495,6 +12818,7 @@ function generatePrognosis(resilienz, risikoprofil, aceScore, hypothesen) {
     text += '<div style="background: #fee2e2; padding: 12px; border-radius: 8px;">';
     text += '<h4 style="margin: 0 0 8px; color: #dc2626; font-size: 0.9rem;">✗ Ungünstig</h4>';
     text += '<ul style="margin: 0; padding-left: 16px; font-size: 0.85rem;">';
+    if (cgasScore && cgasScore < 41) text += '<li>Stark eingeschränktes Funktionsniveau (CGAS <41)</li>';
     if (aceScore.score >= 4) text += '<li>Hohe ACE-Belastung</li>';
     if (chronicity === 'chronisch') text += '<li>Chronifizierungszeichen</li>';
     if (risikoprofil.akut?.length > 0) text += '<li>Akute Risikofaktoren</li>';
@@ -12504,11 +12828,14 @@ function generatePrognosis(resilienz, risikoprofil, aceScore, hypothesen) {
 
     text += '</div>';
 
-    // Gesamteinschätzung
+    // Gesamteinschätzung (jetzt mit CGAS)
     let prognose = 'moderat';
-    if (totalRessourcen >= 5 && aceScore.score < 4 && risikoprofil.akut?.length === 0) {
+    const goodCGAS = cgasScore && cgasScore >= 61;
+    const poorCGAS = cgasScore && cgasScore < 41;
+
+    if ((totalRessourcen >= 5 || goodCGAS) && aceScore.score < 4 && risikoprofil.akut?.length === 0) {
         prognose = 'günstig';
-    } else if (aceScore.score >= 6 || risikoprofil.akut?.length >= 2 || totalRessourcen < 2) {
+    } else if (aceScore.score >= 6 || risikoprofil.akut?.length >= 2 || totalRessourcen < 2 || poorCGAS) {
         prognose = 'vorsichtig';
     }
 
@@ -12517,8 +12844,10 @@ function generatePrognosis(resilienz, risikoprofil, aceScore, hypothesen) {
 
     if (prognose === 'günstig') {
         text += '- Bei adäquater Behandlung und guter Compliance ist von einer deutlichen Symptomreduktion auszugehen.';
+        if (goodCGAS) text += ' Das erhaltene Funktionsniveau ist ein positiver prognostischer Faktor.';
     } else if (prognose === 'vorsichtig') {
         text += '- Aufgrund der Belastungsfaktoren ist ein längerer Behandlungsverlauf zu erwarten. Engmaschige Verlaufskontrollen empfohlen.';
+        if (poorCGAS) text += ' Das eingeschränkte Funktionsniveau erfordert möglicherweise intensivere Behandlung.';
     } else {
         text += '- Bei kontinuierlicher Behandlung und Stärkung der Schutzfaktoren ist eine Stabilisierung erreichbar.';
     }
@@ -13618,7 +13947,7 @@ ${analysisResult.aceScore?.interpretation || ''}
 DIAGNOSTISCHE HYPOTHESEN
 ───────────────────────────────────────────────────────────────
 
-${(analysisResult.hypothesen || []).map((h, i) => `${i + 1}. ${h.name} (${h.konfidenz}%) - ${h.icd10 || ''}`).join('\n')}
+${(analysisResult.hypothesen || []).map((h, i) => `${i + 1}. ${h.label || h.name} (Verdachtsgrad: ${h.verdachtsgrad}%) - ${h.icd10 || ''}`).join('\n')}
 
 ───────────────────────────────────────────────────────────────
 INTERVENTIONEN
@@ -14108,10 +14437,10 @@ function generatePDFSection1(grunddaten, hypothesen, aceScore, risikoprofil) {
     // Hypotheses
     if (hypothesen.length > 0) {
         html += `
-        <h3>Diagnostische Hypothesen</h3>
+        <h3>Diagnostische Hypothesen (Screening-Ergebnis)</h3>
         <div class="hypothesis-main">
-            <h4>Haupthypothese: ${hypothesen[0].label}</h4>
-            <p><strong>Konfidenz:</strong> ${hypothesen[0].konfidenz}%</p>
+            <h4>Hauptverdacht: ${hypothesen[0].label}</h4>
+            <p><strong>Verdachtsgrad:</strong> ${hypothesen[0].verdachtsgrad}%</p>
             <p>${hypothesen[0].beschreibung || hypothesen[0].begründung || ''}</p>
         </div>`;
 
@@ -14119,12 +14448,12 @@ function generatePDFSection1(grunddaten, hypothesen, aceScore, risikoprofil) {
             html += `
             <h4>Differentialdiagnosen:</h4>
             <table>
-                <thead><tr><th>Diagnose</th><th>Konfidenz</th><th>Begründung</th></tr></thead>
+                <thead><tr><th>Diagnose</th><th>Verdachtsgrad</th><th>Begründung</th></tr></thead>
                 <tbody>
                 ${hypothesen.slice(1, 5).map(h => `
                     <tr>
                         <td><strong>${h.label}</strong></td>
-                        <td>${h.konfidenz}%</td>
+                        <td>${h.verdachtsgrad}%</td>
                         <td>${h.begründung || h.beschreibung || '-'}</td>
                     </tr>
                 `).join('')}
@@ -14142,6 +14471,21 @@ function generatePDFSection1(grunddaten, hypothesen, aceScore, risikoprofil) {
         ${aceScore.identifiziert && aceScore.identifiziert.length > 0 ?
             `<p><strong>Identifiziert:</strong> ${aceScore.identifiziert.join(', ')}</p>` : ''}
     </div>`;
+
+    // CGAS Score
+    if (risikoprofil.cgas) {
+        const cgasBoxClass = risikoprofil.cgas.score >= 61 ? 'success-box' :
+                            risikoprofil.cgas.score >= 41 ? 'warning-box' : 'danger-box';
+        html += `
+        <h3>CGAS - Globales Funktionsniveau</h3>
+        <div class="theory-box">
+            <p>Die <strong>Children's Global Assessment Scale (CGAS)</strong> ist ein klinisches Rating-Instrument zur Beurteilung des allgemeinen Funktionsniveaus bei Kindern und Jugendlichen (Shaffer et al., 1983). Die Skala reicht von 1-100, wobei höhere Werte besseres Funktionieren anzeigen.</p>
+        </div>
+        <div class="${cgasBoxClass}">
+            <p><strong>Score: ${risikoprofil.cgas.score}/100</strong></p>
+            <p>${risikoprofil.cgas.interpretation}</p>
+        </div>`;
+    }
 
     return html;
 }
