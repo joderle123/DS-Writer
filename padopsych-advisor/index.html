@@ -843,7 +843,12 @@
 
                     <!-- Multi-Model Synthesis -->
                     <div class="analysis-section" style="margin-top:24px">
-                        <h3 class="section-title">Multi-Modell-Synthese</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 class="section-title" style="margin: 0;">Multi-Modell-Synthese</h3>
+                            <button type="button" id="export-pdf-btn" class="btn btn-primary" onclick="exportFallkonzeptionPDF()" style="display: none;">
+                                📄 Bedienungsanleitung als PDF
+                            </button>
+                        </div>
                         <div id="synthese-container">
                             <div class="placeholder-card">
                                 <p>Synthese aus 7 theoretischen Perspektiven wird nach der Analyse angezeigt.</p>
@@ -11866,6 +11871,12 @@ function renderAnalysis(result) {
 
     // Interventions
     renderInterventionen(result.interventionen);
+
+    // Show PDF export button
+    const exportBtn = document.getElementById('export-pdf-btn');
+    if (exportBtn) {
+        exportBtn.style.display = 'inline-flex';
+    }
 }
 
 /**
@@ -13759,6 +13770,896 @@ function loadTreatmentTool(type) {
         default:
             container.innerHTML = '<p>Unbekanntes Behandlungstool</p>';
     }
+}
+
+// ============================================================
+// PDF EXPORT - BEDIENUNGSANLEITUNG
+// ============================================================
+
+/**
+ * Export complete case formulation as PDF (opens print dialog)
+ * Creates a comprehensive "Bedienungsanleitung" with all models and theories
+ */
+function exportFallkonzeptionPDF() {
+    const result = window.currentAnalysisResult;
+    if (!result) {
+        alert('Bitte führen Sie zuerst eine Analyse durch.');
+        return;
+    }
+
+    const synthese = result.synthese || {};
+    const grunddaten = result.grunddaten || {};
+    const hypothesen = result.hypothesen || [];
+    const aceScore = result.aceScore || {};
+    const risikoprofil = result.risikoprofil || {};
+    const interventionen = result.interventionen || {};
+
+    // Generate comprehensive PDF content
+    const pdfContent = generatePDFContent(result, synthese, grunddaten, hypothesen, aceScore, risikoprofil, interventionen);
+
+    // Open in new window for printing
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(pdfContent);
+    printWindow.document.close();
+
+    // Auto-trigger print dialog after content loads
+    printWindow.onload = function() {
+        setTimeout(() => {
+            printWindow.print();
+        }, 500);
+    };
+}
+
+function generatePDFContent(result, synthese, grunddaten, hypothesen, aceScore, risikoprofil, interventionen) {
+    const today = new Date().toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' });
+    const patientInfo = `${grunddaten.alter ? grunddaten.alter + ' Jahre' : ''}, ${grunddaten.geschlecht || ''}`.trim();
+
+    return `
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Klinische Fallkonzeption - Bedienungsanleitung</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #1e293b;
+            max-width: 100%;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 20pt;
+            color: #1e40af;
+            border-bottom: 3px solid #1e40af;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 14pt;
+            color: #1e40af;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: #eff6ff;
+            border-left: 4px solid #1e40af;
+            page-break-after: avoid;
+        }
+        h3 {
+            font-size: 12pt;
+            color: #334155;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            page-break-after: avoid;
+        }
+        h4 {
+            font-size: 11pt;
+            color: #475569;
+            margin: 12px 0 6px;
+        }
+        p {
+            margin: 8px 0;
+            text-align: justify;
+        }
+        ul, ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+        li {
+            margin: 4px 0;
+        }
+        .header-box {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .header-box h1 {
+            color: white;
+            border-bottom-color: rgba(255,255,255,0.3);
+            margin: 0;
+        }
+        .header-meta {
+            margin-top: 12px;
+            font-size: 10pt;
+            opacity: 0.9;
+        }
+        .section-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            page-break-inside: avoid;
+        }
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            margin: 12px 0;
+        }
+        .danger-box {
+            background: #fee2e2;
+            border-left: 4px solid #dc2626;
+            padding: 12px;
+            margin: 12px 0;
+        }
+        .success-box {
+            background: #d1fae5;
+            border-left: 4px solid #059669;
+            padding: 12px;
+            margin: 12px 0;
+        }
+        .info-box {
+            background: #e0f2fe;
+            border-left: 4px solid #0284c7;
+            padding: 12px;
+            margin: 12px 0;
+        }
+        .theory-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 10pt;
+        }
+        .theory-box h4 {
+            margin-top: 0;
+            color: #6366f1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 10pt;
+        }
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+        .factor-card {
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 12px;
+            border-left: 3px solid #6366f1;
+        }
+        .hypothesis-main {
+            background: #ecfdf5;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #059669;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+        .toc {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .toc h3 {
+            margin-top: 0;
+        }
+        .toc ol {
+            margin: 0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 9pt;
+            color: #64748b;
+            text-align: center;
+        }
+        .reference {
+            font-size: 9pt;
+            color: #64748b;
+            font-style: italic;
+        }
+        @media print {
+            body {
+                padding: 0;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-box">
+        <h1>📋 Klinische Fallkonzeption</h1>
+        <h2 style="color: white; background: none; border: none; padding: 0; margin: 8px 0 0;">Bedienungsanleitung für die Behandlung</h2>
+        <div class="header-meta">
+            <strong>Patient:</strong> ${patientInfo || 'Nicht angegeben'} |
+            <strong>Erstellt:</strong> ${today} |
+            <strong>Vorstellungsanlass:</strong> ${grunddaten.vorstellungsanlass || 'Nicht angegeben'}
+        </div>
+    </div>
+
+    <div class="toc">
+        <h3>📑 Inhaltsverzeichnis</h3>
+        <ol>
+            <li>Zusammenfassung & Haupthypothesen</li>
+            <li>Bio-Psycho-Soziales Modell</li>
+            <li>Ätiologisches Verständnis</li>
+            <li>Systemische Perspektive</li>
+            <li>Bindungstheoretische Einordnung</li>
+            <li>Entwicklungsperspektive</li>
+            <li>Trauma-Perspektive & ACE</li>
+            <li>Ökologisches Modell (Bronfenbrenner)</li>
+            <li>Resilienz & Schutzfaktoren</li>
+            <li>Integrierte Fallhypothese</li>
+            <li>Behandlungsplan & Interventionen</li>
+            <li>Theoretische Grundlagen (Kurzreferenz)</li>
+        </ol>
+    </div>
+
+    ${generatePDFSection1(grunddaten, hypothesen, aceScore, risikoprofil)}
+
+    ${generatePDFSection2(synthese.biopsychosozial)}
+
+    ${generatePDFSection3(synthese, aceScore)}
+
+    ${generatePDFSection4(synthese.systemisch)}
+
+    ${generatePDFSection5(synthese.bindung)}
+
+    ${generatePDFSection6(synthese.entwicklung)}
+
+    ${generatePDFSection7(synthese.trauma, aceScore)}
+
+    ${generatePDFSection8(synthese.oekologisch)}
+
+    ${generatePDFSection9(synthese.resilienz)}
+
+    ${generatePDFSection10(result, synthese)}
+
+    ${generatePDFSection11(interventionen, hypothesen, grunddaten)}
+
+    ${generatePDFSection12()}
+
+    <div class="footer">
+        <p><strong>PädoPsych Advisor</strong> - Klinisches Entscheidungsunterstützungssystem für Kinder- und Jugendpsychiatrie</p>
+        <p>Dieses Dokument dient als Orientierungshilfe und ersetzt nicht die klinische Einschätzung des behandelnden Fachpersonals.</p>
+        <p>Erstellt am ${today}</p>
+    </div>
+</body>
+</html>
+    `;
+}
+
+// PDF Section Generators
+
+function generatePDFSection1(grunddaten, hypothesen, aceScore, risikoprofil) {
+    let html = `
+    <h2>1. Zusammenfassung & Haupthypothesen</h2>
+
+    <div class="section-box">
+        <h3>Patientendaten</h3>
+        <table>
+            <tr><th>Alter</th><td>${grunddaten.alter || '-'} Jahre</td></tr>
+            <tr><th>Geschlecht</th><td>${grunddaten.geschlecht || '-'}</td></tr>
+            <tr><th>Schulform</th><td>${grunddaten.schulform || '-'}</td></tr>
+            <tr><th>Wohnsituation</th><td>${grunddaten.wohnsituation || '-'}</td></tr>
+            <tr><th>Überweisung von</th><td>${grunddaten.ueberweisungVon || '-'}</td></tr>
+            <tr><th>Vorstellungsanlass</th><td>${grunddaten.vorstellungsanlass || '-'}</td></tr>
+        </table>
+    </div>`;
+
+    // Risk Assessment
+    if (risikoprofil.akut && risikoprofil.akut.length > 0) {
+        html += `
+        <div class="danger-box">
+            <h4>⚠️ AKUTE RISIKOFAKTOREN</h4>
+            <ul>${risikoprofil.akut.map(r => `<li><strong>${r.label}</strong></li>`).join('')}</ul>
+        </div>`;
+    }
+
+    // Hypotheses
+    if (hypothesen.length > 0) {
+        html += `
+        <h3>Diagnostische Hypothesen</h3>
+        <div class="hypothesis-main">
+            <h4>Haupthypothese: ${hypothesen[0].label}</h4>
+            <p><strong>Konfidenz:</strong> ${hypothesen[0].konfidenz}%</p>
+            <p>${hypothesen[0].beschreibung || hypothesen[0].begründung || ''}</p>
+        </div>`;
+
+        if (hypothesen.length > 1) {
+            html += `
+            <h4>Differentialdiagnosen:</h4>
+            <table>
+                <thead><tr><th>Diagnose</th><th>Konfidenz</th><th>Begründung</th></tr></thead>
+                <tbody>
+                ${hypothesen.slice(1, 5).map(h => `
+                    <tr>
+                        <td><strong>${h.label}</strong></td>
+                        <td>${h.konfidenz}%</td>
+                        <td>${h.begründung || h.beschreibung || '-'}</td>
+                    </tr>
+                `).join('')}
+                </tbody>
+            </table>`;
+        }
+    }
+
+    // ACE Score
+    html += `
+    <h3>ACE-Score (Adverse Childhood Experiences)</h3>
+    <div class="${aceScore.score >= 4 ? 'danger-box' : aceScore.score >= 2 ? 'warning-box' : 'success-box'}">
+        <p><strong>Score: ${aceScore.score}/10</strong></p>
+        <p>${aceScore.interpretation}</p>
+        ${aceScore.identifiziert && aceScore.identifiziert.length > 0 ?
+            `<p><strong>Identifiziert:</strong> ${aceScore.identifiziert.join(', ')}</p>` : ''}
+    </div>`;
+
+    return html;
+}
+
+function generatePDFSection2(bps) {
+    if (!bps) return '';
+
+    return `
+    <h2 class="page-break">2. Bio-Psycho-Soziales Modell</h2>
+
+    <div class="theory-box">
+        <h4>📚 Theoretischer Hintergrund</h4>
+        <p>Das Bio-Psycho-Soziale Modell nach <strong>George Engel (1977)</strong> ist das Standardmodell in der modernen Psychiatrie und Psychologie. Es besagt, dass psychische Störungen durch das Zusammenwirken von biologischen, psychologischen und sozialen Faktoren entstehen und aufrechterhalten werden.</p>
+        <p class="reference">Engel, G.L. (1977). The need for a new medical model. Science, 196(4286), 129-136.</p>
+    </div>
+
+    <div class="grid-3">
+        <div class="factor-card" style="border-left-color: #22c55e;">
+            <h4>🧬 Biologische Faktoren</h4>
+            <ul>
+                ${(bps.biologisch || []).map(f => `<li>${typeof f === 'object' ? f.faktor : f}</li>`).join('') || '<li>Keine dokumentiert</li>'}
+            </ul>
+        </div>
+        <div class="factor-card" style="border-left-color: #8b5cf6;">
+            <h4>🧠 Psychologische Faktoren</h4>
+            <ul>
+                ${(bps.psychologisch || []).map(f => `<li>${typeof f === 'object' ? f.faktor : f}</li>`).join('') || '<li>Keine dokumentiert</li>'}
+            </ul>
+        </div>
+        <div class="factor-card" style="border-left-color: #3b82f6;">
+            <h4>👥 Soziale Faktoren</h4>
+            <ul>
+                ${(bps.sozial || []).map(f => `<li>${typeof f === 'object' ? f.faktor : f}</li>`).join('') || '<li>Keine dokumentiert</li>'}
+            </ul>
+        </div>
+    </div>
+
+    ${bps.zusammenfassung ? `<div class="info-box"><p><strong>Zusammenfassung:</strong> ${bps.zusammenfassung}</p></div>` : ''}
+    `;
+}
+
+function generatePDFSection3(synthese, aceScore) {
+    const bps = synthese.biopsychosozial || {};
+    const trauma = synthese.trauma || {};
+    const bindung = synthese.bindung || {};
+
+    let html = `
+    <h2>3. Ätiologisches Verständnis</h2>
+
+    <h3>Prädisponierende Faktoren</h3>
+    <p>Faktoren, die die Vulnerabilität für die Entwicklung der Symptomatik erhöht haben:</p>
+    <ul>`;
+
+    // Biological
+    const bioVulnerability = (bps.biologisch || []).filter(f => {
+        const text = typeof f === 'object' ? f.faktor : f;
+        return text.toLowerCase().includes('genetik') || text.toLowerCase().includes('familiär') ||
+               text.toLowerCase().includes('neurobiolog');
+    });
+    if (bioVulnerability.length > 0) {
+        html += `<li><strong>Biologische Vulnerabilität:</strong> ${bioVulnerability.map(f => typeof f === 'object' ? f.faktor : f).join(', ')}</li>`;
+    }
+
+    // Attachment
+    if (bindung.früheFaktoren && bindung.früheFaktoren.length > 0) {
+        html += `<li><strong>Frühe Bindungserfahrungen:</strong> ${bindung.früheFaktoren.join(', ')}</li>`;
+    }
+
+    // ACE
+    if (aceScore.score > 0) {
+        html += `<li><strong>Belastende Kindheitserfahrungen:</strong> ACE-Score ${aceScore.score}/10</li>`;
+    }
+
+    html += `</ul>
+
+    <h3>Auslösende Faktoren</h3>
+    <p>Ereignisse oder Umstände, die die aktuelle Symptomatik ausgelöst haben:</p>`;
+
+    if (trauma.trigger && trauma.trigger.length > 0) {
+        html += `<ul>${trauma.trigger.map(t => `<li>${t}</li>`).join('')}</ul>`;
+    } else {
+        html += `<p><em>Im klinischen Gespräch weiter zu explorieren.</em></p>`;
+    }
+
+    return html;
+}
+
+function generatePDFSection4(sys) {
+    if (!sys) return '';
+
+    return `
+    <h2 class="page-break">4. Systemische Perspektive</h2>
+
+    <div class="theory-box">
+        <h4>📚 Theoretischer Hintergrund</h4>
+        <p>Die systemische Perspektive basiert auf der <strong>Systemtheorie</strong> und Familientherapie (Minuchin, Watzlawick, Bateson). Symptome des Kindes werden als Ausdruck von Spannungen oder Dysfunktionen im Familiensystem verstanden.</p>
+        <p><strong>Kernkonzepte:</strong> Zirkuläre Kausalität, Homöostase, Triangulation, Parentifizierung, identifizierter Patient.</p>
+        <p class="reference">Minuchin, S. (1974). Families and Family Therapy. Harvard University Press.</p>
+    </div>
+
+    <h3>Identifizierte systemische Aspekte</h3>
+    ${sys.aspekte && sys.aspekte.length > 0 ? `
+        <ul>
+            ${sys.aspekte.map(a => `<li><strong>${a.icon || '•'} ${a.name}:</strong> ${a.inhalt}</li>`).join('')}
+        </ul>
+    ` : '<p><em>Keine auffälligen systemischen Dynamiken dokumentiert.</em></p>'}
+
+    ${sys.empfehlung ? `<div class="info-box"><p><strong>Empfehlung:</strong> ${sys.empfehlung}</p></div>` : ''}
+    ${sys.familientherapie ? `<div class="success-box"><p>💡 <strong>Familientherapeutische Perspektive empfohlen</strong></p></div>` : ''}
+    `;
+}
+
+function generatePDFSection5(bindung) {
+    if (!bindung) return '';
+
+    return `
+    <h2>5. Bindungstheoretische Einordnung</h2>
+
+    <div class="theory-box">
+        <h4>📚 Theoretischer Hintergrund</h4>
+        <p>Die <strong>Bindungstheorie</strong> nach John Bowlby (1969) und Mary Ainsworth beschreibt, wie frühe Beziehungserfahrungen innere Arbeitsmodelle für spätere Beziehungen prägen.</p>
+        <p><strong>Bindungsmuster:</strong></p>
+        <ul>
+            <li><strong>Sicher (B):</strong> Vertrauen, offene Emotionsregulation</li>
+            <li><strong>Unsicher-vermeidend (A):</strong> Pseudo-Autonomie, unterdrückte Bedürfnisse</li>
+            <li><strong>Unsicher-ambivalent (C):</strong> Klammern, Trennungsangst</li>
+            <li><strong>Desorganisiert (D):</strong> Widersprüchliches Verhalten, oft bei Trauma</li>
+        </ul>
+        <p class="reference">Bowlby, J. (1969). Attachment and Loss. | Ainsworth, M. (1978). Patterns of Attachment.</p>
+    </div>
+
+    ${bindung.einschätzung ? `
+        <div class="section-box">
+            <h3>Einschätzung des Bindungsmusters</h3>
+            <p><strong>${bindung.einschätzung.muster || 'Nicht eindeutig'}</strong></p>
+            <p>${bindung.einschätzung.beschreibung || ''}</p>
+            ${bindung.einschätzung.prognose ? `<p><strong>Prognose:</strong> ${bindung.einschätzung.prognose}</p>` : ''}
+        </div>
+    ` : ''}
+
+    ${bindung.früheFaktoren && bindung.früheFaktoren.length > 0 ? `
+        <h4>Frühe Bindungsfaktoren</h4>
+        <ul>${bindung.früheFaktoren.map(f => `<li>${f}</li>`).join('')}</ul>
+    ` : ''}
+
+    ${bindung.aktuelleSignale && bindung.aktuelleSignale.length > 0 ? `
+        <h4>Aktuelle Bindungssignale</h4>
+        <ul>${bindung.aktuelleSignale.map(s => `<li>${s}</li>`).join('')}</ul>
+    ` : ''}
+
+    ${bindung.intervention && bindung.intervention.length > 0 ? `
+        <div class="success-box">
+            <h4>Therapeutische Implikationen</h4>
+            <ul>${bindung.intervention.map(i => `<li>${i}</li>`).join('')}</ul>
+        </div>
+    ` : ''}
+    `;
+}
+
+function generatePDFSection6(entwicklung) {
+    if (!entwicklung) return '';
+
+    return `
+    <h2 class="page-break">6. Entwicklungsperspektive</h2>
+
+    <div class="theory-box">
+        <h4>📚 Theoretischer Hintergrund</h4>
+        <p>Die Entwicklungsperspektive basiert auf <strong>Eriksons Stufenmodell</strong>, Piagets kognitiver Entwicklung und Havighursts Entwicklungsaufgaben.</p>
+        <p><strong>Entwicklungsphasen nach Erikson:</strong></p>
+        <ul>
+            <li>Säuglingsalter (0-1): Ur-Vertrauen vs. Misstrauen</li>
+            <li>Kleinkindalter (1-3): Autonomie vs. Scham/Zweifel</li>
+            <li>Spielalter (3-6): Initiative vs. Schuldgefühl</li>
+            <li>Schulalter (6-12): Werksinn vs. Minderwertigkeitsgefühl</li>
+            <li>Adoleszenz (12-18): Identität vs. Rollenkonfusion</li>
+        </ul>
+        <p class="reference">Erikson, E. (1950). Childhood and Society. | Piaget, J. (1970). Meine Theorie der geistigen Entwicklung.</p>
+    </div>
+
+    ${entwicklung.entwicklungsphase ? `
+        <div class="section-box">
+            <h3>Aktuelle Entwicklungsphase</h3>
+            <p><strong>Alter:</strong> ${entwicklung.alter || '?'} Jahre - <strong>${entwicklung.entwicklungsphase}</strong></p>
+            ${entwicklung.einschätzung ? `<p>${entwicklung.einschätzung}</p>` : ''}
+        </div>
+    ` : ''}
+
+    ${entwicklung.entwicklungsaufgaben && entwicklung.entwicklungsaufgaben.length > 0 ? `
+        <h4>Aktuelle Entwicklungsaufgaben</h4>
+        <ul>${entwicklung.entwicklungsaufgaben.map(a => `<li>${a}</li>`).join('')}</ul>
+    ` : ''}
+
+    ${entwicklung.auffälligkeiten && entwicklung.auffälligkeiten.length > 0 ? `
+        <div class="warning-box">
+            <h4>⚠️ Entwicklungsauffälligkeiten</h4>
+            <ul>${entwicklung.auffälligkeiten.map(a => `<li>${a}</li>`).join('')}</ul>
+        </div>
+    ` : ''}
+
+    ${entwicklung.empfehlung ? `<div class="info-box"><p><strong>Empfehlung:</strong> ${entwicklung.empfehlung}</p></div>` : ''}
+    `;
+}
+
+function generatePDFSection7(trauma, aceScore) {
+    return `
+    <h2>7. Trauma-Perspektive & ACE</h2>
+
+    <div class="theory-box">
+        <h4>📚 Theoretischer Hintergrund</h4>
+        <p>Die <strong>ACE-Studie</strong> (Felitti et al., 1998) zeigt: Belastende Kindheitserfahrungen haben dosisabhängige Auswirkungen auf psychische und physische Gesundheit.</p>
+        <p><strong>4F-Reaktionsmuster</strong> auf Trauma:</p>
+        <ul>
+            <li><strong>Fight (Kampf):</strong> Aggression, Wutausbrüche, Kontrolle</li>
+            <li><strong>Flight (Flucht):</strong> Vermeidung, Rückzug, Hyperaktivität</li>
+            <li><strong>Freeze (Erstarren):</strong> Dissoziation, Numbing, Hilflosigkeit</li>
+            <li><strong>Fawn (Anpassen):</strong> People-Pleasing, Überanpassung</li>
+        </ul>
+        <p class="reference">Felitti, V.J. et al. (1998). ACE Study. Am J Prev Med. | Van der Kolk, B. (2014). The Body Keeps the Score.</p>
+    </div>
+
+    <div class="${aceScore.score >= 4 ? 'danger-box' : aceScore.score >= 2 ? 'warning-box' : 'info-box'}">
+        <h3>ACE-Score: ${aceScore.score}/10</h3>
+        <p>${aceScore.interpretation}</p>
+        ${aceScore.identifiziert && aceScore.identifiziert.length > 0 ? `
+            <p><strong>Identifizierte ACEs:</strong></p>
+            <ul>${aceScore.identifiziert.map(i => `<li>${i}</li>`).join('')}</ul>
+        ` : ''}
+    </div>
+
+    ${trauma && trauma.relevant ? `
+        ${trauma.traumatyp && trauma.traumatyp.length > 0 ? `
+            <h4>Trauma-Typ</h4>
+            <ul>${trauma.traumatyp.map(t => `<li><strong>${t.typ}:</strong> ${t.beschreibung || ''}</li>`).join('')}</ul>
+        ` : ''}
+
+        ${trauma.reaktionsmuster && trauma.reaktionsmuster.length > 0 ? `
+            <h4>Identifizierte Reaktionsmuster</h4>
+            <ul>${trauma.reaktionsmuster.map(r => `
+                <li><strong>${r.muster}:</strong> ${r.zeichen} <em>(Umgang: ${r.umgang})</em></li>
+            `).join('')}</ul>
+        ` : ''}
+
+        ${trauma.wichtig ? `<div class="warning-box"><p><strong>⚠️ Wichtig:</strong> ${trauma.wichtig}</p></div>` : ''}
+    ` : '<p><em>Keine Traumatisierung dokumentiert. Dennoch wichtig: Trauma kann verborgen sein.</em></p>'}
+    `;
+}
+
+function generatePDFSection8(oeko) {
+    if (!oeko) return '';
+
+    return `
+    <h2 class="page-break">8. Ökologisches Modell (Bronfenbrenner)</h2>
+
+    <div class="theory-box">
+        <h4>📚 Theoretischer Hintergrund</h4>
+        <p>Das <strong>ökologische Modell</strong> nach Urie Bronfenbrenner (1979) beschreibt die Entwicklung des Kindes im Kontext verschachtelter Umweltsysteme.</p>
+        <p><strong>Die 4 Systemebenen:</strong></p>
+        <ul>
+            <li><strong>🏠 Mikrosystem:</strong> Familie, Schule, Peers - direkte Face-to-Face-Interaktionen</li>
+            <li><strong>🔗 Mesosystem:</strong> Verbindungen zwischen Mikrosystemen (z.B. Eltern-Lehrer-Kontakt)</li>
+            <li><strong>🏢 Exosystem:</strong> Indirekter Einfluss (Arbeitsplatz der Eltern, Medien)</li>
+            <li><strong>🌍 Makrosystem:</strong> Kulturelle/gesellschaftliche Ebene (Werte, Gesetze)</li>
+        </ul>
+        <p class="reference">Bronfenbrenner, U. (1979). The Ecology of Human Development. Harvard University Press.</p>
+    </div>
+
+    <div class="grid-2">
+        <div class="factor-card">
+            <h4>🏠 Mikrosystem</h4>
+            ${oeko.mikrosystem?.faktoren?.length > 0 ?
+                `<ul>${oeko.mikrosystem.faktoren.map(f => `<li>${f}</li>`).join('')}</ul>` :
+                '<p><em>Keine Daten</em></p>'}
+        </div>
+        <div class="factor-card">
+            <h4>🔗 Mesosystem</h4>
+            ${oeko.mesosystem?.faktoren?.length > 0 ?
+                `<ul>${oeko.mesosystem.faktoren.map(f => `<li>${f}</li>`).join('')}</ul>` :
+                '<p><em>Keine Daten</em></p>'}
+        </div>
+        <div class="factor-card">
+            <h4>🏢 Exosystem</h4>
+            ${oeko.exosystem?.faktoren?.length > 0 ?
+                `<ul>${oeko.exosystem.faktoren.map(f => `<li>${f}</li>`).join('')}</ul>` :
+                '<p><em>Keine Daten</em></p>'}
+        </div>
+        <div class="factor-card">
+            <h4>🌍 Makrosystem</h4>
+            ${oeko.makrosystem?.faktoren?.length > 0 ?
+                `<ul>${oeko.makrosystem.faktoren.map(f => `<li>${f}</li>`).join('')}</ul>` :
+                '<p><em>Keine Daten</em></p>'}
+        </div>
+    </div>
+    `;
+}
+
+function generatePDFSection9(resilienz) {
+    if (!resilienz) return '';
+
+    const total = (resilienz.individuell?.length || 0) + (resilienz.familiär?.length || 0) + (resilienz.sozial?.length || 0);
+
+    return `
+    <h2>9. Resilienz & Schutzfaktoren</h2>
+
+    <div class="theory-box">
+        <h4>📚 Theoretischer Hintergrund</h4>
+        <p><strong>Resilienz</strong> bezeichnet die Fähigkeit, sich trotz widriger Umstände positiv zu entwickeln (Werner & Smith, 1982; Masten, 2001).</p>
+        <p><strong>Schutzfaktoren auf 3 Ebenen:</strong></p>
+        <ul>
+            <li><strong>Individuell:</strong> Intelligenz, Temperament, Selbstwirksamkeit, soziale Kompetenz</li>
+            <li><strong>Familiär:</strong> Stabile Bezugsperson, emotionale Wärme, klare Strukturen</li>
+            <li><strong>Sozial:</strong> Unterstützende Lehrer, Peers, Zugang zu Ressourcen</li>
+        </ul>
+        <p class="reference">Werner, E. & Smith, R. (1982). Vulnerable but Invincible. | Masten, A. (2001). Ordinary Magic.</p>
+    </div>
+
+    <div class="success-box">
+        <h3>Identifizierte Schutzfaktoren: ${total}</h3>
+        ${resilienz.gesamtbewertung ? `<p>${resilienz.gesamtbewertung}</p>` : ''}
+    </div>
+
+    <div class="grid-3">
+        <div class="factor-card" style="border-left-color: #059669;">
+            <h4>💪 Individuell</h4>
+            ${resilienz.individuell?.length > 0 ?
+                `<ul>${resilienz.individuell.map(r => `<li>${r}</li>`).join('')}</ul>` :
+                '<p><em>Zu explorieren</em></p>'}
+        </div>
+        <div class="factor-card" style="border-left-color: #059669;">
+            <h4>👨‍👩‍👧 Familiär</h4>
+            ${resilienz.familiär?.length > 0 ?
+                `<ul>${resilienz.familiär.map(r => `<li>${r}</li>`).join('')}</ul>` :
+                '<p><em>Zu explorieren</em></p>'}
+        </div>
+        <div class="factor-card" style="border-left-color: #059669;">
+            <h4>🌍 Sozial</h4>
+            ${resilienz.sozial?.length > 0 ?
+                `<ul>${resilienz.sozial.map(r => `<li>${r}</li>`).join('')}</ul>` :
+                '<p><em>Zu explorieren</em></p>'}
+        </div>
+    </div>
+    `;
+}
+
+function generatePDFSection10(result, synthese) {
+    const grunddaten = result.grunddaten || {};
+    const hypothesen = result.hypothesen || [];
+    const bps = synthese.biopsychosozial || {};
+    const trauma = synthese.trauma || {};
+    const bindung = synthese.bindung || {};
+    const sys = synthese.systemisch || {};
+    const resilienz = synthese.resilienz || {};
+
+    const alter = grunddaten.alter || '?';
+    const geschlecht = grunddaten.geschlecht === 'weiblich' ? 'Das Mädchen' :
+                       grunddaten.geschlecht === 'männlich' ? 'Der Junge' : 'Das Kind/Der Jugendliche';
+    const hauptdiagnose = hypothesen[0]?.label || 'die vorliegende Symptomatik';
+
+    return `
+    <h2 class="page-break">10. Integrierte Fallhypothese</h2>
+
+    <div class="section-box" style="background: #f8fafc; border: 2px solid #6366f1;">
+        <p style="font-style: italic; font-size: 12pt; line-height: 1.8;">
+            <strong>${geschlecht}</strong> (${alter} Jahre) zeigt <strong>${hauptdiagnose}</strong>,
+            ${trauma.relevant ? `die sich vor dem Hintergrund belastender Kindheitserfahrungen (ACE-Score: ${trauma.aceScore || '?'}/10) ` : ''}
+            ${bindung.einschätzung?.muster ? `bei ${bindung.einschätzung.muster} ` : ''}
+            ${sys.aspekte?.length > 0 ? 'im Kontext familiärer Belastungsfaktoren ' : ''}
+            entwickelt hat.
+        </p>
+        <p style="font-style: italic; font-size: 12pt; line-height: 1.8;">
+            Die Symptomatik wird vermutlich aufrechterhalten durch ein Zusammenspiel aus
+            ${(bps.psychologisch || []).length > 0 ? 'intrapsychischen Faktoren (dysfunktionale Kognitionen, maladaptive Copingstrategien)' : ''}
+            ${sys.aspekte?.length > 0 ? ', familiären Interaktionsmustern' : ''}
+            ${(bps.sozial || []).some(s => (typeof s === 'object' ? s.faktor : s).toLowerCase().includes('schul')) ? ', schulischen/sozialen Stressoren' : ''}.
+        </p>
+        <p style="font-style: italic; font-size: 12pt; line-height: 1.8;">
+            Als protektive Faktoren können ${(resilienz.individuell?.length || 0) + (resilienz.familiär?.length || 0) + (resilienz.sozial?.length || 0)}
+            identifizierte Ressourcen genutzt werden, was die Prognose bei adäquater Behandlung günstig beeinflusst.
+        </p>
+    </div>
+    `;
+}
+
+function generatePDFSection11(interventionen, hypothesen, grunddaten) {
+    const alter = parseInt(grunddaten.alter) || 12;
+
+    let html = `
+    <h2>11. Behandlungsplan & Interventionen</h2>
+
+    <h3>Empfohlenes Setting</h3>
+    <p>${alter < 12 ?
+        'Ambulante Kinder- und Jugendlichenpsychotherapie mit starker Elternarbeit empfohlen.' :
+        'Ambulante Psychotherapie empfohlen, bei schwerer Ausprägung teilstationäre/stationäre Behandlung erwägen.'}</p>
+    `;
+
+    // Immediate interventions
+    if (interventionen.sofort && interventionen.sofort.length > 0) {
+        html += `
+        <div class="danger-box">
+            <h4>🚨 Sofortmaßnahmen</h4>
+            <ul>${interventionen.sofort.map(i => `<li>${i}</li>`).join('')}</ul>
+        </div>`;
+    }
+
+    // Short-term
+    if (interventionen.kurzfristig && interventionen.kurzfristig.length > 0) {
+        html += `
+        <h4>📅 Kurzfristig (Wochen)</h4>
+        <ul>${interventionen.kurzfristig.map(i => `<li>${i}</li>`).join('')}</ul>`;
+    }
+
+    // Medium-term
+    if (interventionen.mittelfristig && interventionen.mittelfristig.length > 0) {
+        html += `
+        <h4>📆 Mittelfristig (Monate)</h4>
+        <ul>${interventionen.mittelfristig.map(i => `<li>${i}</li>`).join('')}</ul>`;
+    }
+
+    // Long-term
+    if (interventionen.langfristig && interventionen.langfristig.length > 0) {
+        html += `
+        <h4>🎯 Langfristig</h4>
+        <ul>${interventionen.langfristig.map(i => `<li>${i}</li>`).join('')}</ul>`;
+    }
+
+    // Therapy recommendations based on diagnosis
+    html += `
+    <h3>Therapieverfahren nach Diagnose</h3>
+    <table>
+        <thead><tr><th>Diagnose</th><th>Empfohlene Verfahren</th></tr></thead>
+        <tbody>
+            <tr><td>Depression</td><td>Kognitive Verhaltenstherapie (KVT), IPT-A</td></tr>
+            <tr><td>Angststörungen</td><td>KVT mit Exposition, EMDR bei Trauma</td></tr>
+            <tr><td>ADHS</td><td>Multimodale Therapie, Elterntraining, ggf. Medikation</td></tr>
+            <tr><td>PTBS</td><td>TF-KVT, EMDR, narrative Exposition</td></tr>
+            <tr><td>Emotionsregulationsstörung</td><td>DBT-A (Dialektisch-Behaviorale Therapie)</td></tr>
+            <tr><td>Bindungsstörung</td><td>Bindungsbasierte Interventionen, Familientherapie</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Elternarbeit</h3>
+    <ul>
+        <li>Psychoedukation über Störungsbild und Behandlung</li>
+        <li>Elternberatung/-training zur Unterstützung des Therapieprozesses</li>
+        ${alter < 12 ? '<li><strong>Intensive Elterneinbindung</strong> (mind. 50% der Therapiezeit bei jüngeren Kindern)</li>' : ''}
+        <li>Regelmäßige Elterngespräche zur Verlaufskontrolle</li>
+    </ul>
+    `;
+
+    return html;
+}
+
+function generatePDFSection12() {
+    return `
+    <h2 class="page-break">12. Theoretische Grundlagen (Kurzreferenz)</h2>
+
+    <p>Diese Bedienungsanleitung basiert auf folgenden theoretischen Modellen und deren klinischer Anwendung:</p>
+
+    <table>
+        <thead><tr><th>Modell</th><th>Autor(en)</th><th>Kernanwendung</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><strong>Bio-Psycho-Soziales Modell</strong></td>
+                <td>Engel (1977)</td>
+                <td>Ganzheitliche Fallkonzeption, Integration aller Faktoren</td>
+            </tr>
+            <tr>
+                <td><strong>ACE-Studie</strong></td>
+                <td>Felitti et al. (1998)</td>
+                <td>Risikostratifizierung, Traumasensibilität</td>
+            </tr>
+            <tr>
+                <td><strong>Bindungstheorie</strong></td>
+                <td>Bowlby (1969), Ainsworth (1978)</td>
+                <td>Beziehungsgestaltung, therapeutische Allianz</td>
+            </tr>
+            <tr>
+                <td><strong>Systemtheorie</strong></td>
+                <td>Minuchin (1974), Watzlawick</td>
+                <td>Familieninterventionen, systemische Hypothesen</td>
+            </tr>
+            <tr>
+                <td><strong>Ökologisches Modell</strong></td>
+                <td>Bronfenbrenner (1979)</td>
+                <td>Kontextanalyse, Interventionsebenen</td>
+            </tr>
+            <tr>
+                <td><strong>Entwicklungspsychologie</strong></td>
+                <td>Erikson (1950), Piaget</td>
+                <td>Altersgerechte Einordnung, Entwicklungsaufgaben</td>
+            </tr>
+            <tr>
+                <td><strong>Resilienzforschung</strong></td>
+                <td>Werner & Smith (1982), Masten</td>
+                <td>Ressourcenorientierung, Schutzfaktoren</td>
+            </tr>
+            <tr>
+                <td><strong>Kognitive Verhaltenstherapie</strong></td>
+                <td>Beck (1979), Kendall</td>
+                <td>Interventionsplanung bei Angst/Depression</td>
+            </tr>
+            <tr>
+                <td><strong>DBT</strong></td>
+                <td>Linehan (1993), Miller & Rathus</td>
+                <td>Emotionsregulation, Skills-Training</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="info-box">
+        <h4>📚 Weiterführende Literatur</h4>
+        <ul>
+            <li>Remschmidt, H. (Hrsg.): Kinder- und Jugendpsychiatrie. Thieme.</li>
+            <li>Döpfner, M. et al.: Verhaltenstherapie bei Kindern und Jugendlichen. Hogrefe.</li>
+            <li>Brisch, K.H.: Bindungsstörungen. Klett-Cotta.</li>
+            <li>van der Kolk, B.: Verkörperter Schrecken. Probst Verlag.</li>
+        </ul>
+    </div>
+    `;
 }
 
 // ============================================================
