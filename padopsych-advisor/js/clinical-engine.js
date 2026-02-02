@@ -1,1168 +1,1424 @@
 /**
- * PädoPsych Advisor - Clinical Engine
- * Das klinische Gehirn der App - Analysiert Falldaten und generiert Hypothesen
+ * PädoPsych Advisor - Clinical Engine v2.0
+ * Umfassende Multi-Modell-Analyse für Kinder- und Jugendpsychiatrie
  */
 
 const ClinicalEngine = {
 
     /**
-     * Hauptfunktion: Analysiert die Falldaten und generiert Ergebnis
+     * Hauptfunktion: Analysiert die Falldaten und generiert umfassendes Ergebnis
      * @param {Object} caseData - Die Falldaten aus dem Formular
-     * @returns {Object} Analyseergebnis mit Hypothesen, Differential, Modell
+     * @returns {Object} Analyseergebnis mit Synthesen, Modellen, Interventionen
      */
     analyze(caseData) {
+        // ACE Score berechnen
+        const aceScore = this.calculateACEScore(caseData);
+
+        // Risikoprofil erstellen
+        const risikoprofil = this.createRisikoprofil(caseData);
+
+        // Diagnostische Hypothesen generieren
         const hypothesen = this.generateHypothesen(caseData);
-        const differential = this.differentialDiagnose(hypothesen, caseData);
-        const modell = this.generateKlinischesModell(hypothesen, caseData);
+
+        // Multi-Modell-Synthese
+        const synthese = {
+            biopsychosozial: this.generateBiopsychosozial(caseData, hypothesen),
+            systemisch: this.generateSystemisch(caseData),
+            trauma: this.generateTraumaPerspektive(caseData, aceScore),
+            bindung: this.generateBindungsperspektive(caseData),
+            entwicklung: this.generateEntwicklungsperspektive(caseData),
+            oekologisch: this.generateOekologisch(caseData),
+            resilienz: this.generateResilienzprofil(caseData)
+        };
+
+        // Integriertes Fallverständnis
+        const fallverstaendnis = this.generateFallverstaendnis(caseData, hypothesen, synthese);
+
+        // Interventionsempfehlungen
+        const interventionen = this.generateInterventionen(caseData, hypothesen, risikoprofil);
+
+        // Bedienungsanleitung
         const bedienungsanleitung = this.generateBedienungsanleitung(hypothesen, caseData);
 
         return {
-            hypothesen,           // Array sortiert nach Wahrscheinlichkeit
-            differential,         // Differentialdiagnostische Überlegungen
-            modell,              // Das klinische Erklärungsmodell
-            bedienungsanleitung, // Praktische Handlungsempfehlungen
-            caseData,            // Original-Daten für Referenz
+            grunddaten: this.extractGrunddaten(caseData),
+            aceScore,
+            risikoprofil,
+            hypothesen,
+            synthese,
+            fallverstaendnis,
+            interventionen,
+            bedienungsanleitung,
             timestamp: new Date().toISOString()
         };
     },
 
-    /**
-     * Berechnet Hypothesen mit Scores basierend auf Symptomen und Kontext
-     * @param {Object} caseData - Die Falldaten
-     * @returns {Array} Sortierte Hypothesen mit Konfidenzwerten
-     */
-    generateHypothesen(caseData) {
-        const results = [];
-        const symptome = [...(caseData.symptome || []), ...(caseData.kontext || [])];
-        const kontext = caseData.kontext || [];
-        const hauptproblem = caseData.hauptproblem;
+    // ============================================================
+    // GRUNDDATEN EXTRAKTION
+    // ============================================================
 
-        // Relevante Hypothesen basierend auf Hauptproblem priorisieren
-        const relevanteHypothesen = CLINICAL_KNOWLEDGE.hauptproblemRelevanz[hauptproblem] || [];
-
-        for (const [id, hypo] of Object.entries(CLINICAL_KNOWLEDGE.hypothesen)) {
-            let score = 0;
-            let maxScore = 0;
-            const evidenz = [];
-            const gegenEvidenz = [];
-
-            // Bonus für relevante Hypothesen basierend auf Hauptproblem
-            if (relevanteHypothesen.includes(id)) {
-                score += 2;
-            }
-
-            // Kernsymptome prüfen und gewichten
-            for (const [gruppe, items] of Object.entries(hypo.kernSymptome)) {
-                items.forEach(symptom => {
-                    const gewicht = hypo.gewichtung?.[symptom] || 1;
-                    maxScore += gewicht;
-
-                    if (symptome.includes(symptom)) {
-                        score += gewicht;
-                        evidenz.push({
-                            symptom,
-                            text: this.symptomToText(symptom),
-                            gewicht
-                        });
-                    }
-                });
-            }
-
-            // Stärkende Faktoren aus Kontext
-            hypo.staerkendeFaktoren?.forEach(faktor => {
-                if (kontext.includes(faktor) || symptome.includes(faktor)) {
-                    score += 1.5;
-                    evidenz.push({
-                        symptom: faktor,
-                        text: this.kontextToText(faktor) + " (verstärkend)",
-                        gewicht: 1.5
-                    });
-                }
-            });
-
-            // Schwächende Faktoren aus Kontext
-            hypo.schwächendeFaktoren?.forEach(faktor => {
-                if (kontext.includes(faktor)) {
-                    score -= 1.5;
-                    gegenEvidenz.push({
-                        faktor,
-                        text: this.kontextToText(faktor)
-                    });
-                }
-            });
-
-            // Konfidenz berechnen (0-100%)
-            // Normalisieren auf maxScore, aber mindestens auf Basis der gefundenen Evidenz
-            const basisScore = Math.max(maxScore, 8); // Mindestens 8 als Basis
-            const konfidenz = Math.min(100, Math.max(0, Math.round((score / basisScore) * 100)));
-
-            // Nur relevante Hypothesen (> 15% Konfidenz)
-            if (konfidenz > 15 || evidenz.length >= 2) {
-                results.push({
-                    id,
-                    name: hypo.name,
-                    vollname: hypo.vollname,
-                    kategorie: hypo.kategorie,
-                    icd10: hypo.icd10,
-                    konfidenz: Math.max(konfidenz, evidenz.length > 0 ? 20 : 0),
-                    score: Math.round(score * 10) / 10,
-                    evidenz: evidenz.map(e => e.text),
-                    evidenzDetails: evidenz,
-                    gegenEvidenz: gegenEvidenz.map(e => e.text),
-                    interpretation: this.getInterpretation(hypo, konfidenz),
-                    differentialDiagnosen: hypo.differentialDiagnosen || [],
-                    wichtigerHinweis: hypo.wichtigerHinweis || null,
-                    farbe: CLINICAL_KNOWLEDGE.kategoriefarben[hypo.kategorie] || '#6366f1'
-                });
-            }
-        }
-
-        // Sortieren nach Konfidenz (absteigend)
-        return results.sort((a, b) => b.konfidenz - a.konfidenz);
+    extractGrunddaten(caseData) {
+        return {
+            alter: caseData.identifikation?.alter,
+            geschlecht: caseData.identifikation?.geschlecht,
+            schulform: caseData.identifikation?.schulform,
+            wohnsituation: caseData.identifikation?.wohnsituation,
+            ueberweisungVon: caseData.identifikation?.ueberweisungVon,
+            vorstellungsanlass: caseData.identifikation?.vorstellungsanlassEltern ||
+                               caseData.identifikation?.vorstellungsanlassKind ||
+                               'Nicht angegeben'
+        };
     },
 
-    /**
-     * Wählt passende Interpretation basierend auf Konfidenz-Level
-     * @param {Object} hypo - Die Hypothese
-     * @param {number} konfidenz - Konfidenzwert 0-100
-     * @returns {string} Passender Interpretationstext
-     */
-    getInterpretation(hypo, konfidenz) {
-        if (konfidenz >= 60) return hypo.interpretation.hoch;
-        if (konfidenz >= 35) return hypo.interpretation.mittel;
-        return hypo.interpretation.niedrig;
-    },
+    // ============================================================
+    // ACE SCORE (Adverse Childhood Experiences)
+    // ============================================================
 
-    /**
-     * Generiert differentialdiagnostische Überlegungen
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @param {Object} caseData - Die Falldaten
-     * @returns {Array} Differentialdiagnostische Überlegungen
-     */
-    differentialDiagnose(hypothesen, caseData) {
-        const ueberlegungen = [];
-        const hypoIds = hypothesen.map(h => h.id);
+    calculateACEScore(caseData) {
+        const aceItems = [
+            'emotionaleMisshandlung',
+            'körperlicheMisshandlung',
+            'sexuellerMissbrauch',
+            'emotionaleVernachlässigung',
+            'körperlicheVernachlässigung',
+            'häuslicheGewalt',
+            'suchtFamilieACE',
+            'psychKrankheitEltern',
+            'trennungScheidungACE',
+            'inhaftierungFamilie'
+        ];
 
-        // Top 2 Hypothesen vergleichen
-        if (hypothesen.length >= 2) {
-            const h1 = hypothesen[0];
-            const h2 = hypothesen[1];
+        let score = 0;
+        const identifiziert = [];
 
-            // Prüfe ob sie sich in den Differentialdiagnosen überschneiden
-            if (h1.differentialDiagnosen.includes(h2.id) || h2.differentialDiagnosen.includes(h1.id)) {
-                ueberlegungen.push({
-                    typ: "abgrenzung",
-                    icon: "⚖️",
-                    titel: `${h1.name} vs. ${h2.name}`,
-                    text: `Diese Störungsbilder können sich ähnlich präsentieren. ${this.getDifferentialText(h1.id, h2.id)}`
-                });
+        aceItems.forEach(item => {
+            if (caseData.checkboxes?.[item]) {
+                score++;
+                identifiziert.push(this.getCheckboxLabel(item));
             }
-        }
+        });
 
-        // ADHS vs Trauma - wichtige Differenzierung
-        if (hypoIds.includes('adhs') && hypoIds.includes('trauma')) {
-            ueberlegungen.push({
-                typ: "wichtig",
-                icon: "⚠️",
-                titel: "ADHS vs. Trauma",
-                text: "Traumatisierte Kinder zeigen oft ADHS-ähnliche Symptome (Unruhe, Konzentrationsprobleme). " +
-                      "ENTSCHEIDEND: Gab es ein auslösendes Ereignis? Bestanden die Symptome schon VOR dem Ereignis?"
-            });
-        }
-
-        // Angst und Depression Komorbidität
-        if (hypoIds.includes('angst') && hypoIds.includes('depression')) {
-            ueberlegungen.push({
-                typ: "komorbidität",
-                icon: "🔗",
-                titel: "Komorbidität Angst/Depression",
-                text: "Angst und Depression treten bei Kindern häufig gemeinsam auf (Komorbidität ca. 30-50%). " +
-                      "Beide Aspekte sollten in der Behandlung berücksichtigt werden."
-            });
-        }
-
-        // ODD als Symptom - nicht als primäre Diagnose
-        const oddHypo = hypothesen.find(h => h.id === 'odd');
-        if (oddHypo && oddHypo.konfidenz > 40) {
-            ueberlegungen.push({
-                typ: "hinweis",
-                icon: "💡",
-                titel: "Opposition als Symptom",
-                text: "WICHTIG: Oppositionelles Verhalten ist oft ein SYMPTOM, nicht die Ursache. " +
-                      "Dahinter können ADHS, Trauma, Bindungsprobleme, Überforderung oder unerkannte Teilleistungsstörungen stecken."
-            });
-        }
-
-        // Autismus-Hinweis für spezialisierte Diagnostik
-        const asdHypo = hypothesen.find(h => h.id === 'asd');
-        if (asdHypo && asdHypo.konfidenz > 25) {
-            ueberlegungen.push({
-                typ: "empfehlung",
-                icon: "🔬",
-                titel: "Spezialisierte Diagnostik empfohlen",
-                text: "Bei Verdacht auf Autismus-Spektrum-Störung ist eine spezialisierte Diagnostik unerlässlich. " +
-                      "Screening-Ergebnisse allein reichen für eine Diagnose NICHT aus. " +
-                      "Bei Mädchen wird Autismus häufig übersehen (Maskierung/Camouflaging)."
-            });
-        }
-
-        // Bindung bei jungen Kindern
-        const bindungHypo = hypothesen.find(h => h.id === 'bindung');
-        if (bindungHypo && bindungHypo.konfidenz > 30 && parseInt(caseData.grunddaten?.alter) <= 8) {
-            ueberlegungen.push({
-                typ: "entwicklung",
-                icon: "👶",
-                titel: "Bindung als Entwicklungsaufgabe",
-                text: "Bei jüngeren Kindern ist die Bindungsentwicklung noch im Fluss. " +
-                      "Interventionen sollten primär die Bezugspersonen einbeziehen und Beziehungssicherheit fördern."
-            });
-        }
-
-        // Trauma-sensitives Vorgehen
-        const traumaHypo = hypothesen.find(h => h.id === 'trauma');
-        if (traumaHypo && traumaHypo.konfidenz > 35) {
-            ueberlegungen.push({
-                typ: "vorsicht",
-                icon: "🛡️",
-                titel: "Traumasensibles Vorgehen",
-                text: "Bei Traumaverdacht: Keine konfrontativen Techniken ohne stabile therapeutische Beziehung! " +
-                      "Stabilisierung und Sicherheit haben Priorität vor Aufarbeitung."
-            });
-        }
-
-        // Depression bei Kindern - Reizbarkeit beachten
-        const depHypo = hypothesen.find(h => h.id === 'depression');
-        if (depHypo && depHypo.konfidenz > 35) {
-            ueberlegungen.push({
-                typ: "altersbesonderheit",
-                icon: "📌",
-                titel: "Depression bei Kindern",
-                text: "Bei Kindern und Jugendlichen äußert sich Depression häufig als Reizbarkeit, Wutausbrüche " +
-                      "und körperliche Beschwerden - nicht unbedingt als 'klassische' Traurigkeit. " +
-                      "Suizidalität muss immer exploriert werden!"
-            });
-        }
-
-        return ueberlegungen;
+        return {
+            score,
+            max: 10,
+            identifiziert,
+            interpretation: this.interpretACEScore(score),
+            risiko: score >= 4 ? 'hoch' : score >= 2 ? 'mittel' : 'niedrig'
+        };
     },
 
-    /**
-     * Generiert das klinische Erklärungsmodell (bio-psycho-sozial)
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @param {Object} caseData - Die Falldaten
-     * @returns {Object} Das klinische Modell
-     */
-    generateKlinischesModell(hypothesen, caseData) {
-        const name = caseData.grunddaten?.name || "Das Kind";
-        const topHypo = hypothesen[0];
-        const alter = caseData.grunddaten?.alter;
-        const kontext = caseData.kontext || [];
-        const symptome = caseData.symptome || [];
-
-        // Prädisponierende Faktoren (Vulnerabilitäten)
-        const praedisponierend = [];
-        if (kontext.includes('familiaer')) praedisponierend.push("Familiäre Vorbelastung (genetisch/psychisch)");
-        if (kontext.includes('seit_immer')) praedisponierend.push("Früher Beginn der Symptomatik");
-        if (symptome.includes('vernachlaessigung')) praedisponierend.push("Vernachlässigungserfahrungen");
-
-        // Auslösende Faktoren (Trigger)
-        const ausloesend = [];
-        if (kontext.includes('nach_ereignis')) ausloesend.push("Belastendes Lebensereignis");
-        if (symptome.includes('schulwechsel')) ausloesend.push("Schulwechsel / Umbruchssituation");
-        if (symptome.includes('elterntrennung')) ausloesend.push("Trennung der Eltern");
-        if (symptome.includes('verlust_trauer')) ausloesend.push("Verlust / Trauererfahrung");
-
-        // Aufrechterhaltende Faktoren
-        const aufrechterhaltend = [];
-        if (symptome.includes('haeusliche_konflikte')) aufrechterhaltend.push("Anhaltende familiäre Konflikte");
-        if (hypothesen.some(h => h.id === 'emotionsregulation' && h.konfidenz > 30)) {
-            aufrechterhaltend.push("Fehlende Emotionsregulationsstrategien");
+    interpretACEScore(score) {
+        if (score >= 6) {
+            return "Sehr hohe Belastung durch multiple adverse Kindheitserfahrungen. Dringend traumasensibles Vorgehen erforderlich. Signifikant erhöhtes Risiko für psychische und körperliche Gesundheitsprobleme.";
         }
-        if (kontext.includes('nur_schule') || kontext.includes('nur_zuhause')) {
-            aufrechterhaltend.push("Situationsspezifische Verstärker");
+        if (score >= 4) {
+            return "Hohe Belastung. Erhöhtes Risiko für Depression, Angststörungen, Suchterkrankungen. Traumafokussierte Behandlung empfohlen.";
         }
-        if (symptome.includes('wird_gemobbt')) aufrechterhaltend.push("Mobbing-Erfahrungen");
+        if (score >= 2) {
+            return "Moderate Belastung. Traumasensibles Vorgehen empfohlen. Resilienzfaktoren identifizieren und stärken.";
+        }
+        if (score >= 1) {
+            return "Einzelne belastende Erfahrung identifiziert. Im Verlauf beobachten.";
+        }
+        return "Keine klassischen ACEs dokumentiert. Andere Belastungsfaktoren beachten.";
+    },
 
-        // Protektive Faktoren (was könnte helfen)
-        const protektiv = [];
-        if (!symptome.includes('wenig_freunde')) protektiv.push("Vorhandene Peer-Beziehungen");
-        if (!symptome.includes('haeusliche_konflikte')) protektiv.push("Stabile familiäre Situation");
-        if (caseData.freitext && caseData.freitext.toLowerCase().includes('stärk')) {
-            protektiv.push("Vorhandene Ressourcen/Stärken");
+    // ============================================================
+    // RISIKOPROFIL
+    // ============================================================
+
+    createRisikoprofil(caseData) {
+        const akut = [];
+        const chronisch = [];
+        const schutz = [];
+
+        // Akute Risiken
+        const akuteRisikoItems = [
+            { id: 'suizidgedanken', label: 'Suizidgedanken', severity: 'critical' },
+            { id: 'suizidplanung', label: 'Suizidplanung', severity: 'critical' },
+            { id: 'selbstverletzung', label: 'Selbstverletzendes Verhalten', severity: 'high' },
+            { id: 'fremdgefährdung', label: 'Fremdgefährdung', severity: 'critical' },
+            { id: 'substanzAkut', label: 'Akuter Substanzkonsum', severity: 'high' }
+        ];
+
+        akuteRisikoItems.forEach(item => {
+            if (caseData.checkboxes?.[item.id]) {
+                akut.push(item);
+            }
+        });
+
+        // Chronische Risiken
+        const chronischeItems = [
+            'mobbingOpfer', 'isolation', 'schulabsentismus', 'delinquenz',
+            'gamingExzessiv', 'realitätsflucht'
+        ];
+
+        chronischeItems.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                chronisch.push(this.getCheckboxLabel(id));
+            }
+        });
+
+        // Schutzfaktoren sammeln
+        const schutzItems = [
+            'intelligenz', 'kreativität', 'humor', 'empathie', 'problemlösung',
+            'selbstwirksamkeit', 'copingStrategien', 'sichereBindung',
+            'unterstützendeEltern', 'familiärerZusammenhalt', 'positivePeers',
+            'mentor', 'hobbysSport', 'hobbysKreativ', 'vereinMitglied'
+        ];
+
+        schutzItems.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                schutz.push(this.getCheckboxLabel(id));
+            }
+        });
+
+        // Dringlichkeitsstufe bestimmen
+        let dringlichkeit = 'normal';
+        if (akut.some(r => r.severity === 'critical')) {
+            dringlichkeit = 'sofort';
+        } else if (akut.length > 0) {
+            dringlichkeit = 'hoch';
+        } else if (chronisch.length >= 3) {
+            dringlichkeit = 'erhöht';
         }
 
         return {
-            zusammenfassung: this.generateZusammenfassung(name, alter, hypothesen, caseData),
-
-            biopsychosozial: {
-                praedisponierend: praedisponierend.length > 0 ? praedisponierend : ["Keine spezifischen Faktoren identifiziert"],
-                ausloesend: ausloesend.length > 0 ? ausloesend : ["Unklar / keine eindeutigen Auslöser erkennbar"],
-                aufrechterhaltend: aufrechterhaltend.length > 0 ? aufrechterhaltend : ["Noch zu explorieren"],
-                protektiv: protektiv.length > 0 ? protektiv : ["Ressourcen sollten exploriert werden"]
-            },
-
-            haupthypothese: topHypo ? {
-                id: topHypo.id,
-                name: topHypo.vollname,
-                konfidenz: topHypo.konfidenz,
-                erklaerung: topHypo.interpretation,
-                icd10: topHypo.icd10,
-                farbe: topHypo.farbe
-            } : null,
-
-            nebendiagnosen: hypothesen.slice(1, 4).map(h => ({
-                id: h.id,
-                name: h.name,
-                konfidenz: h.konfidenz,
-                farbe: h.farbe
-            })),
-
-            symptomCluster: this.clusterSymptome(caseData.symptome || [])
+            akut,
+            chronisch,
+            schutzfaktoren: schutz,
+            dringlichkeit,
+            bilanz: schutz.length - (akut.length * 2 + chronisch.length),
+            warnung: akut.length > 0 ? this.generateRisikoWarnung(akut) : null
         };
     },
 
-    /**
-     * Gruppiert Symptome nach Kategorien
-     * @param {Array} symptome - Die ausgewählten Symptome
-     * @returns {Object} Symptome gruppiert nach Kategorie
-     */
-    clusterSymptome(symptome) {
-        const cluster = {
-            aufmerksamkeit: [],
-            emotion: [],
-            sozial: [],
-            verhalten: [],
-            belastung: []
+    generateRisikoWarnung(akuteRisiken) {
+        const critical = akuteRisiken.filter(r => r.severity === 'critical');
+        if (critical.length > 0) {
+            return {
+                stufe: 'KRITISCH',
+                text: `ACHTUNG: ${critical.map(r => r.label).join(', ')} identifiziert. Sofortige Risikoeinschätzung und Krisenintervention erforderlich!`,
+                massnahmen: CLINICAL_KNOWLEDGE.interventionen.akut
+            };
+        }
+        return {
+            stufe: 'ERHÖHT',
+            text: 'Erhöhte Risikofaktoren identifiziert. Engmaschiges Monitoring und Krisenplan empfohlen.',
+            massnahmen: null
         };
+    },
 
-        const mapping = {
-            aufmerksamkeit: ['nicht_stillsitzen', 'unterbricht', 'verliert_sachen', 'hoert_nicht_zu', 'beendet_nicht', 'ablenkbar'],
-            emotion: ['wutausbrueche', 'frustriert', 'aengstlich', 'traurig', 'stimmungsschwankungen', 'weint_viel'],
-            sozial: ['wenig_freunde', 'wird_gemobbt', 'mobbt_andere', 'spielt_allein', 'soziale_regeln', 'kein_blickkontakt'],
-            verhalten: ['verweigert', 'streitet', 'provoziert', 'handgreiflich', 'zerstoert', 'luegt'],
-            belastung: ['elterntrennung', 'verlust_trauer', 'haeusliche_konflikte', 'schulwechsel', 'gewalterfahrung', 'vernachlaessigung']
-        };
+    // ============================================================
+    // DIAGNOSTISCHE HYPOTHESEN
+    // ============================================================
 
-        for (const [kategorie, items] of Object.entries(mapping)) {
-            cluster[kategorie] = symptome.filter(s => items.includes(s)).map(s => this.symptomToText(s));
+    generateHypothesen(caseData) {
+        const results = [];
+        const checkedSymptoms = Object.keys(caseData.checkboxes || {}).filter(k => caseData.checkboxes[k]);
+
+        for (const [id, hypo] of Object.entries(CLINICAL_KNOWLEDGE.diagnoseHypothesen)) {
+            const evaluation = this.evaluateHypothese(hypo, checkedSymptoms, caseData);
+
+            if (evaluation.konfidenz > 15 || evaluation.erfuellteKriterien.length >= 2) {
+                results.push({
+                    id,
+                    label: hypo.label,
+                    icd10: hypo.icd10,
+                    konfidenz: evaluation.konfidenz,
+                    erfuellteKriterien: evaluation.erfuellteKriterien,
+                    differentialHints: hypo.differentialHints || [],
+                    interpretation: this.getHypotheseInterpretation(evaluation.konfidenz, hypo.label)
+                });
+            }
         }
 
-        return cluster;
+        return results.sort((a, b) => b.konfidenz - a.konfidenz);
     },
 
-    /**
-     * Generiert Fließtext-Zusammenfassung des Falls
-     * @param {string} name - Name/Pseudonym des Kindes
-     * @param {string} alter - Alter des Kindes
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @param {Object} caseData - Die Falldaten
-     * @returns {string} Zusammenfassender Text
-     */
-    generateZusammenfassung(name, alter, hypothesen, caseData) {
-        const hauptproblem = caseData.hauptproblem;
+    evaluateHypothese(hypo, symptoms, caseData) {
+        let score = 0;
+        let maxScore = 0;
+        const erfuellt = [];
+
+        // Required Symptoms prüfen
+        if (hypo.requiredSymptoms) {
+            const minRequired = hypo.minRequired || 1;
+            let countRequired = 0;
+
+            hypo.requiredSymptoms.forEach(s => {
+                maxScore += 2;
+                if (symptoms.includes(s)) {
+                    score += 2;
+                    countRequired++;
+                    erfuellt.push(this.getCheckboxLabel(s));
+                }
+            });
+
+            if (countRequired < minRequired) {
+                score = score * 0.5; // Reduzieren wenn Kernkriterien fehlen
+            }
+        }
+
+        // Supporting Symptoms
+        if (hypo.supportingSymptoms) {
+            const minSupporting = hypo.minSupporting || 0;
+            let countSupporting = 0;
+
+            hypo.supportingSymptoms.forEach(s => {
+                maxScore += 1;
+                if (symptoms.includes(s)) {
+                    score += 1;
+                    countSupporting++;
+                    erfuellt.push(this.getCheckboxLabel(s));
+                }
+            });
+        }
+
+        // Gruppen-basierte Kriterien (ADHS, Autismus)
+        if (hypo.requiredFromGroup1 && hypo.requiredFromGroup2) {
+            const group1Count = hypo.requiredFromGroup1.filter(s => symptoms.includes(s)).length;
+            const group2Count = hypo.requiredFromGroup2.filter(s => symptoms.includes(s)).length;
+
+            const group1Met = group1Count >= (hypo.minFromGroup1 || 1);
+            const group2Met = group2Count >= (hypo.minFromGroup2 || 1);
+
+            maxScore = hypo.requiredFromGroup1.length + hypo.requiredFromGroup2.length;
+            score = group1Count + group2Count;
+
+            if (group1Met) erfuellt.push(`Unaufmerksamkeit: ${group1Count}/${hypo.minFromGroup1}`);
+            if (group2Met) erfuellt.push(`Hyperaktivität/Impulsivität: ${group2Count}/${hypo.minFromGroup2}`);
+        }
+
+        // PTBS Gruppen
+        if (hypo.requiredFromGroups) {
+            let allGroupsMet = true;
+            for (const [groupName, groupDef] of Object.entries(hypo.requiredFromGroups)) {
+                const count = groupDef.symptoms.filter(s => symptoms.includes(s)).length;
+                if (count >= groupDef.min) {
+                    erfuellt.push(`${groupName}: ${count}/${groupDef.min}`);
+                    score += count;
+                } else {
+                    allGroupsMet = false;
+                }
+                maxScore += groupDef.symptoms.length;
+            }
+            if (!allGroupsMet) score *= 0.5;
+        }
+
+        const konfidenz = Math.min(95, Math.max(0, Math.round((score / Math.max(maxScore, 1)) * 100)));
+
+        return { konfidenz, erfuellteKriterien: erfuellt };
+    },
+
+    getHypotheseInterpretation(konfidenz, label) {
+        if (konfidenz >= 70) {
+            return `Deutliche Hinweise auf ${label}. Gezielte Diagnostik und Behandlungsplanung empfohlen.`;
+        }
+        if (konfidenz >= 45) {
+            return `Relevante Hinweise auf ${label}. Vertiefte Exploration und differentialdiagnostische Abklärung empfohlen.`;
+        }
+        if (konfidenz >= 25) {
+            return `Einzelne Hinweise auf ${label}. Im Verlauf beobachten, bei Zunahme der Symptomatik abklären.`;
+        }
+        return `Geringe Hinweise. Differentialdiagnostisch im Blick behalten.`;
+    },
+
+    // ============================================================
+    // BIO-PSYCHO-SOZIALES MODELL
+    // ============================================================
+
+    generateBiopsychosozial(caseData, hypothesen) {
+        const bio = [];
+        const psycho = [];
+        const sozial = [];
+
+        // BIOLOGISCH
+        // Genetik/Familie
+        const famPsych = ['famDepression', 'famAngst', 'famBipolar', 'famPsychose',
+                         'famADHS', 'famAutismus', 'famSucht', 'famSuizid'];
+        famPsych.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                bio.push({ faktor: this.getCheckboxLabel(id), typ: 'Genetik/Familie' });
+            }
+        });
+
+        // Entwicklung
+        const entwicklung = ['komplikationSS', 'fruehgeburt', 'geburtsKomplikation',
+                            'neonataleProbleme', 'motorikVerzögert', 'spracheVerzögert'];
+        entwicklung.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                bio.push({ faktor: this.getCheckboxLabel(id), typ: 'Entwicklung' });
+            }
+        });
+
+        // Körperlich
+        const körperlich = ['chronischeErkrankung', 'epilepsie', 'neurologisch',
+                          'schlafstörung', 'somatisierung'];
+        körperlich.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                bio.push({ faktor: this.getCheckboxLabel(id), typ: 'Körperlich' });
+            }
+        });
+
+        // PSYCHOLOGISCH
+        // Kognitive Faktoren
+        if (caseData.checkboxes?.konzentrationsstörungBefund) {
+            psycho.push({ faktor: 'Konzentrationsstörung', typ: 'Kognition' });
+        }
+        if (caseData.checkboxes?.hoffnungslosigkeit) {
+            psycho.push({ faktor: 'Hoffnungslosigkeit/negative Kognitionen', typ: 'Kognition' });
+        }
+        if (caseData.checkboxes?.grübeln) {
+            psycho.push({ faktor: 'Grübeln/Rumination', typ: 'Kognition' });
+        }
+
+        // Emotionale Faktoren
+        const emotional = ['stimmungDepressiv', 'stimmungÄngstlich', 'stimmungLabil',
+                         'anhedonie', 'emoÜberflutung', 'emoWutausbrüche'];
+        emotional.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                psycho.push({ faktor: this.getCheckboxLabel(id), typ: 'Emotion' });
+            }
+        });
+
+        // Verhalten
+        const verhalten = ['vermeidungTrauma', 'rückzug', 'selbstverletzung'];
+        verhalten.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                psycho.push({ faktor: this.getCheckboxLabel(id), typ: 'Verhalten' });
+            }
+        });
+
+        // SOZIAL
+        // Familie
+        const familie = ['elternTrennung', 'hochkonflikt', 'alleinerziehend',
+                        'kommunikationProbleme', 'überbehütend', 'vernachlässigend', 'inkonsistent'];
+        familie.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                sozial.push({ faktor: this.getCheckboxLabel(id), typ: 'Familie' });
+            }
+        });
+
+        // Peers
+        const peers = ['mobbingOpfer', 'isolation', 'kontaktscheu', 'negativerPeergroup'];
+        peers.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                sozial.push({ faktor: this.getCheckboxLabel(id), typ: 'Peers' });
+            }
+        });
+
+        // Schule
+        const schule = ['konzentrationSchule', 'verhaltensauffälligSchule',
+                       'schulangst', 'schulabsentismus', 'lehrerKonflikt'];
+        schule.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                sozial.push({ faktor: this.getCheckboxLabel(id), typ: 'Schule' });
+            }
+        });
+
+        // Sozioökonomisch
+        const sozioöko = ['finanzielleNot', 'arbeitslosigkeit', 'wohnungsnot', 'migrationsstress'];
+        sozioöko.forEach(id => {
+            if (caseData.checkboxes?.[id]) {
+                sozial.push({ faktor: this.getCheckboxLabel(id), typ: 'Sozioökonomisch' });
+            }
+        });
+
+        return {
+            biologisch: bio,
+            psychologisch: psycho,
+            sozial: sozial,
+            zusammenfassung: this.generateBPSZusammenfassung(bio, psycho, sozial)
+        };
+    },
+
+    generateBPSZusammenfassung(bio, psycho, sozial) {
+        const parts = [];
+
+        if (bio.length > 0) {
+            parts.push(`Biologisch zeigen sich ${bio.length} relevante Faktoren, darunter ${bio.slice(0, 2).map(b => b.faktor).join(', ')}.`);
+        }
+
+        if (psycho.length > 0) {
+            parts.push(`Psychologisch sind ${psycho.length} Bereiche betroffen, insbesondere ${psycho.slice(0, 2).map(p => p.faktor).join(', ')}.`);
+        }
+
+        if (sozial.length > 0) {
+            parts.push(`Im sozialen Bereich bestehen ${sozial.length} Belastungsfaktoren, v.a. ${sozial.slice(0, 2).map(s => s.faktor).join(', ')}.`);
+        }
+
+        return parts.join(' ') || 'Keine spezifischen Faktoren in diesem Modell identifiziert.';
+    },
+
+    // ============================================================
+    // SYSTEMISCHE PERSPEKTIVE
+    // ============================================================
+
+    generateSystemisch(caseData) {
+        const aspekte = [];
+
+        // Symptom als Kommunikation
+        let symptomFunktion = null;
+        if (caseData.checkboxes?.parentifizierung) {
+            symptomFunktion = "Das Kind übernimmt möglicherweise Verantwortung, die nicht altersgerecht ist. Das Symptom könnte ein Signal sein, dass das Kind überfordert ist.";
+        }
+        if (caseData.checkboxes?.loyalitätskonflikt) {
+            symptomFunktion = "Das Kind steht möglicherweise zwischen den Eltern. Das Symptom könnte ein Versuch sein, neutral zu bleiben oder Aufmerksamkeit auf sich zu lenken.";
+        }
+        if (caseData.checkboxes?.hochkonflikt) {
+            symptomFunktion = "Bei hohem Elternkonflikt kann das Symptom des Kindes eine ablenkende Funktion haben - es 'vereint' die Eltern in der Sorge um das Kind.";
+        }
+
+        if (symptomFunktion) {
+            aspekte.push({
+                name: "Mögliche Symptomfunktion",
+                inhalt: symptomFunktion,
+                icon: "💬"
+            });
+        }
+
+        // Triangulierung
+        if (caseData.checkboxes?.hochkonflikt || caseData.checkboxes?.loyalitätskonflikt) {
+            aspekte.push({
+                name: "Triangulierung",
+                inhalt: "Das Kind scheint in Elternkonflikte einbezogen zu werden. Eltern-Kind-Grenzen könnten unklar sein. Ziel: Kind aus dem Konflikt heraushalten.",
+                icon: "⚠️"
+            });
+        }
+
+        // Grenzen
+        if (caseData.checkboxes?.überbehütend) {
+            aspekte.push({
+                name: "Grenzproblematik: Zu eng",
+                inhalt: "Überbehütender Stil kann Autonomieentwicklung hemmen und Ängste verstärken. Frage: Was befürchten die Eltern?",
+                icon: "🔒"
+            });
+        }
+        if (caseData.checkboxes?.grenzenUnklar) {
+            aspekte.push({
+                name: "Grenzproblematik: Unklar",
+                inhalt: "Unklare Rollen und Grenzen können zu Verunsicherung beim Kind führen. Struktur und Klarheit schaffen.",
+                icon: "❓"
+            });
+        }
+
+        // Erziehungsstil-Dynamiken
+        if (caseData.checkboxes?.inkonsistent) {
+            aspekte.push({
+                name: "Inkonsistente Erziehung",
+                inhalt: "Uneinheitliches Vorgehen (zwischen Eltern oder situativ) erschwert dem Kind Orientierung. Sind die Eltern sich uneinig?",
+                icon: "🔄"
+            });
+        }
+
+        // Systemische Hypothesen
+        const systemHypothesen = [];
+        if (caseData.checkboxes?.verhWütend && caseData.checkboxes?.hochkonflikt) {
+            systemHypothesen.push("Das aggressive Verhalten des Kindes könnte die elterlichen Konflikte spiegeln.");
+        }
+        if (caseData.checkboxes?.angstSozial && caseData.checkboxes?.überbehütend) {
+            systemHypothesen.push("Die Ängste des Kindes und der überbehütende Stil könnten sich gegenseitig verstärken.");
+        }
+        if (caseData.checkboxes?.schulabsentismus && caseData.checkboxes?.alleinerziehend) {
+            systemHypothesen.push("Das Schulvermeidungsverhalten könnte mit Sorge um den alleinerziehenden Elternteil zusammenhängen.");
+        }
+
+        if (systemHypothesen.length > 0) {
+            aspekte.push({
+                name: "Zirkuläre Hypothesen",
+                inhalt: systemHypothesen.join(' '),
+                icon: "🔁"
+            });
+        }
+
+        return {
+            aspekte,
+            empfehlung: aspekte.length > 0
+                ? "Systemische Faktoren spielen eine Rolle. Familientherapeutische Perspektive einbeziehen."
+                : "Keine auffälligen systemischen Dynamiken dokumentiert. Bei Bedarf vertiefen.",
+            familientherapie: aspekte.length >= 2
+        };
+    },
+
+    // ============================================================
+    // TRAUMA-PERSPEKTIVE
+    // ============================================================
+
+    generateTraumaPerspektive(caseData, aceScore) {
+        if (aceScore.score === 0 && !this.hasTraumaSymptoms(caseData)) {
+            return {
+                relevant: false,
+                hinweis: "Keine Traumatisierung dokumentiert. Bei unklarer Symptomatik: behutsam explorieren."
+            };
+        }
+
+        const traumatyp = this.bestimmeTraumatyp(caseData);
+        const reaktionsmuster = this.bestimmeReaktionsmuster(caseData);
+        const trigger = this.identifiziereTrigger(caseData);
+
+        return {
+            relevant: true,
+            aceScore: aceScore.score,
+            traumatyp,
+            reaktionsmuster,
+            trigger,
+            empfehlungen: this.getTraumaEmpfehlungen(traumatyp, reaktionsmuster),
+            wichtig: "Traumasensibles Vorgehen ist essentiell. Keine Konfrontation ohne Stabilisierung und sichere therapeutische Beziehung."
+        };
+    },
+
+    hasTraumaSymptoms(caseData) {
+        const traumaSymptoms = ['flashbacks', 'vermeidungTrauma', 'hyperarousal',
+                               'numbing', 'dissoziativ', 'triggerreaktionen'];
+        return traumaSymptoms.some(s => caseData.checkboxes?.[s]);
+    },
+
+    bestimmeTraumatyp(caseData) {
+        const typen = [];
+
+        // Typ I (Einmalig)
+        if (caseData.checkboxes?.unfallTrauma || caseData.checkboxes?.naturkatastrophe) {
+            typen.push({
+                typ: "Typ I (Einmalig)",
+                beschreibung: "Einmaliges traumatisches Ereignis (z.B. Unfall). Oft bessere Prognose bei Behandlung."
+            });
+        }
+
+        // Typ II (Wiederholend)
+        if (caseData.checkboxes?.mobbingTrauma) {
+            typen.push({
+                typ: "Typ II (Wiederholend)",
+                beschreibung: "Wiederholte Traumatisierung (z.B. Mobbing). Kann zu komplexeren Symptomen führen."
+            });
+        }
+
+        // Komplex (Beziehungstrauma)
+        const komplex = ['emotionaleMisshandlung', 'körperlicheMisshandlung', 'sexuellerMissbrauch',
+                        'emotionaleVernachlässigung', 'häuslicheGewalt'];
+        if (komplex.some(id => caseData.checkboxes?.[id])) {
+            typen.push({
+                typ: "Komplex (Entwicklungstrauma)",
+                beschreibung: "Frühe, beziehungsbezogene Traumatisierung. Betrifft Bindung, Affektregulation, Selbstbild. Längerer Behandlungsbedarf."
+            });
+        }
+
+        return typen.length > 0 ? typen : [{ typ: "Nicht näher spezifiziert", beschreibung: "Art der Traumatisierung unklar. Behutsame Exploration." }];
+    },
+
+    bestimmeReaktionsmuster(caseData) {
+        const muster = [];
+
+        // Fight
+        if (caseData.checkboxes?.verhAggression || caseData.checkboxes?.verhWütend ||
+            caseData.checkboxes?.emoWutausbrüche) {
+            muster.push({
+                muster: "Fight (Kampf)",
+                zeichen: "Aggression, Wutausbrüche, Kontrollverhalten",
+                umgang: "Nicht persönlich nehmen. Sicherheit schaffen. Keine Machtkämpfe."
+            });
+        }
+
+        // Flight
+        if (caseData.checkboxes?.vermeidungTrauma || caseData.checkboxes?.rückzug ||
+            caseData.checkboxes?.schulangst) {
+            muster.push({
+                muster: "Flight (Flucht)",
+                zeichen: "Vermeidung, Rückzug, Schulabsentismus",
+                umgang: "Vermeidung verstehen, nicht erzwingen. Kleine Schritte in Sicherheit."
+            });
+        }
+
+        // Freeze
+        if (caseData.checkboxes?.dissoziativ || caseData.checkboxes?.numbing ||
+            caseData.checkboxes?.mutismus) {
+            muster.push({
+                muster: "Freeze (Erstarren)",
+                zeichen: "Dissoziation, Erstarren, Abwesenheit, Mutismus",
+                umgang: "Erdung, Orientierung geben. Langsam, sanft ansprechen. Sensorische Reize."
+            });
+        }
+
+        // Fawn
+        if (caseData.checkboxes?.bindungDistanzlos || caseData.checkboxes?.parentifizierung) {
+            muster.push({
+                muster: "Fawn (Anpassung)",
+                zeichen: "Überanpassung, People-Pleasing, Grenzenlosigkeit",
+                umgang: "Eigene Bedürfnisse erfragen. Nein sagen üben. Grenzen respektieren."
+            });
+        }
+
+        return muster.length > 0 ? muster : [{ muster: "Kein klares Muster", zeichen: "Muster unklar", umgang: "Beobachten und explorieren" }];
+    },
+
+    identifiziereTrigger(caseData) {
+        const trigger = [];
+
+        if (caseData.checkboxes?.triggerreaktionen) {
+            trigger.push("Bekannte Triggerreaktionen vorhanden - Details explorieren");
+        }
+        if (caseData.checkboxes?.flashbacks) {
+            trigger.push("Flashbacks vorhanden - Auslöser identifizieren");
+        }
+        if (caseData.checkboxes?.albträume) {
+            trigger.push("Albträume - Themen können auf Trigger hinweisen");
+        }
+
+        return trigger;
+    },
+
+    getTraumaEmpfehlungen(traumatypen, reaktionsmuster) {
+        const empfehlungen = [
+            "Sicherheit und Vorhersehbarkeit herstellen",
+            "Stabilisierungsarbeit vor Traumabearbeitung",
+            "Ressourcen und positive Erfahrungen stärken"
+        ];
+
+        if (traumatypen.some(t => t.typ.includes('Komplex'))) {
+            empfehlungen.push("Längerfristige Therapie einplanen");
+            empfehlungen.push("Bindungsorientierte Interventionen priorisieren");
+        }
+
+        if (reaktionsmuster.some(r => r.muster.includes('Freeze'))) {
+            empfehlungen.push("Körperorientierte Stabilisierungstechniken");
+        }
+
+        return empfehlungen;
+    },
+
+    // ============================================================
+    // BINDUNGSPERSPEKTIVE
+    // ============================================================
+
+    generateBindungsperspektive(caseData) {
+        const bindungsmuster = this.einschätzeBindungsmuster(caseData);
+        const faktoren = [];
+
+        // Frühe Faktoren
+        if (caseData.checkboxes?.bindungProbleme) faktoren.push("Frühe Bindungsprobleme dokumentiert");
+        if (caseData.checkboxes?.bonding) faktoren.push("Gutes initiales Bonding (Schutzfaktor)");
+        if (caseData.checkboxes?.schreibaby) faktoren.push("Schreibaby - frühe Regulationsprobleme");
+        if (caseData.checkboxes?.fütterProbleme) faktoren.push("Frühe Fütterprobleme");
+
+        // Aktuelle Bindungssignale
+        const aktuell = [];
+        if (caseData.checkboxes?.bindungKlammern) aktuell.push("Übermäßiges Klammern");
+        if (caseData.checkboxes?.bindungDistanzlos) aktuell.push("Distanzloses Verhalten");
+        if (caseData.checkboxes?.bindungMisstrauen) aktuell.push("Grundmisstrauen");
+        if (caseData.checkboxes?.bindungAmbivalent) aktuell.push("Ambivalentes Beziehungsverhalten");
+        if (caseData.checkboxes?.bindungSchwer) aktuell.push("Schwer zu beruhigen");
+
+        return {
+            einschätzung: bindungsmuster,
+            früheFaktoren: faktoren,
+            aktuelleSignale: aktuell,
+            intervention: this.getBindungsintervention(bindungsmuster)
+        };
+    },
+
+    einschätzeBindungsmuster(caseData) {
+        // Desorganisiert
+        if (caseData.checkboxes?.dissoziativ ||
+            (caseData.checkboxes?.bindungKlammern && caseData.checkboxes?.bindungMisstrauen)) {
+            return {
+                muster: "Desorganisierte Bindung (D)",
+                beschreibung: "Widersprüchliches Bindungsverhalten, möglicherweise Folge von Beziehungstrauma. Bezugsperson als Quelle von Angst UND Trost.",
+                prognose: "Intensivere Intervention erforderlich"
+            };
+        }
+
+        // Unsicher-ambivalent
+        if (caseData.checkboxes?.bindungKlammern || caseData.checkboxes?.angstTrennung ||
+            caseData.checkboxes?.bindungSchwer) {
+            return {
+                muster: "Unsicher-ambivalente Bindung (C)",
+                beschreibung: "Übermäßiges Klammern, schwer zu beruhigen, eingeschränkte Exploration. Oft bei inkonsistenter Verfügbarkeit der Bezugsperson.",
+                prognose: "Gute Prognose bei verlässlicher Beziehungserfahrung"
+            };
+        }
+
+        // Unsicher-vermeidend
+        if (caseData.checkboxes?.kontaktscheu || caseData.checkboxes?.affektFlach ||
+            (caseData.checkboxes?.rückzug && !caseData.checkboxes?.angstAusgeprägt)) {
+            return {
+                muster: "Unsicher-vermeidende Bindung (A)",
+                beschreibung: "Zeigt wenig Nähebedürfnis, Pseudoautonomie, wenig Emotionsausdruck. Oft bei emotional wenig verfügbarer Bezugsperson.",
+                prognose: "Zugang zu Emotionen fördern"
+            };
+        }
+
+        // Sicher (wenn Schutzfaktoren)
+        if (caseData.checkboxes?.sichereBindung) {
+            return {
+                muster: "Sichere Bindung (B)",
+                beschreibung: "Nutzt Bezugsperson als sichere Basis. Wichtiger Schutzfaktor für alle anderen Probleme.",
+                prognose: "Gute Grundlage für Intervention"
+            };
+        }
+
+        return {
+            muster: "Nicht eindeutig einschätzbar",
+            beschreibung: "Bindungsmuster auf Basis der vorliegenden Informationen nicht eindeutig bestimmbar.",
+            prognose: "Weitere Exploration empfohlen"
+        };
+    },
+
+    getBindungsintervention(bindungsmuster) {
+        const interventionen = {
+            "Desorganisierte Bindung (D)": [
+                "Traumasensibles Vorgehen",
+                "Sichere, vorhersehbare Umgebung",
+                "Keine Retraumatisierung durch Bindungsperson",
+                "Möglicherweise alternative Bezugsperson stärken"
+            ],
+            "Unsicher-ambivalente Bindung (C)": [
+                "Konsistenz und Verlässlichkeit bieten",
+                "Vorhersehbare Trennungen mit klarem Wiederkommen",
+                "Emotionen validieren, nicht verstärken",
+                "Autonomie in kleinen Schritten fördern"
+            ],
+            "Unsicher-vermeidende Bindung (A)": [
+                "Emotionale Präsenz zeigen, nicht aufdrängen",
+                "Gefühle spiegeln und benennen",
+                "Bedürfnisse erfragen (Kind kennt sie oft nicht)",
+                "Geduld - Annäherung braucht Zeit"
+            ],
+            "Sichere Bindung (B)": [
+                "Bindung als Ressource nutzen",
+                "Bezugsperson in Behandlung einbeziehen",
+                "Sichere Basis stärken"
+            ]
+        };
+
+        return interventionen[bindungsmuster.muster] || ["Bindungsqualität weiter explorieren"];
+    },
+
+    // ============================================================
+    // ENTWICKLUNGSPSYCHOPATHOLOGISCHE PERSPEKTIVE
+    // ============================================================
+
+    generateEntwicklungsperspektive(caseData) {
+        const alter = parseInt(caseData.identifikation?.alter) || null;
+
+        if (!alter) {
+            return {
+                relevant: false,
+                hinweis: "Alter nicht angegeben - Entwicklungseinschätzung nicht möglich"
+            };
+        }
+
+        const entwicklungsaufgaben = this.getEntwicklungsaufgaben(alter);
+        const auffälligkeiten = this.getEntwicklungsauffälligkeiten(caseData);
+        const einschätzung = this.einschätzeEntwicklungsstand(caseData, alter);
+
+        return {
+            alter,
+            entwicklungsphase: this.getEntwicklungsphase(alter),
+            entwicklungsaufgaben,
+            auffälligkeiten,
+            einschätzung,
+            empfehlung: auffälligkeiten.length > 2
+                ? "Multiple Entwicklungsauffälligkeiten. Umfassende Entwicklungsdiagnostik empfohlen."
+                : "Entwicklungsaspekte im Verlauf beobachten."
+        };
+    },
+
+    getEntwicklungsphase(alter) {
+        if (alter < 1) return "Säuglingsalter";
+        if (alter < 3) return "Kleinkindalter";
+        if (alter < 6) return "Vorschulalter";
+        if (alter < 12) return "Schulkindalter";
+        if (alter < 18) return "Jugendalter";
+        return "Junges Erwachsenenalter";
+    },
+
+    getEntwicklungsaufgaben(alter) {
+        const aufgaben = CLINICAL_KNOWLEDGE.modellvorlagen.entwicklung.entwicklungsaufgaben;
+
+        if (alter < 1) return aufgaben["0-1"];
+        if (alter < 3) return aufgaben["1-3"];
+        if (alter < 6) return aufgaben["3-6"];
+        if (alter < 12) return aufgaben["6-12"];
+        return aufgaben["12-18"];
+    },
+
+    getEntwicklungsauffälligkeiten(caseData) {
+        const auffälligkeiten = [];
+
+        if (caseData.checkboxes?.motorikVerzögert) auffälligkeiten.push("Motorische Entwicklung");
+        if (caseData.checkboxes?.spracheVerzögert) auffälligkeiten.push("Sprachentwicklung");
+        if (caseData.checkboxes?.kontaktVerzögert) auffälligkeiten.push("Soziale Entwicklung");
+        if (caseData.checkboxes?.regulationProbleme) auffälligkeiten.push("Emotionale Regulation");
+        if (caseData.checkboxes?.sauberkeitVerzögert) auffälligkeiten.push("Sauberkeitsentwicklung");
+        if (caseData.checkboxes?.teilleistung) auffälligkeiten.push("Teilleistungen");
+
+        return auffälligkeiten;
+    },
+
+    einschätzeEntwicklungsstand(caseData, alter) {
+        let hinweise = [];
+
+        // Regression?
+        if (caseData.checkboxes?.enuresisTag && alter > 5) {
+            hinweise.push("Mögliche Regression (Einnässen nach erreichter Sauberkeit)");
+        }
+        if (caseData.checkboxes?.interessenverlust) {
+            hinweise.push("Interessenverlust kann auf emotionale Belastung oder Depression hinweisen");
+        }
+
+        // Frühreife/Parentifizierung?
+        if (caseData.checkboxes?.parentifizierung) {
+            hinweise.push("Parentifizierung - Kind übernimmt nicht-altersgerechte Verantwortung");
+        }
+
+        return hinweise.length > 0 ? hinweise : ["Keine offensichtlichen Entwicklungsabweichungen dokumentiert"];
+    },
+
+    // ============================================================
+    // ÖKOLOGISCHES MODELL (BRONFENBRENNER)
+    // ============================================================
+
+    generateOekologisch(caseData) {
+        return {
+            mikrosystem: this.analyseMikrosystem(caseData),
+            mesosystem: this.analyseMesosystem(caseData),
+            exosystem: this.analyseExosystem(caseData),
+            makrosystem: this.analyseMakrosystem(caseData)
+        };
+    },
+
+    analyseMikrosystem(caseData) {
+        const bereiche = {
+            familie: { belastungen: [], ressourcen: [] },
+            schule: { belastungen: [], ressourcen: [] },
+            peers: { belastungen: [], ressourcen: [] }
+        };
+
+        // Familie
+        if (caseData.checkboxes?.hochkonflikt) bereiche.familie.belastungen.push("Hochstrittigkeit");
+        if (caseData.checkboxes?.kommunikationProbleme) bereiche.familie.belastungen.push("Kommunikationsprobleme");
+        if (caseData.checkboxes?.unterstützendeEltern) bereiche.familie.ressourcen.push("Unterstützende Eltern");
+        if (caseData.checkboxes?.familiärerZusammenhalt) bereiche.familie.ressourcen.push("Familienzusammenhalt");
+
+        // Schule
+        if (caseData.checkboxes?.schulangst) bereiche.schule.belastungen.push("Schulangst");
+        if (caseData.checkboxes?.lehrerKonflikt) bereiche.schule.belastungen.push("Lehrerkonflikte");
+        if (caseData.checkboxes?.guteSchule) bereiche.schule.ressourcen.push("Gute Schule");
+        if (caseData.checkboxes?.lernmotivation) bereiche.schule.ressourcen.push("Lernmotivation");
+
+        // Peers
+        if (caseData.checkboxes?.mobbingOpfer) bereiche.peers.belastungen.push("Mobbing");
+        if (caseData.checkboxes?.isolation) bereiche.peers.belastungen.push("Isolation");
+        if (caseData.checkboxes?.positivePeers) bereiche.peers.ressourcen.push("Positive Freundschaften");
+        if (caseData.checkboxes?.vereinMitglied) bereiche.peers.ressourcen.push("Vereinseinbindung");
+
+        return bereiche;
+    },
+
+    analyseMesosystem(caseData) {
+        const verbindungen = [];
+
+        // Familie-Schule
+        if (caseData.checkboxes?.hausaufgabenKonflikte) {
+            verbindungen.push({
+                bereich: "Familie-Schule",
+                art: "Konflikt",
+                beschreibung: "Hausaufgabenkonflikte belasten beide Systeme"
+            });
+        }
+
+        if (caseData.checkboxes?.schulbegleitung || caseData.checkboxes?.nachteilsausgleich) {
+            verbindungen.push({
+                bereich: "Familie-Schule-Hilfesystem",
+                art: "Kooperation",
+                beschreibung: "Etablierte Unterstützungsmaßnahmen"
+            });
+        }
+
+        return verbindungen;
+    },
+
+    analyseExosystem(caseData) {
+        const faktoren = [];
+
+        if (caseData.checkboxes?.arbeitslosigkeit) {
+            faktoren.push("Arbeitslosigkeit der Eltern - indirekter Einfluss auf Kind");
+        }
+        if (caseData.checkboxes?.chronischeKrankheitEltern) {
+            faktoren.push("Chronische Erkrankung der Eltern beeinflusst Familiendynamik");
+        }
+        if (caseData.checkboxes?.pflegebedürftig) {
+            faktoren.push("Pflegebedürftiger im Haushalt bindet elterliche Ressourcen");
+        }
+
+        return faktoren;
+    },
+
+    analyseMakrosystem(caseData) {
+        const faktoren = [];
+
+        if (caseData.checkboxes?.migrationsstress) {
+            faktoren.push("Migrationshintergrund - kulturelle Faktoren beachten");
+        }
+        if (caseData.checkboxes?.finanzielleNot) {
+            faktoren.push("Sozioökonomische Benachteiligung");
+        }
+
+        return faktoren;
+    },
+
+    // ============================================================
+    // RESILIENZ-PROFIL
+    // ============================================================
+
+    generateResilienzprofil(caseData) {
+        const individuell = [];
+        const familiär = [];
+        const sozial = [];
+
+        // Individuelle Schutzfaktoren
+        const indivItems = ['intelligenz', 'kreativität', 'humor', 'empathie',
+                          'problemlösung', 'selbstwirksamkeit', 'selbstreflexion',
+                          'copingStrategien', 'zukunftsorientierung'];
+        indivItems.forEach(id => {
+            if (caseData.checkboxes?.[id]) individuell.push(this.getCheckboxLabel(id));
+        });
+
+        // Familiäre Schutzfaktoren
+        const famItems = ['sichereBindung', 'unterstützendeEltern', 'familiärerZusammenhalt'];
+        famItems.forEach(id => {
+            if (caseData.checkboxes?.[id]) familiär.push(this.getCheckboxLabel(id));
+        });
+
+        // Soziale Schutzfaktoren
+        const sozItems = ['positivePeers', 'guteSchule', 'mentor', 'vereinMitglied',
+                         'hobbysSport', 'hobbysKreativ', 'hobbysMusik', 'professionelleHilfe'];
+        sozItems.forEach(id => {
+            if (caseData.checkboxes?.[id]) sozial.push(this.getCheckboxLabel(id));
+        });
+
+        const gesamt = individuell.length + familiär.length + sozial.length;
+
+        return {
+            individuell,
+            familiär,
+            sozial,
+            gesamtScore: gesamt,
+            einschätzung: gesamt >= 8 ? "Gute Resilienzressourcen" :
+                         gesamt >= 4 ? "Moderate Ressourcen - Ausbau empfohlen" :
+                         "Wenig Schutzfaktoren identifiziert - Ressourcenaufbau priorisieren",
+            empfehlungen: this.getResilienzempfehlungen(individuell, familiär, sozial)
+        };
+    },
+
+    getResilienzempfehlungen(individuell, familiär, sozial) {
+        const empf = [];
+
+        if (individuell.length < 3) {
+            empf.push("Individuelle Stärken identifizieren und fördern");
+            empf.push("Selbstwirksamkeit durch Erfolgserlebnisse stärken");
+        }
+        if (familiär.length < 2) {
+            empf.push("Eltern-Kind-Beziehung stärken");
+            empf.push("Familienzusammenhalt fördern (gemeinsame Aktivitäten)");
+        }
+        if (sozial.length < 2) {
+            empf.push("Positive Peer-Kontakte fördern");
+            empf.push("Außerschulische Aktivitäten/Vereinsmitgliedschaft anregen");
+        }
+
+        return empf.length > 0 ? empf : ["Vorhandene Ressourcen weiter stärken"];
+    },
+
+    // ============================================================
+    // INTEGRIERTES FALLVERSTÄNDNIS
+    // ============================================================
+
+    generateFallverstaendnis(caseData, hypothesen, synthese) {
         const topHypo = hypothesen[0];
-        const geschlecht = caseData.grunddaten?.geschlecht;
+        const alter = caseData.identifikation?.alter;
+        const geschlecht = caseData.identifikation?.geschlecht;
 
-        // Pronomen basierend auf Geschlecht
-        const pronomen = geschlecht === 'weiblich' ? 'Sie' : geschlecht === 'maennlich' ? 'Er' : 'Das Kind';
+        let text = "";
 
-        let text = `${name || 'Das Kind'}`;
-        if (alter) text += ` (${alter} Jahre)`;
-        text += ` wird vorgestellt wegen `;
-
-        // Hauptproblem in Fließtext
-        const problemText = {
-            'externalisierend': 'externalisierender Verhaltensauffälligkeiten (Wut, Aggression, Opposition)',
-            'internalisierend': 'internalisierender Symptomatik (Rückzug, Ängste, Traurigkeit)',
-            'aufmerksamkeit': 'Aufmerksamkeits- und Konzentrationsproblemen',
-            'sozial': 'Schwierigkeiten im sozialen Bereich',
-            'schulisch': 'schulischer Problematik'
-        };
-        text += problemText[hauptproblem] || 'verschiedener Auffälligkeiten';
-        text += '. ';
-
-        // Symptomzusammenfassung
-        const symptomCount = (caseData.symptome || []).length;
-        if (symptomCount > 0) {
-            text += `Insgesamt wurden ${symptomCount} Symptome identifiziert. `;
-        }
+        // Einleitung
+        text += `Das ${alter ? alter + "-jährige" : ""} ${geschlecht === 'weiblich' ? 'Mädchen' : geschlecht === 'männlich' ? 'Junge' : 'Kind'} `;
+        text += `wird vorgestellt wegen ${caseData.identifikation?.vorstellungsanlassEltern || 'verschiedener Auffälligkeiten'}. `;
 
         // Haupthypothese
         if (topHypo) {
-            text += `Die klinische Analyse ergibt mit ${topHypo.konfidenz}% Konfidenz Hinweise auf ${topHypo.vollname}`;
-            if (topHypo.icd10) text += ` (${topHypo.icd10})`;
+            text += `\n\nDie Analyse ergibt mit ${topHypo.konfidenz}% Konfidenz Hinweise auf ${topHypo.label}`;
+            if (hypothesen.length > 1) {
+                text += `, differentialdiagnostisch sind ${hypothesen.slice(1, 3).map(h => h.label).join(' und ')} zu erwägen`;
+            }
             text += '. ';
         }
 
-        // Nebendiagnosen
-        if (hypothesen.length > 1) {
-            const nebendiagnosen = hypothesen.slice(1, 3).map(h => h.name);
-            text += `Differentialdiagnostisch sind auch ${nebendiagnosen.join(' und ')} zu erwägen. `;
+        // Bio-Psycho-Sozial Summary
+        const bps = synthese.biopsychosozial;
+        if (bps.biologisch.length > 0 || bps.psychologisch.length > 0 || bps.sozial.length > 0) {
+            text += `\n\n${bps.zusammenfassung}`;
         }
 
-        // Kontextfaktoren
-        const kontext = caseData.kontext || [];
-        if (kontext.includes('seit_immer')) {
-            text += `Die Symptomatik besteht laut Angaben seit früher Kindheit. `;
-        } else if (kontext.includes('nach_ereignis')) {
-            text += `Die Symptome haben nach einem belastenden Ereignis begonnen. `;
+        // Trauma
+        if (synthese.trauma.relevant) {
+            text += `\n\nTraumaanamnese positiv (ACE-Score: ${synthese.trauma.aceScore}/10). `;
+            text += synthese.trauma.traumatyp[0]?.beschreibung || '';
         }
 
-        if (kontext.includes('ueberall')) {
-            text += `${pronomen} zeigt die Verhaltensweisen situationsübergreifend. `;
-        } else if (kontext.includes('nur_schule')) {
-            text += `Die Symptome treten primär im schulischen Kontext auf. `;
-        } else if (kontext.includes('nur_zuhause')) {
-            text += `Die Symptome zeigen sich vorwiegend im häuslichen Umfeld. `;
+        // Bindung
+        if (synthese.bindung.einschätzung) {
+            text += `\n\nBindungstheoretisch: ${synthese.bindung.einschätzung.beschreibung}`;
+        }
+
+        // Resilienz
+        text += `\n\nResilienzprofil: ${synthese.resilienz.einschätzung}`;
+        if (synthese.resilienz.individuell.length > 0) {
+            text += ` Identifizierte Stärken: ${synthese.resilienz.individuell.slice(0, 3).join(', ')}.`;
         }
 
         return text;
     },
 
-    /**
-     * Konvertiert Symptom-ID zu lesbarem Text
-     * @param {string} symptom - Symptom-ID
-     * @returns {string} Lesbarer Text
-     */
-    symptomToText(symptom) {
-        return CLINICAL_KNOWLEDGE.symptomLabels[symptom] || symptom;
-    },
+    // ============================================================
+    // INTERVENTIONSEMPFEHLUNGEN
+    // ============================================================
 
-    /**
-     * Konvertiert Kontext-ID zu lesbarem Text
-     * @param {string} kontext - Kontext-ID
-     * @returns {string} Lesbarer Text
-     */
-    kontextToText(kontext) {
-        return CLINICAL_KNOWLEDGE.kontextLabels[kontext] || kontext;
-    },
-
-    /**
-     * Generiert differentialdiagnostischen Vergleichstext für zwei Hypothesen
-     * @param {string} id1 - ID der ersten Hypothese
-     * @param {string} id2 - ID der zweiten Hypothese
-     * @returns {string} Vergleichstext
-     */
-    getDifferentialText(id1, id2) {
-        const pairs = {
-            'adhs_angst': 'Bei Angst ist die Unruhe situativ auf angstauslösende Situationen begrenzt, bei ADHS durchgängig und situationsübergreifend.',
-            'adhs_trauma': 'Traumasymptome beginnen typischerweise nach einem Ereignis, ADHS-Symptome bestehen von früher Kindheit an.',
-            'angst_depression': 'Häufig komorbid auftretend. Angst fokussiert auf Zukunftssorgen, Depression auf Hoffnungslosigkeit.',
-            'angst_asd': 'Bei ASD entstehen soziale Schwierigkeiten durch Verständnisprobleme sozialer Regeln, nicht primär durch Angst.',
-            'asd_angst': 'Bei ASD entstehen soziale Schwierigkeiten durch Verständnisprobleme sozialer Regeln, nicht primär durch Angst.',
-            'odd_adhs': 'Bei ADHS ist oppositionelles Verhalten oft Folge von Frustration und Impulsivität, nicht primär intentional.',
-            'adhs_odd': 'Bei ADHS ist oppositionelles Verhalten oft Folge von Frustration und Impulsivität, nicht primär intentional.',
-            'odd_trauma': 'Oppositionelles Verhalten kann ein Trauma-Bewältigungsversuch sein (Kontrolle zurückgewinnen).',
-            'trauma_odd': 'Oppositionelles Verhalten kann ein Trauma-Bewältigungsversuch sein (Kontrolle zurückgewinnen).',
-            'bindung_trauma': 'Bindungsstörungen und Trauma überschneiden sich häufig, besonders bei frühen Beziehungstraumata.',
-            'trauma_bindung': 'Bindungsstörungen und Trauma überschneiden sich häufig, besonders bei frühen Beziehungstraumata.',
-            'depression_trauma': 'Depressive Symptome können Folge einer Traumatisierung sein. Trauma-Screening empfohlen.',
-            'trauma_depression': 'Depressive Symptome können Folge einer Traumatisierung sein. Trauma-Screening empfohlen.',
-            'asd_adhs': 'ADHS und Autismus können komorbid auftreten. Bei ASD: eher sensorische Überlastung, bei ADHS: eher Impulssteuerung.',
-            'adhs_asd': 'ADHS und Autismus können komorbid auftreten. Bei ASD: eher sensorische Überlastung, bei ADHS: eher Impulssteuerung.',
-            'emotionsregulation_adhs': 'Emotionale Dysregulation ist ein häufiges Begleitsymptom bei ADHS.',
-            'adhs_emotionsregulation': 'Emotionale Dysregulation ist ein häufiges Begleitsymptom bei ADHS.',
-            'emotionsregulation_odd': 'Oppositionelles Verhalten kann aus mangelnder Emotionsregulation resultieren.',
-            'odd_emotionsregulation': 'Oppositionelles Verhalten kann aus mangelnder Emotionsregulation resultieren.'
+    generateInterventionen(caseData, hypothesen, risikoprofil) {
+        const interventionen = {
+            sofort: [],
+            kurzfristig: [],
+            mittelfristig: [],
+            langfristig: []
         };
 
-        // Beide Reihenfolgen prüfen
-        const key1 = `${id1}_${id2}`;
-        const key2 = `${id2}_${id1}`;
+        // Akute Interventionen bei Risiko
+        if (risikoprofil.dringlichkeit === 'sofort') {
+            interventionen.sofort = this.getAkutinterventionen(caseData, risikoprofil);
+        }
 
-        return pairs[key1] || pairs[key2] || 'Eine sorgfältige differentialdiagnostische Anamnese ist erforderlich.';
+        // Therapeutische Interventionen basierend auf Hypothesen
+        hypothesen.slice(0, 3).forEach(hypo => {
+            const therapien = this.getTherapieempfehlungen(hypo.id, caseData);
+            interventionen.kurzfristig.push(...therapien);
+        });
+
+        // Psychosoziale Interventionen
+        interventionen.mittelfristig = this.getPsychosozialeInterventionen(caseData, hypothesen);
+
+        // Langfristige Maßnahmen
+        interventionen.langfristig = this.getLangfristigeZiele(hypothesen);
+
+        // Deduplizieren
+        Object.keys(interventionen).forEach(key => {
+            interventionen[key] = [...new Set(interventionen[key])];
+        });
+
+        return interventionen;
+    },
+
+    getAkutinterventionen(caseData, risikoprofil) {
+        const akut = [];
+
+        if (caseData.checkboxes?.suizidgedanken || caseData.checkboxes?.suizidplanung) {
+            akut.push("Sofortige strukturierte Suizidrisikoeinschätzung");
+            akut.push("Non-Suizid-Vereinbarung wenn möglich");
+            akut.push("Notfallplan erstellen");
+            akut.push("Bei akuter Gefahr: stationäre Aufnahme erwägen");
+        }
+
+        if (caseData.checkboxes?.selbstverletzung) {
+            akut.push("Wundversorgung sicherstellen");
+            akut.push("Auslöser und Funktion explorieren");
+            akut.push("Skills zur Spannungsreduktion vermitteln");
+        }
+
+        if (caseData.checkboxes?.körperlicheMisshandlung ||
+            caseData.checkboxes?.sexuellerMissbrauch ||
+            caseData.checkboxes?.körperlicheVernachlässigung) {
+            akut.push("Kinderschutzprozedere einleiten");
+            akut.push("Dokumentation");
+            akut.push("Jugendamt informieren (§8a SGB VIII)");
+        }
+
+        return akut;
+    },
+
+    getTherapieempfehlungen(hypoId, caseData) {
+        const empfehlungen = [];
+        const therapien = CLINICAL_KNOWLEDGE.interventionen.therapeutisch.psychotherapie;
+        const alter = parseInt(caseData.identifikation?.alter) || 10;
+
+        // Mapping Diagnose zu Therapie
+        const mapping = {
+            depression: ['kognitiveVerhaltenstherapie'],
+            angststörung: ['kognitiveVerhaltenstherapie'],
+            sozialePhobie: ['kognitiveVerhaltenstherapie'],
+            adhs: ['elterntraining'],
+            autismus: ['sozialesKompetenztraining'],
+            ptbs: ['traumatherapie'],
+            komplexePTBS: ['traumatherapie'],
+            emotionsregulationsstörung: ['dialektischBehavioral'],
+            bindungsstörung: ['familientherapie'],
+            oppositionell: ['elterntraining']
+        };
+
+        if (mapping[hypoId]) {
+            mapping[hypoId].forEach(t => {
+                if (therapien[t]) {
+                    empfehlungen.push(`${therapien[t].beschreibung}: ${therapien[t].fokus}`);
+                }
+            });
+        }
+
+        // Spieltherapie für jüngere Kinder
+        if (alter < 12) {
+            empfehlungen.push("Bei jüngerem Kind: Spieltherapie/kindgerechte Verfahren");
+        }
+
+        return empfehlungen;
+    },
+
+    getPsychosozialeInterventionen(caseData, hypothesen) {
+        const interventionen = [];
+
+        // Schulische Maßnahmen
+        if (caseData.checkboxes?.konzentrationSchule ||
+            hypothesen.some(h => h.id === 'adhs')) {
+            interventionen.push("Nachteilsausgleich beantragen");
+        }
+
+        if (hypothesen.some(h => h.id === 'autismus')) {
+            interventionen.push("Schulbegleitung/Integrationshilfe prüfen");
+        }
+
+        // Jugendhilfe
+        if (caseData.checkboxes?.schulabsentismus ||
+            caseData.checkboxes?.delinquenz) {
+            interventionen.push("Sozialpädagogische Familienhilfe (SPFH) erwägen");
+        }
+
+        if (caseData.checkboxes?.kommunikationProbleme ||
+            caseData.checkboxes?.inkonsistent) {
+            interventionen.push("Erziehungsberatung (§28 SGB VIII)");
+        }
+
+        // Ergänzende Therapien
+        if (caseData.checkboxes?.motorikVerzögert ||
+            caseData.checkboxes?.feinmotorikProbleme) {
+            interventionen.push("Ergotherapie");
+        }
+
+        if (caseData.checkboxes?.spracheVerzögert) {
+            interventionen.push("Logopädie");
+        }
+
+        return interventionen;
+    },
+
+    getLangfristigeZiele(hypothesen) {
+        const ziele = [
+            "Stabilisierung und Symptomreduktion",
+            "Stärkung von Schutzfaktoren und Resilienz",
+            "Verbesserung der familiären Beziehungen"
+        ];
+
+        if (hypothesen.some(h => ['adhs', 'autismus'].includes(h.id))) {
+            ziele.push("Langfristiges Funktionsniveau in Schule und Alltag verbessern");
+        }
+
+        if (hypothesen.some(h => ['ptbs', 'komplexePTBS', 'bindungsstörung'].includes(h.id))) {
+            ziele.push("Integration traumatischer Erfahrungen");
+            ziele.push("Aufbau sicherer Beziehungserfahrungen");
+        }
+
+        return ziele;
     },
 
     // ============================================================
-    // BEDIENUNGSANLEITUNG - Praktische Handlungsempfehlungen
+    // BEDIENUNGSANLEITUNG
     // ============================================================
 
-    /**
-     * Generiert die "Bedienungsanleitung" für das Kind
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @param {Object} caseData - Die Falldaten
-     * @returns {Object} Komplette Bedienungsanleitung
-     */
     generateBedienungsanleitung(hypothesen, caseData) {
-        const anleitung = {
-            grundhaltung: this.getGrundhaltung(hypothesen),
+        const topId = hypothesen[0]?.id;
 
+        return {
+            grundhaltung: this.getGrundhaltung(topId),
             ampelsystem: {
-                gruen: this.getGruenSignale(hypothesen),
-                gelb: this.getGelbSignale(hypothesen),
-                rot: this.getRotSignale(hypothesen)
+                gruen: this.getGruenSignale(topId),
+                gelb: this.getGelbSignale(topId),
+                rot: this.getRotSignale()
             },
-
-            situationsrezepte: this.getSituationsrezepte(hypothesen, caseData),
-
             dosAndDonts: {
-                tuDas: this.getTuDas(hypothesen),
-                lassDas: this.getLassDas(hypothesen)
+                tuDas: this.getTuDas(topId),
+                lassDas: this.getLassDas(topId)
             },
-
-            notfallplan: this.getNotfallplan(hypothesen),
-
-            beziehungstipps: this.getBeziehungstipps(hypothesen),
-
-            elterninfo: this.getElterninfo(hypothesen)
+            situationsrezepte: this.getSituationsrezepte(topId),
+            notfallplan: this.getNotfallplan(),
+            beziehungstipps: this.getBeziehungstipps()
         };
-
-        return anleitung;
     },
 
-    /**
-     * Grundhaltung - Die wichtigste Botschaft für den Umgang
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @returns {Object} Leitsatz, Erklärung und Mantra
-     */
-    getGrundhaltung(hypothesen) {
-        const topId = hypothesen[0]?.id;
-
+    getGrundhaltung(topId) {
         const haltungen = {
-            adhs: {
-                leitsatz: "Struktur geben, nicht strafen",
-                erklaerung: "Das Kind KANN nicht, es WILL nicht nicht. Das Gehirn arbeitet anders - es braucht externe Struktur, die es selbst noch nicht aufbauen kann.",
-                mantra: "Kurz, klar, konsequent - und immer mit Beziehung.",
-                icon: "🎯"
-            },
-            angst: {
-                leitsatz: "Sicherheit geben, mutig machen",
-                erklaerung: "Das Kind erlebt echte Angst. Bagatellisieren verstärkt sie. Das Kind braucht Verständnis UND sanfte Ermutigung zu kleinen Mutschritten.",
-                mantra: "Ich sehe deine Angst. Ich bin bei dir. Du schaffst den nächsten kleinen Schritt.",
-                icon: "🛡️"
-            },
-            depression: {
-                leitsatz: "Dabeibleiben, nicht aufgeben",
-                erklaerung: "Depression bei Kindern zeigt sich oft als Reizbarkeit, nicht als Traurigkeit. Das Kind braucht Geduld, Aktivierung und das Gefühl, dass es wertvoll ist.",
-                mantra: "Du bist wichtig. Ich gebe nicht auf. Wir machen kleine Schritte zusammen.",
-                icon: "💙"
-            },
-            odd: {
-                leitsatz: "Verbindung vor Korrektur",
-                erklaerung: "Hinter Opposition steckt meist ein unerfülltes Bedürfnis. Machtkämpfe eskalieren. Das Kind braucht Wahlmöglichkeiten und das Gefühl von Kontrolle.",
-                mantra: "Ich kämpfe nicht gegen dich, sondern für dich.",
-                icon: "🤝"
-            },
-            trauma: {
-                leitsatz: "Sicherheit, Sicherheit, Sicherheit",
-                erklaerung: "Das Nervensystem ist im Überlebensmodus. Das Kind reagiert auf Trigger, nicht auf Sie persönlich. Vorhersehbarkeit und Ruhe sind heilsam.",
-                mantra: "Du bist hier sicher. Ich bin berechenbar. Nichts Schlimmes passiert.",
-                icon: "🏠"
-            },
-            asd: {
-                leitsatz: "Klar, konkret, visuell",
-                erklaerung: "Das Kind denkt anders, nicht schlechter. Implizite Regeln sind unsichtbar. Es braucht explizite Erklärungen und visuelle Unterstützung.",
-                mantra: "Ich sage genau, was ich meine. Ich zeige, was ich erwarte.",
-                icon: "📋"
-            },
-            bindung: {
-                leitsatz: "Beziehung ist die Intervention",
-                erklaerung: "Das Kind hat gelernt, dass Beziehungen unsicher sind. Es testet Sie. Bleiben Sie beständig, auch wenn es Sie wegstößt.",
-                mantra: "Ich bleibe. Auch wenn du mich testest. Ich bleibe.",
-                icon: "❤️"
-            },
-            emotionsregulation: {
-                leitsatz: "Co-Regulation vor Selbstregulation",
-                erklaerung: "Das Kind kann sich nicht selbst beruhigen, weil es das noch nicht gelernt hat. Es braucht SIE als externen Regler.",
-                mantra: "Ich bleibe ruhig, damit du dich an meiner Ruhe orientieren kannst.",
-                icon: "🌊"
-            }
+            adhs: { leitsatz: "Struktur geben, nicht strafen", mantra: "Das Kind KANN nicht, es WILL nicht nicht.", icon: "🎯" },
+            angststörung: { leitsatz: "Sicherheit geben, mutig machen", mantra: "Ich sehe deine Angst. Du schaffst den nächsten kleinen Schritt.", icon: "🛡️" },
+            depression: { leitsatz: "Dabeibleiben, nicht aufgeben", mantra: "Du bist wichtig. Wir machen kleine Schritte zusammen.", icon: "💙" },
+            oppositionell: { leitsatz: "Verbindung vor Korrektur", mantra: "Ich kämpfe nicht gegen dich, sondern für dich.", icon: "🤝" },
+            ptbs: { leitsatz: "Sicherheit, Sicherheit, Sicherheit", mantra: "Du bist hier sicher. Ich bin berechenbar.", icon: "🏠" },
+            komplexePTBS: { leitsatz: "Sicherheit, Sicherheit, Sicherheit", mantra: "Du bist hier sicher. Ich bin berechenbar.", icon: "🏠" },
+            autismus: { leitsatz: "Klar, konkret, visuell", mantra: "Ich sage genau, was ich meine.", icon: "📋" },
+            bindungsstörung: { leitsatz: "Beziehung ist die Intervention", mantra: "Ich bleibe. Auch wenn du mich testest.", icon: "❤️" },
+            emotionsregulationsstörung: { leitsatz: "Co-Regulation vor Selbstregulation", mantra: "Ich bleibe ruhig, damit du dich orientieren kannst.", icon: "🌊" }
         };
-
-        return haltungen[topId] || haltungen.emotionsregulation;
+        return haltungen[topId] || haltungen.emotionsregulationsstörung;
     },
 
-    /**
-     * Grüne Ampel - Kind ist stabil
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @returns {Array} Positive Signale
-     */
-    getGruenSignale(hypothesen) {
-        const signale = [
-            { signal: "Kind ist ansprechbar und reagiert auf Ansprache", icon: "✓" },
-            { signal: "Kann sich an Absprachen halten", icon: "✓" },
-            { signal: "Zeigt Interesse an Aktivitäten", icon: "✓" },
-            { signal: "Interagiert positiv mit anderen", icon: "✓" },
-            { signal: "Kann Frustrationen aushalten", icon: "✓" }
-        ];
-
-        const topId = hypothesen[0]?.id;
-
-        if (topId === 'adhs') {
-            signale.push({ signal: "Kann bei einer Aufgabe bleiben", icon: "✓" });
-        }
-        if (topId === 'angst') {
-            signale.push({ signal: "Traut sich an neue Situationen", icon: "✓" });
-        }
-        if (topId === 'asd') {
-            signale.push({ signal: "Akzeptiert Veränderungen im Ablauf", icon: "✓" });
-        }
-
-        return signale;
-    },
-
-    /**
-     * Gelbe Ampel - Vorsicht, Eskalation möglich
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @returns {Array} Warnsignale
-     */
-    getGelbSignale(hypothesen) {
-        const signale = [
-            { signal: "Zunehmende Unruhe", icon: "⚡" },
-            { signal: "Kürzere Zündschnur", icon: "⚡" },
-            { signal: "Beginnt zu diskutieren/verweigern", icon: "⚡" }
-        ];
-
-        const topId = hypothesen[0]?.id;
-
-        if (topId === 'adhs') {
-            signale.push({ signal: "Motorik nimmt zu, zappelt mehr", icon: "⚡" });
-            signale.push({ signal: "Hört nicht mehr richtig zu", icon: "⚡" });
-            signale.push({ signal: "Macht viele Flüchtigkeitsfehler", icon: "⚡" });
-        }
-        if (topId === 'angst') {
-            signale.push({ signal: "Zieht sich zurück, wird still", icon: "⚡" });
-            signale.push({ signal: "Klagt über Bauch-/Kopfschmerzen", icon: "⚡" });
-            signale.push({ signal: "Sucht vermehrt Nähe/Rückversicherung", icon: "⚡" });
-        }
-        if (topId === 'depression') {
-            signale.push({ signal: "Wird gereizter als sonst", icon: "⚡" });
-            signale.push({ signal: "Zieht sich von Aktivitäten zurück", icon: "⚡" });
-        }
-        if (topId === 'odd') {
-            signale.push({ signal: "Verweigert erste Aufforderungen", icon: "⚡" });
-            signale.push({ signal: "Wird provokant/sarkastisch", icon: "⚡" });
-            signale.push({ signal: "Testet Grenzen aus", icon: "⚡" });
-        }
-        if (topId === 'trauma') {
-            signale.push({ signal: "Wirkt abwesend, starrt", icon: "⚡" });
-            signale.push({ signal: "Schreckhafter als sonst", icon: "⚡" });
-            signale.push({ signal: "Klammert oder meidet plötzlich", icon: "⚡" });
-        }
-        if (topId === 'asd') {
-            signale.push({ signal: "Stimming nimmt zu", icon: "⚡" });
-            signale.push({ signal: "Wird rigider, besteht auf Routinen", icon: "⚡" });
-        }
-        if (topId === 'emotionsregulation') {
-            signale.push({ signal: "Stimme wird lauter", icon: "⚡" });
-            signale.push({ signal: "Atmet schneller", icon: "⚡" });
-        }
-
-        return signale;
-    },
-
-    /**
-     * Rote Ampel - Eskalation, Krise
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @returns {Array} Alarmsignale
-     */
-    getRotSignale(hypothesen) {
+    getGruenSignale(topId) {
         return [
-            { signal: "Kontrollverlust (schreit, weint unkontrolliert)", icon: "🔴" },
-            { signal: "Körperliche Anspannung (Fäuste, starre Haltung)", icon: "🔴" },
-            { signal: "Verbale Aggression oder Drohungen", icon: "🔴" },
-            { signal: "Ignoriert jede Ansprache komplett", icon: "🔴" },
-            { signal: "Fluchtverhalten oder Erstarren", icon: "🔴" },
-            { signal: "Wirft mit Gegenständen", icon: "🔴" },
-            { signal: "Selbst- oder fremdverletzendes Verhalten", icon: "🔴" }
+            "Kind ist ansprechbar und reagiert auf Ansprache",
+            "Kann sich an Absprachen halten",
+            "Zeigt Interesse an Aktivitäten",
+            "Kann Frustrationen aushalten"
         ];
     },
 
-    /**
-     * Situations-Rezepte - Konkrete Wenn-Dann-Anleitungen
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @param {Object} caseData - Die Falldaten
-     * @returns {Array} Situationsrezepte
-     */
-    getSituationsrezepte(hypothesen, caseData) {
-        const rezepte = [];
-        const topId = hypothesen[0]?.id;
-        const hypoIds = hypothesen.map(h => h.id);
-
-        // Basis-Rezepte (für alle)
-        rezepte.push({
-            situation: "Kind verweigert eine Aufgabe",
-            icon: "🚫",
-            reaktion: [
-                "NICHT: Sofort Druck erhöhen oder drohen",
-                "STATTDESSEN: Kurz innehalten, durchatmen",
-                "Wahlmöglichkeit anbieten: 'Möchtest du mit X oder Y anfangen?'",
-                "Aufgabe in kleinere Schritte teilen",
-                "Ersten Schritt gemeinsam machen"
-            ]
-        });
-
-        rezepte.push({
-            situation: "Kind wird wütend / eskaliert",
-            icon: "😠",
-            reaktion: [
-                "NICHT: Laut werden, anfassen, Publikum",
-                "STATTDESSEN: Eigene Stimme SENKEN (nicht heben!)",
-                "Raum geben, nicht bedrängen (1-2 Meter Abstand)",
-                "Wenig Worte: 'Ich sehe, dass du wütend bist.'",
-                "Warten bis Erregung sinkt (20-30 Min möglich)",
-                "ERST DANN: Kurz besprechen, nicht moralisieren"
-            ]
-        });
-
-        // ADHS-spezifische Rezepte
-        if (topId === 'adhs' || hypoIds.includes('adhs')) {
-            rezepte.push({
-                situation: "Kind kann nicht stillsitzen",
-                icon: "🏃",
-                reaktion: [
-                    "NICHT: 'Sitz still!' (unmöglich für das Kind)",
-                    "STATTDESSEN: Bewegung ERLAUBEN (Wackelkissen, Stehpult)",
-                    "Bewegungspause einbauen (alle 15-20 Min)",
-                    "Aufgabe mit Bewegung verbinden",
-                    "Kurze Arbeitseinheiten, dann Pause"
-                ]
-            });
-
-            rezepte.push({
-                situation: "Kind hört nicht zu / ist abgelenkt",
-                icon: "👂",
-                reaktion: [
-                    "Blickkontakt herstellen (freundlich, auf Augenhöhe)",
-                    "Namen sagen, PAUSE, dann erst Anweisung",
-                    "Nur EINEN Auftrag auf einmal geben",
-                    "Kind die Anweisung wiederholen lassen",
-                    "Visuell unterstützen (zeigen, aufschreiben, Piktogramme)"
-                ]
-            });
-
-            rezepte.push({
-                situation: "Kind macht ständig Flüchtigkeitsfehler",
-                icon: "✏️",
-                reaktion: [
-                    "NICHT: 'Konzentrier dich!' (es versucht es bereits)",
-                    "Checklisten einführen (visuell)",
-                    "Aufgaben in kleinere Häppchen teilen",
-                    "Gemeinsam kontrollieren, nicht allein",
-                    "Fehler sachlich korrigieren, nicht schimpfen"
-                ]
-            });
-        }
-
-        // Angst-spezifische Rezepte
-        if (topId === 'angst' || hypoIds.includes('angst')) {
-            rezepte.push({
-                situation: "Kind will nicht in die Schule / vermeidet",
-                icon: "🏫",
-                reaktion: [
-                    "NICHT: Zwingen ODER Vermeidung komplett erlauben",
-                    "Angst validieren: 'Das ist schwer für dich'",
-                    "KLEINEN Schritt vereinbaren (nicht alles auf einmal)",
-                    "Erfolg feiern, egal wie klein",
-                    "Langsam steigern, nicht überfordern"
-                ]
-            });
-
-            rezepte.push({
-                situation: "Kind weint / klammert bei Trennung",
-                icon: "😢",
-                reaktion: [
-                    "NICHT: Wegschieben, ungeduldig werden, schleichen",
-                    "STATTDESSEN: Kurzes, klares Abschiedsritual",
-                    "Ruhig: 'Ich komme um [Zeit] wieder. Du schaffst das.'",
-                    "Übergangsobjekt mitgeben (Foto, Kuscheltier)",
-                    "Verabschiedung KURZ halten, nicht hinauszögern"
-                ]
-            });
-
-            rezepte.push({
-                situation: "Kind hat Panikattacke / hyperventiliert",
-                icon: "😰",
-                reaktion: [
-                    "Ruhe ausstrahlen (Ihr Nervensystem beruhigt seines)",
-                    "Erdung: 'Schau mich an. Du bist hier, du bist sicher.'",
-                    "Langsam atmen vormachen: 4 Sek ein, 6 Sek aus",
-                    "5-4-3-2-1 Technik: 5 Dinge sehen, 4 hören, 3 fühlen...",
-                    "Nicht fragen, was los ist (kann nicht antworten)"
-                ]
-            });
-        }
-
-        // Trauma-spezifische Rezepte
-        if (topId === 'trauma' || hypoIds.includes('trauma')) {
-            rezepte.push({
-                situation: "Kind wirkt 'weg' / dissoziiert",
-                icon: "🌫️",
-                reaktion: [
-                    "NICHT: Erschrecken, plötzlich anfassen",
-                    "Ruhig, langsam ansprechen, Name nennen",
-                    "Orientierung geben: 'Du bist in [Ort]. Es ist [Tag]. Du bist sicher.'",
-                    "Sensorische Erdung anbieten (kaltes Wasser, Eiswürfel, Duft)",
-                    "KEINE Fragen, KEINE Forderungen stellen"
-                ]
-            });
-
-            rezepte.push({
-                situation: "Kind reagiert extrem auf harmlosen Auslöser",
-                icon: "⚡",
-                reaktion: [
-                    "Verstehen: Das ist ein TRIGGER, keine Überreaktion",
-                    "Sicherheit signalisieren, nicht rationalisieren",
-                    "Kind aus der Situation herausnehmen wenn möglich",
-                    "Später: Trigger gemeinsam identifizieren",
-                    "Trigger vermeiden oder langsam desensibilisieren"
-                ]
-            });
-        }
-
-        // ODD-spezifische Rezepte
-        if (topId === 'odd' || hypoIds.includes('odd')) {
-            rezepte.push({
-                situation: "Kind provoziert / sucht Machtkampf",
-                icon: "⚔️",
-                reaktion: [
-                    "NICHT: Einsteigen in den Kampf (Sie verlieren immer!)",
-                    "STATTDESSEN: Ruhig bleiben, nicht persönlich nehmen",
-                    "Wahlmöglichkeit geben: 'Du kannst X oder Y. Du entscheidest.'",
-                    "Konsequenz ankündigen, EINMAL, sachlich",
-                    "Dann: TUN, nicht reden. Konsequenz ruhig umsetzen.",
-                    "Später: Neustart anbieten, NICHT nachtragen"
-                ]
-            });
-
-            rezepte.push({
-                situation: "Kind diskutiert endlos / will letztes Wort",
-                icon: "💬",
-                reaktion: [
-                    "NICHT: Endlos erklären oder rechtfertigen",
-                    "Kurze Begründung, EINMAL",
-                    "'Ich höre, dass du das anders siehst. Meine Entscheidung steht.'",
-                    "Gesprächsangebot für SPÄTER machen",
-                    "Thema wechseln oder weggehen"
-                ]
-            });
-        }
-
-        // ASD-spezifische Rezepte
-        if (topId === 'asd' || hypoIds.includes('asd')) {
-            rezepte.push({
-                situation: "Kind ist überfordert von Veränderung",
-                icon: "🔄",
-                reaktion: [
-                    "Veränderungen VORHER ankündigen (mit Zeitpuffer)",
-                    "Visuell darstellen (Tagesplan, Timer)",
-                    "Übergangsobjekt/-ritual anbieten",
-                    "Wenn möglich: Veränderung schrittweise einführen",
-                    "Zeit zum Verarbeiten geben"
-                ]
-            });
-
-            rezepte.push({
-                situation: "Kind versteht eine soziale Situation nicht",
-                icon: "❓",
-                reaktion: [
-                    "NICHT: 'Das ist doch klar!' (ist es nicht)",
-                    "Explizit erklären, was passiert ist",
-                    "Konkret sagen, was erwartet wird",
-                    "Social Story nutzen (schriftlich/bildlich)",
-                    "Üben, nicht nur erklären"
-                ]
-            });
-        }
-
-        // Emotionsregulation-spezifische Rezepte
-        if (topId === 'emotionsregulation' || hypoIds.includes('emotionsregulation')) {
-            rezepte.push({
-                situation: "Kind ist frustriert und kann sich nicht beruhigen",
-                icon: "🌋",
-                reaktion: [
-                    "NICHT: 'Beruhig dich!' (kann es noch nicht allein)",
-                    "Selbst demonstrativ ruhig bleiben (Vorbild)",
-                    "Präsent sein, wenig Worte",
-                    "Körperliche Unterstützung anbieten (wenn erwünscht)",
-                    "NACH Beruhigung: Strategie besprechen für nächstes Mal"
-                ]
-            });
-        }
-
-        return rezepte;
+    getGelbSignale(topId) {
+        const basis = ["Zunehmende Unruhe", "Kürzere Zündschnur", "Beginnt zu verweigern"];
+        const spezifisch = {
+            adhs: ["Zappelt mehr", "Hört nicht mehr zu"],
+            angststörung: ["Zieht sich zurück", "Klagt über Bauchschmerzen"],
+            depression: ["Wird gereizter", "Zieht sich von Aktivitäten zurück"],
+            ptbs: ["Wirkt abwesend", "Schreckhafter"]
+        };
+        return [...basis, ...(spezifisch[topId] || [])];
     },
 
-    /**
-     * Do's - Was Sie tun sollten
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @returns {Array} Empfohlene Verhaltensweisen
-     */
-    getTuDas(hypothesen) {
-        const todos = [
-            { tipp: "Ruhig bleiben (Ihr Nervensystem reguliert seines)", icon: "🧘" },
-            { tipp: "Beziehung priorisieren vor Korrektur", icon: "❤️" },
-            { tipp: "Kleine Erfolge feiern und benennen", icon: "🎉" },
-            { tipp: "Vorhersehbar und berechenbar sein", icon: "📅" },
-            { tipp: "Konsequent sein - aber mit Wärme", icon: "🎯" }
+    getRotSignale() {
+        return [
+            "Kontrollverlust (schreit, weint unkontrolliert)",
+            "Körperliche Anspannung",
+            "Verbale Aggression oder Drohungen",
+            "Fluchtverhalten oder Erstarren",
+            "Selbst- oder fremdverletzendes Verhalten"
         ];
-
-        const topId = hypothesen[0]?.id;
-        const hypoIds = hypothesen.map(h => h.id);
-
-        if (topId === 'adhs' || hypoIds.includes('adhs')) {
-            todos.push({ tipp: "Kurze, klare Anweisungen (1 Sache auf einmal)", icon: "💬" });
-            todos.push({ tipp: "Visuelle Unterstützung nutzen (Bilder, Listen)", icon: "📋" });
-            todos.push({ tipp: "Bewegungspausen einbauen", icon: "🏃" });
-            todos.push({ tipp: "SOFORT nach positivem Verhalten loben", icon: "👍" });
-            todos.push({ tipp: "Struktur und Routinen etablieren", icon: "🔄" });
-        }
-
-        if (topId === 'angst' || hypoIds.includes('angst')) {
-            todos.push({ tipp: "Ängste ernst nehmen, NICHT bagatellisieren", icon: "👂" });
-            todos.push({ tipp: "Kleine Mutschritte ermöglichen und feiern", icon: "🦁" });
-            todos.push({ tipp: "Sicherheit vermitteln durch Präsenz", icon: "🏠" });
-            todos.push({ tipp: "Bewältigungsstrategien gemeinsam üben", icon: "💪" });
-        }
-
-        if (topId === 'depression' || hypoIds.includes('depression')) {
-            todos.push({ tipp: "Aktivitäten anregen, aber nicht erzwingen", icon: "🌱" });
-            todos.push({ tipp: "Erfolge und Stärken sichtbar machen", icon: "⭐" });
-            todos.push({ tipp: "Suizidalität ansprechen wenn nötig", icon: "🆘" });
-        }
-
-        if (topId === 'odd' || hypoIds.includes('odd')) {
-            todos.push({ tipp: "Wahlmöglichkeiten geben (Kontrolle teilen)", icon: "🔀" });
-            todos.push({ tipp: "Positive Aufmerksamkeit für gutes Verhalten", icon: "👀" });
-            todos.push({ tipp: "Natürliche Konsequenzen nutzen", icon: "⚖️" });
-        }
-
-        if (topId === 'trauma' || hypoIds.includes('trauma')) {
-            todos.push({ tipp: "Trigger identifizieren und vermeiden/vorbereiten", icon: "🎯" });
-            todos.push({ tipp: "Immer ankündigen, was als nächstes kommt", icon: "📢" });
-            todos.push({ tipp: "Wahlmöglichkeiten geben (Kontrolle zurückgeben)", icon: "🎮" });
-            todos.push({ tipp: "Sichere Orte/Personen etablieren", icon: "🏠" });
-        }
-
-        if (topId === 'asd' || hypoIds.includes('asd')) {
-            todos.push({ tipp: "Explizit und konkret kommunizieren", icon: "📝" });
-            todos.push({ tipp: "Visuelle Hilfsmittel nutzen", icon: "🖼️" });
-            todos.push({ tipp: "Routinen beibehalten", icon: "🔄" });
-            todos.push({ tipp: "Reizarme Rückzugsmöglichkeit bieten", icon: "🤫" });
-        }
-
-        if (topId === 'bindung' || hypoIds.includes('bindung')) {
-            todos.push({ tipp: "Beständig bleiben, auch bei Ablehnung", icon: "🌳" });
-            todos.push({ tipp: "Kleine positive Rituale etablieren", icon: "☕" });
-            todos.push({ tipp: "Trennungen ankündigen und einhalten", icon: "👋" });
-        }
-
-        return todos;
     },
 
-    /**
-     * Don'ts - Was Sie vermeiden sollten
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @returns {Array} Zu vermeidende Verhaltensweisen
-     */
-    getLassDas(hypothesen) {
-        const donts = [
-            { tipp: "Machtkämpfe eingehen (Sie verlieren immer)", icon: "❌" },
+    getTuDas(topId) {
+        const basis = [
+            { tipp: "Ruhig bleiben", icon: "🧘" },
+            { tipp: "Beziehung priorisieren", icon: "❤️" },
+            { tipp: "Kleine Erfolge feiern", icon: "🎉" },
+            { tipp: "Vorhersehbar sein", icon: "📅" }
+        ];
+        const spezifisch = {
+            adhs: [{ tipp: "Kurze, klare Anweisungen", icon: "💬" }, { tipp: "Bewegungspausen", icon: "🏃" }],
+            angststörung: [{ tipp: "Ängste ernst nehmen", icon: "👂" }, { tipp: "Kleine Mutschritte ermöglichen", icon: "🦁" }],
+            autismus: [{ tipp: "Explizit kommunizieren", icon: "📝" }, { tipp: "Visuelle Hilfsmittel", icon: "🖼️" }]
+        };
+        return [...basis, ...(spezifisch[topId] || [])];
+    },
+
+    getLassDas(topId) {
+        const basis = [
+            { tipp: "Machtkämpfe eingehen", icon: "❌" },
             { tipp: "Vor anderen bloßstellen", icon: "❌" },
-            { tipp: "Verhalten persönlich nehmen", icon: "❌" },
-            { tipp: "Leere Drohungen aussprechen", icon: "❌" },
-            { tipp: "Im Affekt Konsequenzen ankündigen", icon: "❌" }
+            { tipp: "Verhalten persönlich nehmen", icon: "❌" }
         ];
-
-        const topId = hypothesen[0]?.id;
-        const hypoIds = hypothesen.map(h => h.id);
-
-        if (topId === 'adhs' || hypoIds.includes('adhs')) {
-            donts.push({ tipp: "'Streng dich mehr an!' sagen (es strengt sich an!)", icon: "❌" });
-            donts.push({ tipp: "Lange Anweisungen geben", icon: "❌" });
-            donts.push({ tipp: "Stillsitzen erzwingen wollen", icon: "❌" });
-            donts.push({ tipp: "Mehrere Aufgaben gleichzeitig geben", icon: "❌" });
-        }
-
-        if (topId === 'angst' || hypoIds.includes('angst')) {
-            donts.push({ tipp: "'Stell dich nicht so an!'", icon: "❌" });
-            donts.push({ tipp: "Zur Konfrontation zwingen", icon: "❌" });
-            donts.push({ tipp: "Vermeidung komplett erlauben", icon: "❌" });
-            donts.push({ tipp: "Angst lächerlich machen", icon: "❌" });
-        }
-
-        if (topId === 'depression' || hypoIds.includes('depression')) {
-            donts.push({ tipp: "'Reiß dich zusammen!'", icon: "❌" });
-            donts.push({ tipp: "Gefühle wegdiskutieren wollen", icon: "❌" });
-            donts.push({ tipp: "Aktivität erzwingen", icon: "❌" });
-        }
-
-        if (topId === 'odd' || hypoIds.includes('odd')) {
-            donts.push({ tipp: "Auf Provokationen einsteigen", icon: "❌" });
-            donts.push({ tipp: "Endlos diskutieren/rechtfertigen", icon: "❌" });
-            donts.push({ tipp: "Inkonsequent sein", icon: "❌" });
-        }
-
-        if (topId === 'trauma' || hypoIds.includes('trauma')) {
-            donts.push({ tipp: "Überraschen oder erschrecken", icon: "❌" });
-            donts.push({ tipp: "'Was ist denn schon wieder los?'", icon: "❌" });
-            donts.push({ tipp: "Über Trauma zu sprechen drängen", icon: "❌" });
-            donts.push({ tipp: "Körperlich festhalten (außer bei Gefahr)", icon: "❌" });
-        }
-
-        if (topId === 'asd' || hypoIds.includes('asd')) {
-            donts.push({ tipp: "Ironie oder Sarkasmus verwenden", icon: "❌" });
-            donts.push({ tipp: "Unangekündigte Veränderungen", icon: "❌" });
-            donts.push({ tipp: "Blickkontakt erzwingen", icon: "❌" });
-            donts.push({ tipp: "'Das ist doch klar!' sagen", icon: "❌" });
-        }
-
-        if (topId === 'emotionsregulation' || hypoIds.includes('emotionsregulation')) {
-            donts.push({ tipp: "'Beruhig dich!' schreien", icon: "❌" });
-            donts.push({ tipp: "Selbst laut werden", icon: "❌" });
-            donts.push({ tipp: "Gefühle wegschicken wollen", icon: "❌" });
-        }
-
-        return donts;
-    },
-
-    /**
-     * Notfallplan - Wenn gar nichts mehr geht
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @returns {Object} Notfallplan
-     */
-    getNotfallplan(hypothesen) {
-        return {
-            titel: "Wenn gar nichts mehr geht - Krisenplan",
-            icon: "🆘",
-            schritte: [
-                { nr: 1, text: "STOPP - Eigene Atmung verlangsamen (4 Sek ein, 6 Sek aus)", icon: "🛑" },
-                { nr: 2, text: "Andere Kinder in Sicherheit bringen (ohne Drama)", icon: "👥" },
-                { nr: 3, text: "Raum geben, NICHT bedrängen (1-2 Meter Abstand)", icon: "↔️" },
-                { nr: 4, text: "Wenige, ruhige Worte: 'Ich bin da. Du bist sicher.'", icon: "💬" },
-                { nr: 5, text: "WARTEN - Erregung braucht 20-30 Minuten zum Abklingen", icon: "⏳" },
-                { nr: 6, text: "NICHT diskutieren oder moralisieren im Affekt", icon: "🤐" },
-                { nr: 7, text: "NACH Beruhigung: Kurz besprechen, dann Neustart", icon: "🔄" }
-            ],
-            wichtig: "Im Notfall: Hilfe holen ist keine Schwäche! Bei Eigen- oder Fremdgefährdung: Kolleg:innen rufen, Schulleitung informieren, ggf. 112.",
-            nachDerKrise: [
-                "Eigene Gefühle reflektieren (Supervision nutzen)",
-                "Was hat zum Eskalieren geführt?",
-                "Was hat geholfen, was nicht?",
-                "Präventionsplan anpassen"
-            ]
+        const spezifisch = {
+            adhs: [{ tipp: "'Streng dich mehr an!' sagen", icon: "❌" }],
+            angststörung: [{ tipp: "'Stell dich nicht so an!'", icon: "❌" }],
+            ptbs: [{ tipp: "Über Trauma zu sprechen drängen", icon: "❌" }]
         };
+        return [...basis, ...(spezifisch[topId] || [])];
     },
 
-    /**
-     * Beziehungstipps - Langfristige Beziehungsgestaltung
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @returns {Array} Beziehungstipps
-     */
-    getBeziehungstipps(hypothesen) {
+    getSituationsrezepte(topId) {
         return [
             {
-                tipp: "2-Minuten-Ritual",
-                icon: "⏰",
-                beschreibung: "Jeden Tag 2 Minuten exklusive positive Zeit. Keine Aufgaben, keine Kritik. Nur Verbindung. Das Kind bestimmt die Aktivität."
+                situation: "Kind verweigert eine Aufgabe",
+                icon: "🚫",
+                reaktion: [
+                    "Kurz innehalten, durchatmen",
+                    "Wahlmöglichkeit anbieten",
+                    "Aufgabe in kleinere Schritte teilen"
+                ]
             },
             {
-                tipp: "4:1-Regel",
-                icon: "📊",
-                beschreibung: "Auf jede Korrektur sollten 4 positive Interaktionen kommen. Aktiv nach Gelegenheiten für Lob suchen. Zählen Sie mit!"
-            },
-            {
-                tipp: "Neustart-Kultur",
-                icon: "🔄",
-                beschreibung: "Nach Konflikten: Explizit einen Neustart anbieten. 'Wir fangen nochmal an.' Nicht nachtragen, nicht stundenlang schmollen."
-            },
-            {
-                tipp: "Verhalten benennen, nicht Kind",
-                icon: "💬",
-                beschreibung: "'Das Verhalten war nicht ok' statt 'Du bist böse'. Das Kind ist ok, das Verhalten nicht. Identität schützen."
-            },
-            {
-                tipp: "Gefühle benennen und spiegeln",
-                icon: "🪞",
-                beschreibung: "'Du scheinst wütend zu sein.' 'Das hat dich traurig gemacht.' Gefühle in Worte fassen hilft bei der Regulation."
-            },
-            {
-                tipp: "Vorhersehbarkeit bieten",
-                icon: "📅",
-                beschreibung: "Feste Rituale, angekündigte Übergänge, klare Strukturen. Besonders wichtig bei ADHS, Trauma, Autismus, Bindung."
+                situation: "Kind wird wütend / eskaliert",
+                icon: "😠",
+                reaktion: [
+                    "Eigene Stimme SENKEN",
+                    "Raum geben (1-2 Meter)",
+                    "Wenig Worte: 'Ich sehe, dass du wütend bist.'",
+                    "Warten bis Erregung sinkt"
+                ]
             }
         ];
     },
 
-    /**
-     * Eltern-Info - Was Eltern wissen sollten
-     * @param {Array} hypothesen - Die berechneten Hypothesen
-     * @returns {Object} Elterninformation
-     */
-    getElterninfo(hypothesen) {
-        const topHypo = hypothesen[0];
-
-        const spezifischeInfos = {
-            adhs: [
-                "ADHS ist eine neurobiologische Besonderheit, keine Erziehungssache",
-                "Das Kind KANN nicht anders, es WILL nicht nicht",
-                "Struktur und Routine sind wichtiger als Strenge",
-                "Medikation kann helfen, ist aber nicht die einzige Lösung"
-            ],
-            angst: [
-                "Ängste sind real und schmerzhaft für Ihr Kind",
-                "Vermeidung verstärkt die Angst langfristig",
-                "Kleine Mutschritte sind der Weg - nicht Zwang",
-                "Ihre Ruhe gibt Ihrem Kind Sicherheit"
-            ],
-            depression: [
-                "Depression bei Kindern zeigt sich oft als Reizbarkeit",
-                "Es liegt nicht an mangelnder Willenskraft",
-                "Aktivierung hilft - aber in kleinen Schritten",
-                "Professionelle Hilfe ist wichtig und wirksam"
-            ],
-            odd: [
-                "Opposition ist meist ein Zeichen für unerfüllte Bedürfnisse",
-                "Machtkämpfe eskalieren - Wahlmöglichkeiten helfen",
-                "Dahinter können ADHS, Trauma oder Überforderung stecken",
-                "Beziehung vor Korrektur - immer"
-            ],
-            trauma: [
-                "Das Nervensystem Ihres Kindes ist im Alarmmodus",
-                "Reaktionen sind oft Trigger-basiert, nicht gegen Sie gerichtet",
-                "Sicherheit und Vorhersehbarkeit sind heilsam",
-                "Traumatherapie sollte von Spezialisten durchgeführt werden"
-            ],
-            asd: [
-                "Ihr Kind denkt anders - nicht schlechter",
-                "Viele Regeln, die für andere klar sind, sind unsichtbar",
-                "Explizite Erklärungen und visuelle Hilfen sind wichtig",
-                "Akzeptanz ist wichtiger als 'Normalisierung'"
-            ],
-            bindung: [
-                "Frühe Beziehungserfahrungen prägen - aber Heilung ist möglich",
-                "Ihr Kind testet, ob Sie bleiben - bleiben Sie",
-                "Konstanz und Verlässlichkeit sind die Intervention",
-                "Beziehungsaufbau braucht Zeit und Geduld"
-            ],
-            emotionsregulation: [
-                "Emotionsregulation wird durch Beziehung gelernt",
-                "Ihr Kind braucht Sie als 'externen Regler'",
-                "Wenn Sie ruhig bleiben, kann Ihr Kind sich an Ihnen orientieren",
-                "Strategien müssen explizit geübt werden"
-            ]
-        };
-
+    getNotfallplan() {
         return {
-            headline: `Was Sie über ${topHypo?.name || 'die Situation'} wissen sollten`,
-            icon: "👨‍👩‍👧",
-            kernbotschaften: [
-                "Das Kind macht das nicht absichtlich oder gegen Sie",
-                "Das Verhalten hat einen Grund (auch wenn wir ihn nicht immer sehen)",
-                "Konsequenz ist wichtig - aber Beziehung ist wichtiger",
-                "Sie sind nicht schuld - und Sie sind Teil der Lösung",
-                "Professionelle Hilfe zu suchen ist Verantwortung, kein Versagen"
+            titel: "Krisenplan",
+            schritte: [
+                "STOPP - Eigene Atmung verlangsamen",
+                "Andere in Sicherheit bringen",
+                "Raum geben, NICHT bedrängen",
+                "Wenige, ruhige Worte",
+                "WARTEN - Erregung braucht Zeit zum Abklingen",
+                "NACH Beruhigung: Kurz besprechen, Neustart"
             ],
-            spezifisch: spezifischeInfos[topHypo?.id] || [],
-            ressourcen: [
-                "Elternberatung in der Schule/Kita",
-                "Erziehungsberatungsstellen (kostenlos)",
-                "Kinder- und Jugendpsychiater:innen",
-                "Selbsthilfegruppen für Eltern"
-            ]
+            wichtig: "Im Notfall: Hilfe holen ist keine Schwäche!"
         };
+    },
+
+    getBeziehungstipps() {
+        return [
+            { tipp: "2-Minuten-Ritual", beschreibung: "Jeden Tag 2 Minuten exklusive positive Zeit." },
+            { tipp: "4:1-Regel", beschreibung: "Auf jede Korrektur 4 positive Interaktionen." },
+            { tipp: "Neustart-Kultur", beschreibung: "Nach Konflikten: Explizit Neustart anbieten." }
+        ];
+    },
+
+    // ============================================================
+    // HILFSFUNKTIONEN
+    // ============================================================
+
+    getCheckboxLabel(id) {
+        // Durchsuche alle Sections nach dem Label
+        for (const [sectionKey, section] of Object.entries(CLINICAL_KNOWLEDGE)) {
+            if (section.subsections) {
+                for (const [subKey, sub] of Object.entries(section.subsections)) {
+                    if (sub.checkboxes) {
+                        const item = sub.checkboxes.find(c => c.id === id);
+                        if (item) return item.label;
+                    }
+                }
+            }
+            if (section.checkboxes) {
+                const item = section.checkboxes.find(c => c.id === id);
+                if (item) return item.label;
+            }
+        }
+
+        // Symptom-Checklisten
+        if (CLINICAL_KNOWLEDGE.symptomChecklisten?.subsections) {
+            for (const [subKey, sub] of Object.entries(CLINICAL_KNOWLEDGE.symptomChecklisten.subsections)) {
+                if (sub.checkboxes) {
+                    const item = sub.checkboxes.find(c => c.id === id);
+                    if (item) return item.label;
+                }
+            }
+        }
+
+        return id; // Fallback
     }
 };
 
 // Global verfügbar machen
-window.ClinicalEngine = ClinicalEngine;
+if (typeof window !== 'undefined') {
+    window.ClinicalEngine = ClinicalEngine;
+}
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ClinicalEngine;
+}

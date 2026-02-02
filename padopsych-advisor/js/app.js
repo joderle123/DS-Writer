@@ -1,106 +1,486 @@
 /**
  * PädoPsych Advisor - Main Application
- * Tab-Navigation, Akkordeons, Formular-Steuerung, Speicherung und Export
+ * Comprehensive Clinical Assessment Tool for Child & Adolescent Psychiatry
+ * Dynamic form generation from CLINICAL_KNOWLEDGE base
  */
 
 // ============================================================
-// GLOBALE VARIABLEN
+// GLOBAL VARIABLES
 // ============================================================
 
-// Globales Objekt für Falldaten
-let caseData = {
-    grunddaten: {
-        name: '',
-        alter: '',
-        geschlecht: ''
-    },
-    hauptproblem: '',
-    symptome: [],
-    kontext: [],
-    freitext: ''
-};
-
-// Autosave-Intervall ID
+let caseData = {};
+let analysisResult = null;
 let autosaveInterval = null;
 
-// LocalStorage Keys
 const STORAGE_KEYS = {
-    CURRENT_CASE: 'padopsych_current_case',
-    CASE_ARCHIVE: 'padopsych_case_archive',
+    CURRENT_CASE: 'padopsych_current_case_v2',
+    CASE_ARCHIVE: 'padopsych_case_archive_v2',
     DARK_MODE: 'padopsych_dark_mode'
 };
 
+// Section order for form generation
+const SECTION_ORDER = [
+    'identifikation',
+    'aktuelleSymptomatik',
+    'entwicklungsanamnese',
+    'medizinischeAnamnese',
+    'familienanamnese',
+    'psychosozialesUmfeld',
+    'traumaACEs',
+    'risikoSchutz',
+    'psychopathBefund',
+    'symptomChecklisten'
+];
+
+const SECTION_ICONS = {
+    identifikation: '👤',
+    aktuelleSymptomatik: '🎯',
+    entwicklungsanamnese: '📈',
+    medizinischeAnamnese: '🏥',
+    familienanamnese: '👨‍👩‍👧‍👦',
+    psychosozialesUmfeld: '🌍',
+    traumaACEs: '⚠️',
+    risikoSchutz: '🛡️',
+    psychopathBefund: '🧠',
+    symptomChecklisten: '📋'
+};
+
 // ============================================================
-// INITIALISIERUNG
+// INITIALIZATION
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     try {
+        initializeCaseData();
+        generateDynamicForm();
         initTabNavigation();
-    } catch (e) {
-        console.error('Error initializing tab navigation:', e);
-    }
-
-    try {
-        initAccordions();
-    } catch (e) {
-        console.error('Error initializing accordions:', e);
-    }
-
-    try {
-        initCheckboxCounters();
-    } catch (e) {
-        console.error('Error initializing checkbox counters:', e);
-    }
-
-    try {
-        initFormHandler();
-    } catch (e) {
-        console.error('Error initializing form handler:', e);
-    }
-
-    try {
         initToastContainer();
-    } catch (e) {
-        console.error('Error initializing toast container:', e);
-    }
-
-    try {
         initKeyboardShortcuts();
-    } catch (e) {
-        console.error('Error initializing keyboard shortcuts:', e);
-    }
-
-    try {
         initSavedCasesDropdown();
-    } catch (e) {
-        console.error('Error initializing saved cases dropdown:', e);
-    }
-
-    try {
         loadCurrentCase();
-    } catch (e) {
-        console.error('Error loading current case:', e);
-    }
-
-    try {
         startAutosave();
-    } catch (e) {
-        console.error('Error starting autosave:', e);
-    }
-
-    try {
         initDarkMode();
+        console.log('PädoPsych Advisor v2 initialized');
     } catch (e) {
-        console.error('Error initializing dark mode:', e);
+        console.error('Initialization error:', e);
+        showToast('Fehler bei der Initialisierung: ' + e.message, 'error');
     }
-
-    console.log('PädoPsych Advisor initialized');
 });
 
 /**
- * Initialisiert die Tab-Navigation
+ * Initialize empty caseData structure from CLINICAL_KNOWLEDGE
  */
+function initializeCaseData() {
+    caseData = { _meta: { createdAt: new Date().toISOString() } };
+
+    if (typeof CLINICAL_KNOWLEDGE === 'undefined') {
+        console.warn('CLINICAL_KNOWLEDGE not loaded yet');
+        return;
+    }
+
+    SECTION_ORDER.forEach(sectionKey => {
+        const section = CLINICAL_KNOWLEDGE[sectionKey];
+        if (!section) return;
+
+        caseData[sectionKey] = {};
+
+        // Handle direct fields
+        if (section.fields) {
+            Object.keys(section.fields).forEach(fieldKey => {
+                caseData[sectionKey][fieldKey] = '';
+            });
+        }
+
+        // Handle subsections
+        if (section.subsections) {
+            Object.keys(section.subsections).forEach(subKey => {
+                const sub = section.subsections[subKey];
+                caseData[sectionKey][subKey] = {};
+
+                // Checkboxes
+                if (sub.checkboxes) {
+                    sub.checkboxes.forEach(cb => {
+                        caseData[sectionKey][subKey][cb.id] = false;
+                    });
+                }
+
+                // Textfield
+                if (sub.textfield) {
+                    caseData[sectionKey][subKey][sub.textfield.id] = '';
+                }
+
+                // Fields within subsection
+                if (sub.fields) {
+                    Object.keys(sub.fields).forEach(fieldKey => {
+                        caseData[sectionKey][subKey][fieldKey] = '';
+                    });
+                }
+            });
+        }
+    });
+}
+
+// ============================================================
+// DYNAMIC FORM GENERATION
+// ============================================================
+
+/**
+ * Generate the entire form dynamically from CLINICAL_KNOWLEDGE
+ */
+function generateDynamicForm() {
+    const formContainer = document.getElementById('dynamic-form-container');
+    if (!formContainer) {
+        console.error('dynamic-form-container not found');
+        return;
+    }
+
+    if (typeof CLINICAL_KNOWLEDGE === 'undefined') {
+        formContainer.innerHTML = '<div class="error-box">Wissensbasis nicht geladen</div>';
+        return;
+    }
+
+    let html = '';
+
+    SECTION_ORDER.forEach((sectionKey, index) => {
+        const section = CLINICAL_KNOWLEDGE[sectionKey];
+        if (!section) return;
+
+        const icon = SECTION_ICONS[sectionKey] || '📌';
+        const sectionLetter = String.fromCharCode(65 + index); // A, B, C, ...
+
+        html += `
+            <div class="form-section anamnese-section" id="section-${sectionKey}">
+                <div class="section-header" onclick="toggleSection('${sectionKey}')">
+                    <span class="section-icon">${icon}</span>
+                    <h3 class="form-section-title">${sectionLetter}. ${section.label}</h3>
+                    <span class="section-toggle">▼</span>
+                </div>
+                <div class="section-content" id="content-${sectionKey}">
+        `;
+
+        // Direct fields
+        if (section.fields) {
+            html += '<div class="fields-grid">';
+            html += generateFieldsHTML(section.fields, sectionKey);
+            html += '</div>';
+        }
+
+        // Subsections
+        if (section.subsections) {
+            Object.keys(section.subsections).forEach(subKey => {
+                const sub = section.subsections[subKey];
+                html += generateSubsectionHTML(sub, sectionKey, subKey);
+            });
+        }
+
+        html += `
+                </div>
+            </div>
+        `;
+    });
+
+    // Add submit button
+    html += `
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                Zurücksetzen
+            </button>
+            <button type="submit" class="btn btn-primary btn-large">
+                🔍 Analyse starten
+            </button>
+        </div>
+    `;
+
+    formContainer.innerHTML = html;
+
+    // Add event listeners
+    formContainer.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('change', updateCaseDataFromForm);
+        el.addEventListener('input', debounce(updateCaseDataFromForm, 300));
+    });
+}
+
+/**
+ * Generate HTML for fields
+ */
+function generateFieldsHTML(fields, sectionKey, subKey = null) {
+    let html = '';
+
+    Object.keys(fields).forEach(fieldKey => {
+        const field = fields[fieldKey];
+        const dataPath = subKey ? `${sectionKey}.${subKey}.${fieldKey}` : `${sectionKey}.${fieldKey}`;
+        const inputId = dataPath.replace(/\./g, '_');
+
+        html += `<div class="form-group">`;
+        html += `<label for="${inputId}">${field.label}</label>`;
+
+        switch (field.type) {
+            case 'text':
+                html += `<input type="text" id="${inputId}" data-path="${dataPath}" class="form-input">`;
+                break;
+            case 'number':
+                html += `<input type="number" id="${inputId}" data-path="${dataPath}"
+                         min="${field.min || ''}" max="${field.max || ''}" class="form-input">`;
+                break;
+            case 'textarea':
+                html += `<textarea id="${inputId}" data-path="${dataPath}" rows="3" class="form-textarea"></textarea>`;
+                break;
+            case 'select':
+                html += `<select id="${inputId}" data-path="${dataPath}" class="form-select">`;
+                html += `<option value="">Bitte wählen...</option>`;
+                field.options.forEach(opt => {
+                    html += `<option value="${opt}">${opt}</option>`;
+                });
+                html += `</select>`;
+                break;
+            case 'range':
+                html += `
+                    <div class="range-container">
+                        <input type="range" id="${inputId}" data-path="${dataPath}"
+                               min="${field.min || 0}" max="${field.max || 10}" value="0"
+                               oninput="updateRangeValue('${inputId}')">
+                        <span class="range-value" id="${inputId}_value">0</span>
+                    </div>
+                `;
+                break;
+        }
+
+        html += `</div>`;
+    });
+
+    return html;
+}
+
+/**
+ * Generate HTML for a subsection
+ */
+function generateSubsectionHTML(sub, sectionKey, subKey) {
+    const subId = `${sectionKey}_${subKey}`;
+    let checkedCount = 0;
+
+    let html = `
+        <div class="subsection accordion" id="accordion-${subId}">
+            <button type="button" class="accordion-header" data-accordion="${subId}" onclick="toggleAccordion('${subId}')">
+                <span class="accordion-icon">+</span>
+                ${sub.label}
+                <span class="accordion-count" data-count="${subId}">0</span>
+            </button>
+            <div class="accordion-content" id="${subId}">
+    `;
+
+    // Fields within subsection
+    if (sub.fields) {
+        html += '<div class="fields-grid">';
+        html += generateFieldsHTML(sub.fields, sectionKey, subKey);
+        html += '</div>';
+    }
+
+    // Checkboxes
+    if (sub.checkboxes && sub.checkboxes.length > 0) {
+        html += '<div class="checkbox-grid">';
+        sub.checkboxes.forEach(cb => {
+            const dataPath = `${sectionKey}.${subKey}.${cb.id}`;
+            const inputId = dataPath.replace(/\./g, '_');
+            const classes = ['checkbox-option'];
+
+            if (cb.positive) classes.push('positive-factor');
+            if (cb.severity === 'critical') classes.push('critical-risk');
+            if (cb.severity === 'high') classes.push('high-risk');
+
+            html += `
+                <label class="${classes.join(' ')}">
+                    <input type="checkbox" id="${inputId}" data-path="${dataPath}"
+                           data-accordion="${subId}"
+                           ${cb.positive ? 'data-positive="true"' : ''}
+                           ${cb.severity ? `data-severity="${cb.severity}"` : ''}
+                           ${cb.weight ? `data-weight="${cb.weight}"` : ''}>
+                    <span>${cb.label}</span>
+                </label>
+            `;
+        });
+        html += '</div>';
+    }
+
+    // Textfield
+    if (sub.textfield) {
+        const tf = sub.textfield;
+        const dataPath = `${sectionKey}.${subKey}.${tf.id}`;
+        const inputId = dataPath.replace(/\./g, '_');
+
+        html += `
+            <div class="form-group subsection-textfield">
+                <label for="${inputId}">${tf.label}</label>
+                <textarea id="${inputId}" data-path="${dataPath}" rows="2" class="form-textarea"></textarea>
+            </div>
+        `;
+    }
+
+    html += `
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+/**
+ * Toggle section visibility
+ */
+function toggleSection(sectionKey) {
+    const content = document.getElementById(`content-${sectionKey}`);
+    const section = document.getElementById(`section-${sectionKey}`);
+    const toggle = section.querySelector('.section-toggle');
+
+    if (content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        toggle.textContent = '▼';
+    } else {
+        content.classList.add('collapsed');
+        toggle.textContent = '►';
+    }
+}
+
+/**
+ * Toggle accordion
+ */
+function toggleAccordion(accordionId) {
+    const content = document.getElementById(accordionId);
+    const header = document.querySelector(`[data-accordion="${accordionId}"]`);
+    const icon = header.querySelector('.accordion-icon');
+
+    if (content.classList.contains('open')) {
+        content.classList.remove('open');
+        header.classList.remove('active');
+        icon.textContent = '+';
+    } else {
+        content.classList.add('open');
+        header.classList.add('active');
+        icon.textContent = '−';
+    }
+}
+
+/**
+ * Update range display value
+ */
+function updateRangeValue(inputId) {
+    const input = document.getElementById(inputId);
+    const display = document.getElementById(`${inputId}_value`);
+    if (input && display) {
+        display.textContent = input.value;
+    }
+}
+
+/**
+ * Update accordion checkbox count
+ */
+function updateAccordionCount(accordionId) {
+    const content = document.getElementById(accordionId);
+    if (!content) return;
+
+    const checked = content.querySelectorAll('input[type="checkbox"]:checked').length;
+    const badge = document.querySelector(`[data-count="${accordionId}"]`);
+
+    if (badge) {
+        badge.textContent = checked;
+        badge.classList.toggle('has-items', checked > 0);
+    }
+}
+
+// ============================================================
+// DATA HANDLING
+// ============================================================
+
+/**
+ * Update caseData from form inputs
+ */
+function updateCaseDataFromForm() {
+    const form = document.getElementById('case-form');
+    if (!form) return;
+
+    form.querySelectorAll('[data-path]').forEach(el => {
+        const path = el.dataset.path;
+        const parts = path.split('.');
+
+        let value;
+        if (el.type === 'checkbox') {
+            value = el.checked;
+            // Update accordion count
+            if (el.dataset.accordion) {
+                updateAccordionCount(el.dataset.accordion);
+            }
+        } else if (el.type === 'number' || el.type === 'range') {
+            value = el.value ? parseFloat(el.value) : '';
+        } else {
+            value = el.value;
+        }
+
+        // Set nested value
+        setNestedValue(caseData, parts, value);
+    });
+}
+
+/**
+ * Set a nested value in an object
+ */
+function setNestedValue(obj, parts, value) {
+    let current = obj;
+    for (let i = 0; i < parts.length - 1; i++) {
+        if (!current[parts[i]]) {
+            current[parts[i]] = {};
+        }
+        current = current[parts[i]];
+    }
+    current[parts[parts.length - 1]] = value;
+}
+
+/**
+ * Get a nested value from an object
+ */
+function getNestedValue(obj, parts) {
+    let current = obj;
+    for (const part of parts) {
+        if (current === undefined || current === null) return undefined;
+        current = current[part];
+    }
+    return current;
+}
+
+/**
+ * Restore form from caseData
+ */
+function restoreFormFromCaseData() {
+    const form = document.getElementById('case-form');
+    if (!form) return;
+
+    form.querySelectorAll('[data-path]').forEach(el => {
+        const path = el.dataset.path;
+        const parts = path.split('.');
+        const value = getNestedValue(caseData, parts);
+
+        if (value !== undefined && value !== null) {
+            if (el.type === 'checkbox') {
+                el.checked = value === true;
+            } else {
+                el.value = value;
+            }
+
+            // Update range display
+            if (el.type === 'range') {
+                updateRangeValue(el.id);
+            }
+        }
+    });
+
+    // Update all accordion counts
+    document.querySelectorAll('.accordion-content').forEach(content => {
+        updateAccordionCount(content.id);
+    });
+}
+
+// ============================================================
+// TAB NAVIGATION
+// ============================================================
+
 function initTabNavigation() {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabPanels = document.querySelectorAll('.tab-panel');
@@ -109,21 +489,15 @@ function initTabNavigation() {
         button.addEventListener('click', () => {
             const targetTab = button.dataset.tab;
 
-            // Alle Tabs deaktivieren
             tabButtons.forEach(btn => btn.classList.remove('active'));
             tabPanels.forEach(panel => panel.classList.remove('active'));
 
-            // Ausgewählten Tab aktivieren
             button.classList.add('active');
-            document.getElementById(targetTab).classList.add('active');
+            document.getElementById(targetTab)?.classList.add('active');
         });
     });
 }
 
-/**
- * Wechselt zu einem bestimmten Tab
- * @param {string} tabId - ID des Ziel-Tabs
- */
 function switchToTab(tabId) {
     const tabButton = document.querySelector(`[data-tab="${tabId}"]`);
     if (tabButton) {
@@ -131,390 +505,189 @@ function switchToTab(tabId) {
     }
 }
 
-/**
- * Initialisiert die Akkordeon-Funktionalität
- */
-function initAccordions() {
-    const accordionHeaders = document.querySelectorAll('.accordion-header');
-
-    accordionHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-            const accordionId = header.dataset.accordion;
-            const content = document.getElementById(accordionId);
-            const icon = header.querySelector('.accordion-icon');
-
-            // Toggle active state
-            const isActive = header.classList.contains('active');
-
-            if (isActive) {
-                // Schließen
-                header.classList.remove('active');
-                content.classList.remove('open');
-                icon.textContent = '+';
-            } else {
-                // Öffnen
-                header.classList.add('active');
-                content.classList.add('open');
-                icon.textContent = '−';
-            }
-        });
-    });
-}
+// ============================================================
+// ANALYSIS
+// ============================================================
 
 /**
- * Initialisiert die Checkbox-Zähler für Akkordeons
- */
-function initCheckboxCounters() {
-    const accordions = document.querySelectorAll('.accordion');
-
-    accordions.forEach(accordion => {
-        const header = accordion.querySelector('.accordion-header');
-        const accordionId = header.dataset.accordion;
-        const content = accordion.querySelector('.accordion-content');
-        const checkboxes = content.querySelectorAll('input[type="checkbox"]');
-        const countBadge = header.querySelector('.accordion-count');
-
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
-                updateAccordionCount(accordionId);
-                updateCaseData();
-            });
-        });
-    });
-}
-
-/**
- * Aktualisiert den Zähler eines Akkordeons
- * @param {string} accordionId - ID des Akkordeons
- */
-function updateAccordionCount(accordionId) {
-    const content = document.getElementById(accordionId);
-    const checkedCount = content.querySelectorAll('input[type="checkbox"]:checked').length;
-    const countBadge = document.querySelector(`[data-count="${accordionId}"]`);
-
-    if (countBadge) {
-        countBadge.textContent = checkedCount;
-        if (checkedCount > 0) {
-            countBadge.classList.add('has-items');
-        } else {
-            countBadge.classList.remove('has-items');
-        }
-    }
-}
-
-/**
- * Initialisiert den Formular-Handler
- */
-function initFormHandler() {
-    const form = document.getElementById('case-form');
-
-    if (form) {
-        // Bei Änderungen Daten aktualisieren
-        form.addEventListener('change', updateCaseData);
-
-        // Bei Submit Analyse starten
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            updateCaseData();
-            startAnalysis();
-        });
-    }
-}
-
-/**
- * Aktualisiert das caseData-Objekt mit allen Formulareingaben
- */
-function updateCaseData() {
-    const form = document.getElementById('case-form');
-    if (!form) return;
-
-    // Grunddaten
-    caseData.grunddaten.name = form.querySelector('#name')?.value || '';
-    caseData.grunddaten.alter = form.querySelector('#alter')?.value || '';
-    caseData.grunddaten.geschlecht = form.querySelector('#geschlecht')?.value || '';
-
-    // Hauptproblem (Radio)
-    const hauptproblemRadio = form.querySelector('input[name="hauptproblem"]:checked');
-    caseData.hauptproblem = hauptproblemRadio?.value || '';
-
-    // Symptome (Checkboxen)
-    const symptomCheckboxes = form.querySelectorAll('input[name="symptome[]"]:checked');
-    caseData.symptome = Array.from(symptomCheckboxes).map(cb => cb.value);
-
-    // Kontext (Checkboxen)
-    const kontextCheckboxes = form.querySelectorAll('input[name="kontext[]"]:checked');
-    caseData.kontext = Array.from(kontextCheckboxes).map(cb => cb.value);
-
-    // Freitext
-    caseData.freitext = form.querySelector('#freitext')?.value || '';
-
-    // Debug-Ausgabe (kann später entfernt werden)
-    console.log('Case Data updated:', caseData);
-}
-
-/**
- * Globale Variable für Analyseergebnis
- */
-let analysisResult = null;
-
-/**
- * Startet die Analyse
+ * Start analysis
  */
 function startAnalysis() {
-    // Alle Fehlermarkierungen zurücksetzen
-    clearValidationErrors();
+    updateCaseDataFromForm();
 
-    // Validierung
-    const errors = validateCaseData();
-    if (errors.length > 0) {
-        errors.forEach(err => {
-            highlightErrorField(err.fieldId);
-        });
-        showValidationError(errors[0].message);
-        scrollToFirstError();
+    // Basic validation
+    const alter = caseData.identifikation?.alter;
+    if (!alter) {
+        showToast('Bitte geben Sie das Alter an', 'error');
         return;
     }
 
-    console.log('Analyse wird gestartet mit:', caseData);
-
-    // Button in Ladezustand versetzen
     const submitBtn = document.querySelector('.btn-primary.btn-large');
     if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner"></span> Analysiere...';
     }
 
-    // Fake-Delay für bessere UX (fühlt sich wertiger an)
     setTimeout(() => {
         try {
-            // Prüfen ob ClinicalEngine verfügbar ist
             if (typeof ClinicalEngine === 'undefined') {
                 throw new Error('ClinicalEngine nicht geladen');
             }
 
-            // Analyse durchführen
             analysisResult = ClinicalEngine.analyze(caseData);
             console.log('Analyseergebnis:', analysisResult);
 
-            // Ergebnisse rendern
             renderAnalysis(analysisResult);
             renderBedienungsanleitung(analysisResult);
 
-            // Fall automatisch speichern
             saveCurrentCase();
-
-            // Toast zeigen
             showToast('Analyse abgeschlossen', 'success');
-
-            // Zum Analyse-Tab wechseln
             switchToTab('analyse');
+
         } catch (error) {
-            console.error('Fehler bei der Analyse:', error);
+            console.error('Analyse-Fehler:', error);
             showToast('Fehler bei der Analyse: ' + error.message, 'error');
         } finally {
-            // Button IMMER zurücksetzen
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Analyse starten';
+                submitBtn.innerHTML = '🔍 Analyse starten';
             }
         }
-    }, 800);
-}
-
-/**
- * Validiert die Falldaten
- * @returns {Array} Array von Fehlerobjekten
- */
-function validateCaseData() {
-    const errors = [];
-
-    if (!caseData.grunddaten.alter) {
-        errors.push({
-            fieldId: 'alter',
-            message: 'Bitte geben Sie das Alter des Kindes an.'
-        });
-    }
-
-    if (!caseData.hauptproblem) {
-        errors.push({
-            fieldId: 'hauptproblem-section',
-            message: 'Bitte wählen Sie ein Hauptproblem aus.'
-        });
-    }
-
-    if (caseData.symptome.length < 1) {
-        errors.push({
-            fieldId: 'symptom-section',
-            message: 'Bitte wählen Sie mindestens ein Symptom aus.'
-        });
-    }
-
-    return errors;
-}
-
-/**
- * Markiert ein Feld als fehlerhaft
- * @param {string} fieldId - ID des Feldes
- */
-function highlightErrorField(fieldId) {
-    const field = document.getElementById(fieldId);
-    if (field) {
-        field.classList.add('validation-error');
-    }
-
-    // Spezialfall für Sektionen
-    const section = document.querySelector(`[data-section="${fieldId}"]`);
-    if (section) {
-        section.classList.add('validation-error');
-    }
-}
-
-/**
- * Entfernt alle Fehlermarkierungen
- */
-function clearValidationErrors() {
-    document.querySelectorAll('.validation-error').forEach(el => {
-        el.classList.remove('validation-error');
-    });
-}
-
-/**
- * Scrollt zum ersten Fehlerfeld
- */
-function scrollToFirstError() {
-    const firstError = document.querySelector('.validation-error');
-    if (firstError) {
-        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-}
-
-/**
- * Zeigt einen Validierungsfehler an
- * @param {string} message - Fehlermeldung
- * @param {string} fieldId - ID des fehlenden Feldes (optional)
- */
-function showValidationError(message, fieldId) {
-    showToast(message, 'error');
-
-    // Visuelles Feedback für fehlendes Feld
-    if (fieldId) {
-        highlightErrorField(fieldId);
-    }
+    }, 500);
 }
 
 // ============================================================
-// TAB 2: ANALYSE - Rendering-Funktionen
+// TAB 2: ANALYSIS RENDERING
 // ============================================================
 
 /**
- * Rendert die komplette Analyse-Seite
- * @param {Object} result - Das Analyseergebnis
+ * Render complete analysis
  */
 function renderAnalysis(result) {
-    renderSummary(result.modell);
-    renderHypotheses(result.hypothesen);
-    renderDifferential(result.differential);
-    renderBiopsychosozialModel(result.modell);
+    if (!result) return;
+
+    // ACE Score
+    renderACEScore(result.aceScore);
+
+    // Risk Profile
+    renderRisikoprofil(result.risikoprofil);
+
+    // Hypotheses
+    renderHypothesen(result.hypothesen);
+
+    // Multi-Model Synthesis
+    renderSynthese(result.synthese);
+
+    // Interventions
+    renderInterventionen(result.interventionen);
 }
 
 /**
- * Rendert die Zusammenfassung
- * @param {Object} modell - Das klinische Modell
+ * Render ACE Score
  */
-function renderSummary(modell) {
-    const container = document.getElementById('summary-container');
-    if (!container) return;
+function renderACEScore(aceScore) {
+    const container = document.getElementById('ace-container');
+    if (!container || !aceScore) return;
+
+    const riskLevel = aceScore.score >= 4 ? 'high' : aceScore.score >= 2 ? 'medium' : 'low';
+    const riskClass = riskLevel === 'high' ? 'danger' : riskLevel === 'medium' ? 'warning' : 'success';
 
     container.innerHTML = `
-        <div class="summary-box">
-            <p class="summary-text">${modell.zusammenfassung}</p>
-            <button class="btn btn-secondary btn-small copy-btn" onclick="copySummary()">
-                <span>📋</span> Kopieren
-            </button>
+        <div class="ace-card ${riskClass}">
+            <div class="ace-score-display">
+                <span class="ace-number">${aceScore.score}</span>
+                <span class="ace-label">/10 ACEs</span>
+            </div>
+            <div class="ace-content">
+                <h4>Adverse Childhood Experiences</h4>
+                <p>${aceScore.interpretation}</p>
+                ${aceScore.items.length > 0 ? `
+                    <div class="ace-items">
+                        <strong>Identifizierte ACEs:</strong>
+                        <ul>
+                            ${aceScore.items.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
         </div>
     `;
 }
 
 /**
- * Kopiert die Zusammenfassung in die Zwischenablage
+ * Render Risk Profile
  */
-function copySummary() {
-    if (analysisResult?.modell?.zusammenfassung) {
-        navigator.clipboard.writeText(analysisResult.modell.zusammenfassung)
-            .then(() => {
-                const btn = document.querySelector('.copy-btn');
-                if (btn) {
-                    btn.innerHTML = '<span>✓</span> Kopiert!';
-                    setTimeout(() => {
-                        btn.innerHTML = '<span>📋</span> Kopieren';
-                    }, 2000);
-                }
-                showToast('In Zwischenablage kopiert!', 'success');
-            })
-            .catch(err => {
-                console.error('Kopieren fehlgeschlagen:', err);
-                showToast('Kopieren fehlgeschlagen', 'error');
-            });
-    }
+function renderRisikoprofil(profil) {
+    const container = document.getElementById('risiko-container');
+    if (!container || !profil) return;
+
+    container.innerHTML = `
+        <div class="risiko-grid">
+            ${profil.akut.length > 0 ? `
+                <div class="risiko-section critical">
+                    <h4>🚨 Akute Risiken</h4>
+                    <ul>
+                        ${profil.akut.map(r => `<li>${r}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+            ${profil.chronisch.length > 0 ? `
+                <div class="risiko-section warning">
+                    <h4>⚠️ Chronische Risiken</h4>
+                    <ul>
+                        ${profil.chronisch.map(r => `<li>${r}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+            <div class="risiko-section success">
+                <h4>🛡️ Schutzfaktoren</h4>
+                <ul>
+                    ${profil.schutz.length > 0
+                        ? profil.schutz.map(r => `<li>${r}</li>`).join('')
+                        : '<li>Keine identifiziert</li>'}
+                </ul>
+            </div>
+        </div>
+    `;
 }
 
 /**
- * Rendert die Hypothesen-Karten
- * @param {Array} hypothesen - Array der Hypothesen
+ * Render Hypotheses
  */
-function renderHypotheses(hypothesen) {
-    const container = document.getElementById('hypotheses-container');
+function renderHypothesen(hypothesen) {
+    const container = document.getElementById('hypothesen-container');
     if (!container) return;
 
-    if (hypothesen.length === 0) {
-        container.innerHTML = `
-            <div class="placeholder-card">
-                <p>Keine Hypothesen konnten generiert werden. Bitte überprüfen Sie die Eingaben.</p>
-            </div>
-        `;
+    if (!hypothesen || hypothesen.length === 0) {
+        container.innerHTML = '<div class="placeholder-card">Keine Hypothesen generiert</div>';
         return;
     }
 
-    container.innerHTML = hypothesen.map((hypo, index) => `
-        <div class="hypothesis-card ${index === 0 ? 'primary' : ''}" style="--card-color: ${hypo.farbe}">
-            <div class="hypothesis-header" onclick="toggleHypothesisDetails('hypo-${index}')">
-                <div class="hypothesis-rank">${index + 1}</div>
+    container.innerHTML = hypothesen.map((hypo, i) => `
+        <div class="hypothesis-card ${i === 0 ? 'primary' : ''}" style="--card-color: ${hypo.farbe || '#6366f1'}">
+            <div class="hypothesis-header" onclick="toggleHypothesisDetails('hypo-${i}')">
+                <div class="hypothesis-rank">${i + 1}</div>
                 <div class="hypothesis-info">
-                    <h4 class="hypothesis-name">${hypo.vollname || hypo.name}</h4>
+                    <h4>${hypo.name}</h4>
                     <span class="hypothesis-icd">${hypo.icd10 || ''}</span>
                 </div>
                 <div class="hypothesis-score">
                     <span class="confidence-value">${hypo.konfidenz}%</span>
                     <div class="confidence-bar">
-                        <div class="confidence-fill" style="width: ${hypo.konfidenz}%; background-color: ${getConfidenceColor(hypo.konfidenz)}"></div>
+                        <div class="confidence-fill" style="width: ${hypo.konfidenz}%"></div>
                     </div>
                 </div>
                 <span class="expand-icon">▼</span>
             </div>
-            <div class="hypothesis-details" id="hypo-${index}">
+            <div class="hypothesis-details" id="hypo-${i}">
                 <div class="interpretation-box">
                     <h5>Interpretation</h5>
-                    <p>${hypo.interpretation}</p>
+                    <p>${hypo.interpretation || 'Keine zusätzliche Interpretation'}</p>
                 </div>
-                ${hypo.evidenz.length > 0 ? `
+                ${hypo.evidenz && hypo.evidenz.length > 0 ? `
                     <div class="evidence-box">
                         <h5>Hinweisende Symptome</h5>
-                        <ul class="evidence-list">
-                            ${hypo.evidenz.map(e => `<li class="evidence-item positive">✓ ${e}</li>`).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
-                ${hypo.gegenEvidenz.length > 0 ? `
-                    <div class="counter-evidence-box">
-                        <h5>Gegenargumente</h5>
-                        <ul class="evidence-list">
-                            ${hypo.gegenEvidenz.map(e => `<li class="evidence-item negative">− ${e}</li>`).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
-                ${hypo.wichtigerHinweis ? `
-                    <div class="important-note">
-                        <strong>⚠️ Wichtig:</strong> ${hypo.wichtigerHinweis}
+                        <ul>${hypo.evidenz.map(e => `<li class="evidence-item positive">✓ ${e}</li>`).join('')}</ul>
                     </div>
                 ` : ''}
             </div>
@@ -522,128 +695,247 @@ function renderHypotheses(hypothesen) {
     `).join('');
 }
 
-/**
- * Toggle für Hypothesen-Details
- * @param {string} id - Element-ID
- */
 function toggleHypothesisDetails(id) {
     const details = document.getElementById(id);
-    const card = details.parentElement;
-    const icon = card.querySelector('.expand-icon');
+    const card = details?.parentElement;
+    const icon = card?.querySelector('.expand-icon');
 
-    if (details.classList.contains('open')) {
+    if (details?.classList.contains('open')) {
         details.classList.remove('open');
-        icon.textContent = '▼';
+        if (icon) icon.textContent = '▼';
     } else {
-        details.classList.add('open');
-        icon.textContent = '▲';
+        details?.classList.add('open');
+        if (icon) icon.textContent = '▲';
     }
 }
 
 /**
- * Gibt die Farbe für den Konfidenz-Wert zurück
- * @param {number} konfidenz - Konfidenz in Prozent
- * @returns {string} CSS-Farbe
+ * Render Multi-Model Synthesis
  */
-function getConfidenceColor(konfidenz) {
-    if (konfidenz >= 60) return '#10b981'; // Grün
-    if (konfidenz >= 35) return '#f59e0b'; // Gelb/Orange
-    return '#6366f1'; // Primärfarbe
-}
+function renderSynthese(synthese) {
+    const container = document.getElementById('synthese-container');
+    if (!container || !synthese) return;
 
-/**
- * Rendert die differentialdiagnostischen Überlegungen
- * @param {Array} differential - Array der Überlegungen
- */
-function renderDifferential(differential) {
-    const container = document.getElementById('differential-container');
-    if (!container) return;
+    const models = [
+        { key: 'biopsychosozial', icon: '🧬', title: 'Bio-Psycho-Soziales Modell' },
+        { key: 'systemisch', icon: '👨‍👩‍👧', title: 'Systemische Perspektive' },
+        { key: 'trauma', icon: '💔', title: 'Trauma-Perspektive' },
+        { key: 'bindung', icon: '🤝', title: 'Bindungs-Perspektive' },
+        { key: 'entwicklung', icon: '📈', title: 'Entwicklungs-Perspektive' },
+        { key: 'oekologisch', icon: '🌍', title: 'Ökologisches Modell' },
+        { key: 'resilienz', icon: '💪', title: 'Resilienz-Profil' }
+    ];
 
-    if (differential.length === 0) {
-        container.innerHTML = `
-            <div class="placeholder-card">
-                <p>Keine spezifischen differentialdiagnostischen Hinweise.</p>
+    let html = '<div class="synthese-tabs">';
+    models.forEach((m, i) => {
+        html += `
+            <button type="button" class="synthese-tab ${i === 0 ? 'active' : ''}"
+                    onclick="switchSyntheseTab('${m.key}')">
+                ${m.icon} ${m.title}
+            </button>
+        `;
+    });
+    html += '</div><div class="synthese-content">';
+
+    models.forEach((m, i) => {
+        const data = synthese[m.key];
+        html += `
+            <div class="synthese-panel ${i === 0 ? 'active' : ''}" id="synthese-${m.key}">
+                ${renderSyntheseContent(m.key, data)}
             </div>
         `;
-        return;
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function switchSyntheseTab(key) {
+    document.querySelectorAll('.synthese-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.textContent.includes(key) ||
+            tab.getAttribute('onclick').includes(key));
+    });
+    document.querySelectorAll('.synthese-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `synthese-${key}`);
+    });
+    // Fix active state
+    document.querySelectorAll('.synthese-tab').forEach(tab => {
+        const onclick = tab.getAttribute('onclick');
+        tab.classList.toggle('active', onclick && onclick.includes(`'${key}'`));
+    });
+}
+
+function renderSyntheseContent(key, data) {
+    if (!data) return '<p>Keine Daten verfügbar</p>';
+
+    if (key === 'biopsychosozial') {
+        return `
+            <div class="bps-model">
+                <div class="bps-section bio">
+                    <h4>🧬 Biologisch</h4>
+                    <ul>${(data.biologisch || []).map(f => `<li>${f}</li>`).join('') || '<li>-</li>'}</ul>
+                </div>
+                <div class="bps-section psycho">
+                    <h4>🧠 Psychologisch</h4>
+                    <ul>${(data.psychologisch || []).map(f => `<li>${f}</li>`).join('') || '<li>-</li>'}</ul>
+                </div>
+                <div class="bps-section sozial">
+                    <h4>👥 Sozial</h4>
+                    <ul>${(data.sozial || []).map(f => `<li>${f}</li>`).join('') || '<li>-</li>'}</ul>
+                </div>
+            </div>
+            ${data.zusammenfassung ? `<div class="bps-summary"><p>${data.zusammenfassung}</p></div>` : ''}
+        `;
     }
 
-    container.innerHTML = differential.map(item => `
-        <div class="differential-card ${item.typ}">
-            <div class="differential-icon">${item.icon}</div>
-            <div class="differential-content">
-                <h4 class="differential-title">${item.titel}</h4>
-                <p class="differential-text">${item.text}</p>
+    if (key === 'systemisch') {
+        return `
+            <div class="systemisch-content">
+                ${data.familienstruktur ? `<div class="sys-section"><h4>Familienstruktur</h4><p>${data.familienstruktur}</p></div>` : ''}
+                ${data.dynamiken && data.dynamiken.length > 0 ? `
+                    <div class="sys-section"><h4>Familiendynamiken</h4>
+                    <ul>${data.dynamiken.map(d => `<li>${d}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${data.muster && data.muster.length > 0 ? `
+                    <div class="sys-section"><h4>Interaktionsmuster</h4>
+                    <ul>${data.muster.map(m => `<li>${m}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${data.hypothese ? `<div class="sys-hypothesis"><strong>Systemische Hypothese:</strong> ${data.hypothese}</div>` : ''}
             </div>
-        </div>
-    `).join('');
+        `;
+    }
+
+    if (key === 'trauma') {
+        return `
+            <div class="trauma-content">
+                ${data.aceScore !== undefined ? `<div class="trauma-ace">ACE-Score: ${data.aceScore}/10</div>` : ''}
+                ${data.traumaTypen && data.traumaTypen.length > 0 ? `
+                    <div class="trauma-section"><h4>Trauma-Typen</h4>
+                    <ul>${data.traumaTypen.map(t => `<li>${t}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${data.reaktionsmuster ? `<div class="trauma-section"><h4>4F-Reaktionsmuster</h4><p>${data.reaktionsmuster}</p></div>` : ''}
+                ${data.folgen && data.folgen.length > 0 ? `
+                    <div class="trauma-section"><h4>Beobachtete Traumafolgen</h4>
+                    <ul>${data.folgen.map(f => `<li>${f}</li>`).join('')}</ul></div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    if (key === 'bindung') {
+        return `
+            <div class="bindung-content">
+                ${data.muster ? `<div class="bindung-pattern"><h4>Bindungsmuster</h4><p>${data.muster}</p></div>` : ''}
+                ${data.beschreibung ? `<p>${data.beschreibung}</p>` : ''}
+                ${data.hinweise && data.hinweise.length > 0 ? `
+                    <div class="bindung-section"><h4>Hinweise</h4>
+                    <ul>${data.hinweise.map(h => `<li>${h}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${data.implikationen ? `<div class="bindung-impl"><strong>Therapeutische Implikationen:</strong> ${data.implikationen}</div>` : ''}
+            </div>
+        `;
+    }
+
+    if (key === 'entwicklung') {
+        return `
+            <div class="entwicklung-content">
+                ${data.entwicklungsstand ? `<div class="entw-section"><h4>Entwicklungsstand</h4><p>${data.entwicklungsstand}</p></div>` : ''}
+                ${data.entwicklungsaufgaben && data.entwicklungsaufgaben.length > 0 ? `
+                    <div class="entw-section"><h4>Aktuelle Entwicklungsaufgaben</h4>
+                    <ul>${data.entwicklungsaufgaben.map(a => `<li>${a}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${data.auffälligkeiten && data.auffälligkeiten.length > 0 ? `
+                    <div class="entw-section warning"><h4>Entwicklungsauffälligkeiten</h4>
+                    <ul>${data.auffälligkeiten.map(a => `<li>${a}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${data.stärken && data.stärken.length > 0 ? `
+                    <div class="entw-section success"><h4>Entwicklungsstärken</h4>
+                    <ul>${data.stärken.map(s => `<li>${s}</li>`).join('')}</ul></div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    if (key === 'oekologisch') {
+        return `
+            <div class="oeko-content">
+                <div class="oeko-model">
+                    ${data.mikrosystem ? `<div class="oeko-level mikro"><h4>Mikrosystem</h4><p>${data.mikrosystem}</p></div>` : ''}
+                    ${data.mesosystem ? `<div class="oeko-level meso"><h4>Mesosystem</h4><p>${data.mesosystem}</p></div>` : ''}
+                    ${data.exosystem ? `<div class="oeko-level exo"><h4>Exosystem</h4><p>${data.exosystem}</p></div>` : ''}
+                    ${data.makrosystem ? `<div class="oeko-level makro"><h4>Makrosystem</h4><p>${data.makrosystem}</p></div>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    if (key === 'resilienz') {
+        return `
+            <div class="resilienz-content">
+                ${data.individuell && data.individuell.length > 0 ? `
+                    <div class="res-section"><h4>💪 Individuelle Ressourcen</h4>
+                    <ul>${data.individuell.map(r => `<li>${r}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${data.familiär && data.familiär.length > 0 ? `
+                    <div class="res-section"><h4>👨‍👩‍👧 Familiäre Ressourcen</h4>
+                    <ul>${data.familiär.map(r => `<li>${r}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${data.sozial && data.sozial.length > 0 ? `
+                    <div class="res-section"><h4>🌍 Soziale Ressourcen</h4>
+                    <ul>${data.sozial.map(r => `<li>${r}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${data.gesamteinschätzung ? `<div class="res-summary"><strong>Gesamteinschätzung:</strong> ${data.gesamteinschätzung}</div>` : ''}
+            </div>
+        `;
+    }
+
+    return '<p>Modell-Daten nicht verfügbar</p>';
 }
 
 /**
- * Rendert das bio-psycho-soziale Modell
- * @param {Object} modell - Das klinische Modell
+ * Render Interventions
  */
-function renderBiopsychosozialModel(modell) {
-    const container = document.getElementById('model-container');
-    if (!container) return;
+function renderInterventionen(interventionen) {
+    const container = document.getElementById('interventionen-container');
+    if (!container || !interventionen) return;
 
-    const bps = modell.biopsychosozial;
+    const timeframes = [
+        { key: 'sofort', icon: '🚨', title: 'Sofortmaßnahmen', class: 'critical' },
+        { key: 'kurzfristig', icon: '📅', title: 'Kurzfristig (Wochen)', class: 'warning' },
+        { key: 'mittelfristig', icon: '📆', title: 'Mittelfristig (Monate)', class: 'info' },
+        { key: 'langfristig', icon: '🎯', title: 'Langfristig', class: 'success' }
+    ];
 
-    container.innerHTML = `
-        <div class="bps-model">
-            <div class="bps-section praedisponierend">
-                <div class="bps-header">
-                    <span class="bps-icon">🌱</span>
-                    <h4>Prädisponierende Faktoren</h4>
+    let html = '<div class="interventionen-grid">';
+
+    timeframes.forEach(tf => {
+        const items = interventionen[tf.key] || [];
+        if (items.length > 0) {
+            html += `
+                <div class="intervention-section ${tf.class}">
+                    <h4>${tf.icon} ${tf.title}</h4>
+                    <ul>
+                        ${items.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
                 </div>
-                <ul class="bps-list">
-                    ${bps.praedisponierend.map(f => `<li>${f}</li>`).join('')}
-                </ul>
-            </div>
-            <div class="bps-section ausloesend">
-                <div class="bps-header">
-                    <span class="bps-icon">⚡</span>
-                    <h4>Auslösende Faktoren</h4>
-                </div>
-                <ul class="bps-list">
-                    ${bps.ausloesend.map(f => `<li>${f}</li>`).join('')}
-                </ul>
-            </div>
-            <div class="bps-section aufrechterhaltend">
-                <div class="bps-header">
-                    <span class="bps-icon">🔄</span>
-                    <h4>Aufrechterhaltende Faktoren</h4>
-                </div>
-                <ul class="bps-list">
-                    ${bps.aufrechterhaltend.map(f => `<li>${f}</li>`).join('')}
-                </ul>
-            </div>
-            <div class="bps-section protektiv">
-                <div class="bps-header">
-                    <span class="bps-icon">🛡️</span>
-                    <h4>Protektive Faktoren</h4>
-                </div>
-                <ul class="bps-list">
-                    ${bps.protektiv.map(f => `<li>${f}</li>`).join('')}
-                </ul>
-            </div>
-        </div>
-    `;
+            `;
+        }
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 // ============================================================
-// TAB 3: BEDIENUNGSANLEITUNG - Rendering-Funktionen
+// TAB 3: BEDIENUNGSANLEITUNG
 // ============================================================
 
-/**
- * Rendert die komplette Bedienungsanleitung
- * @param {Object} result - Das Analyseergebnis
- */
 function renderBedienungsanleitung(result) {
-    const anleitung = result.bedienungsanleitung;
-    const name = result.caseData?.grunddaten?.name || 'das Kind';
+    if (!result || !result.bedienungsanleitung) return;
 
-    renderGrundhaltung(anleitung.grundhaltung, name);
+    const anleitung = result.bedienungsanleitung;
+
+    renderGrundhaltung(anleitung.grundhaltung);
     renderAmpelsystem(anleitung.ampelsystem);
     renderSituationsrezepte(anleitung.situationsrezepte);
     renderDosAndDonts(anleitung.dosAndDonts);
@@ -652,18 +944,13 @@ function renderBedienungsanleitung(result) {
     renderElterninfo(anleitung.elterninfo);
 }
 
-/**
- * Rendert die Grundhaltung
- * @param {Object} grundhaltung - Die Grundhaltung
- * @param {string} name - Name des Kindes
- */
-function renderGrundhaltung(grundhaltung, name) {
+function renderGrundhaltung(grundhaltung) {
     const container = document.getElementById('grundhaltung-container');
-    if (!container) return;
+    if (!container || !grundhaltung) return;
 
     container.innerHTML = `
         <div class="grundhaltung-card">
-            <div class="grundhaltung-icon">${grundhaltung.icon}</div>
+            <div class="grundhaltung-icon">${grundhaltung.icon || '💡'}</div>
             <div class="grundhaltung-content">
                 <h3 class="grundhaltung-leitsatz">"${grundhaltung.leitsatz}"</h3>
                 <p class="grundhaltung-erklaerung">${grundhaltung.erklaerung}</p>
@@ -676,68 +963,60 @@ function renderGrundhaltung(grundhaltung, name) {
     `;
 }
 
-/**
- * Rendert das Ampelsystem
- * @param {Object} ampelsystem - Das Ampelsystem
- */
-function renderAmpelsystem(ampelsystem) {
+function renderAmpelsystem(ampel) {
     const container = document.getElementById('ampel-container');
-    if (!container) return;
+    if (!container || !ampel) return;
 
     container.innerHTML = `
         <div class="ampel-grid">
             <div class="ampel-section gruen">
                 <div class="ampel-header">
                     <span class="ampel-light green"></span>
-                    <h4>Grün - Kind ist stabil</h4>
+                    <h4>Grün - Stabil</h4>
                 </div>
                 <ul class="ampel-list">
-                    ${ampelsystem.gruen.map(s => `<li><span class="signal-icon">${s.icon}</span> ${s.signal}</li>`).join('')}
+                    ${(ampel.gruen || []).map(s => `<li><span>${s.icon || '✓'}</span> ${s.signal}</li>`).join('')}
                 </ul>
             </div>
             <div class="ampel-section gelb">
                 <div class="ampel-header">
                     <span class="ampel-light yellow"></span>
-                    <h4>Gelb - Vorsicht!</h4>
+                    <h4>Gelb - Vorsicht</h4>
                 </div>
                 <ul class="ampel-list">
-                    ${ampelsystem.gelb.map(s => `<li><span class="signal-icon">${s.icon}</span> ${s.signal}</li>`).join('')}
+                    ${(ampel.gelb || []).map(s => `<li><span>${s.icon || '⚠'}</span> ${s.signal}</li>`).join('')}
                 </ul>
             </div>
             <div class="ampel-section rot">
                 <div class="ampel-header">
                     <span class="ampel-light red"></span>
-                    <h4>Rot - Krise!</h4>
+                    <h4>Rot - Krise</h4>
                 </div>
                 <ul class="ampel-list">
-                    ${ampelsystem.rot.map(s => `<li><span class="signal-icon">${s.icon}</span> ${s.signal}</li>`).join('')}
+                    ${(ampel.rot || []).map(s => `<li><span>${s.icon || '🚨'}</span> ${s.signal}</li>`).join('')}
                 </ul>
             </div>
         </div>
     `;
 }
 
-/**
- * Rendert die Situationsrezepte
- * @param {Array} rezepte - Die Situationsrezepte
- */
 function renderSituationsrezepte(rezepte) {
     const container = document.getElementById('rezepte-container');
-    if (!container) return;
+    if (!container || !rezepte) return;
 
-    container.innerHTML = rezepte.map((rezept, index) => `
+    container.innerHTML = (rezepte || []).map((r, i) => `
         <div class="rezept-accordion">
-            <button type="button" class="rezept-header" onclick="toggleRezept('rezept-${index}')">
-                <span class="rezept-icon">${rezept.icon}</span>
-                <span class="rezept-situation">${rezept.situation}</span>
+            <button type="button" class="rezept-header" onclick="toggleRezept('rezept-${i}')">
+                <span class="rezept-icon">${r.icon || '📋'}</span>
+                <span class="rezept-situation">${r.situation}</span>
                 <span class="rezept-expand">+</span>
             </button>
-            <div class="rezept-content" id="rezept-${index}">
+            <div class="rezept-content" id="rezept-${i}">
                 <ul class="rezept-schritte">
-                    ${rezept.reaktion.map(schritt => {
-                        const isNegative = schritt.startsWith('NICHT:');
-                        const isPositive = schritt.startsWith('STATTDESSEN:');
-                        return `<li class="${isNegative ? 'dont' : isPositive ? 'do' : ''}">${schritt}</li>`;
+                    ${(r.reaktion || []).map(schritt => {
+                        const isNeg = schritt.startsWith('NICHT:');
+                        const isPos = schritt.startsWith('STATTDESSEN:');
+                        return `<li class="${isNeg ? 'dont' : isPos ? 'do' : ''}">${schritt}</li>`;
                     }).join('')}
                 </ul>
             </div>
@@ -745,53 +1024,39 @@ function renderSituationsrezepte(rezepte) {
     `).join('');
 }
 
-/**
- * Toggle für Rezept-Akkordeons
- * @param {string} id - Element-ID
- */
 function toggleRezept(id) {
     const content = document.getElementById(id);
-    const header = content.previousElementSibling;
-    const icon = header.querySelector('.rezept-expand');
+    const header = content?.previousElementSibling;
+    const icon = header?.querySelector('.rezept-expand');
 
-    if (content.classList.contains('open')) {
+    if (content?.classList.contains('open')) {
         content.classList.remove('open');
-        icon.textContent = '+';
+        if (icon) icon.textContent = '+';
     } else {
-        content.classList.add('open');
-        icon.textContent = '−';
+        content?.classList.add('open');
+        if (icon) icon.textContent = '−';
     }
 }
 
-/**
- * Rendert Do's and Don'ts
- * @param {Object} dosAndDonts - Do's und Don'ts
- */
 function renderDosAndDonts(dosAndDonts) {
     const container = document.getElementById('dos-donts-container');
-    if (!container) return;
+    if (!container || !dosAndDonts) return;
 
     container.innerHTML = `
         <div class="dos-donts-grid">
             <div class="dos-section">
-                <h4 class="dos-title">✓ Tu das</h4>
+                <h4>✓ Tu das</h4>
                 <ul class="dos-list">
-                    ${dosAndDonts.tuDas.map(item => `
-                        <li class="dos-item">
-                            <span class="item-icon">${item.icon}</span>
-                            <span class="item-text">${item.tipp}</span>
-                        </li>
+                    ${(dosAndDonts.tuDas || []).map(item => `
+                        <li><span>${item.icon || '✓'}</span> ${item.tipp}</li>
                     `).join('')}
                 </ul>
             </div>
             <div class="donts-section">
-                <h4 class="donts-title">✗ Lass das</h4>
+                <h4>✗ Lass das</h4>
                 <ul class="donts-list">
-                    ${dosAndDonts.lassDas.map(item => `
-                        <li class="donts-item">
-                            <span class="item-icon">${item.icon}</span>
-                            <span class="item-text">${item.tipp}</span>
-                        </li>
+                    ${(dosAndDonts.lassDas || []).map(item => `
+                        <li><span>${item.icon || '✗'}</span> ${item.tipp}</li>
                     `).join('')}
                 </ul>
             </div>
@@ -799,148 +1064,95 @@ function renderDosAndDonts(dosAndDonts) {
     `;
 }
 
-/**
- * Rendert den Notfallplan
- * @param {Object} notfallplan - Der Notfallplan
- */
-function renderNotfallplan(notfallplan) {
+function renderNotfallplan(notfall) {
     const container = document.getElementById('notfall-container');
-    if (!container) return;
+    if (!container || !notfall) return;
 
     container.innerHTML = `
         <div class="notfall-card">
             <div class="notfall-header">
-                <span class="notfall-icon">${notfallplan.icon}</span>
-                <h3 class="notfall-title">${notfallplan.titel}</h3>
+                <span class="notfall-icon">${notfall.icon || '🚨'}</span>
+                <h3>${notfall.titel || 'Notfallplan'}</h3>
             </div>
             <ol class="notfall-schritte">
-                ${notfallplan.schritte.map(s => `
-                    <li class="notfall-schritt">
-                        <span class="schritt-icon">${s.icon}</span>
-                        <span class="schritt-text">${s.text}</span>
-                    </li>
+                ${(notfall.schritte || []).map(s => `
+                    <li><span>${s.icon || '→'}</span> ${s.text}</li>
                 `).join('')}
             </ol>
-            <div class="notfall-wichtig">
-                <strong>⚠️ Wichtig:</strong> ${notfallplan.wichtig}
-            </div>
-            <div class="nach-krise">
-                <h4>Nach der Krise:</h4>
-                <ul>
-                    ${notfallplan.nachDerKrise.map(p => `<li>${p}</li>`).join('')}
-                </ul>
-            </div>
+            ${notfall.wichtig ? `<div class="notfall-wichtig"><strong>⚠️ Wichtig:</strong> ${notfall.wichtig}</div>` : ''}
+            ${notfall.nachDerKrise && notfall.nachDerKrise.length > 0 ? `
+                <div class="nach-krise">
+                    <h4>Nach der Krise:</h4>
+                    <ul>${notfall.nachDerKrise.map(p => `<li>${p}</li>`).join('')}</ul>
+                </div>
+            ` : ''}
         </div>
     `;
 }
 
-/**
- * Rendert die Beziehungstipps
- * @param {Array} tipps - Die Beziehungstipps
- */
 function renderBeziehungstipps(tipps) {
     const container = document.getElementById('beziehung-container');
-    if (!container) return;
+    if (!container || !tipps) return;
 
     container.innerHTML = `
         <div class="beziehung-grid">
-            ${tipps.map(tipp => `
+            ${(tipps || []).map(t => `
                 <div class="beziehung-card">
-                    <div class="beziehung-icon">${tipp.icon}</div>
-                    <h4 class="beziehung-title">${tipp.tipp}</h4>
-                    <p class="beziehung-text">${tipp.beschreibung}</p>
+                    <div class="beziehung-icon">${t.icon || '💡'}</div>
+                    <h4>${t.tipp}</h4>
+                    <p>${t.beschreibung}</p>
                 </div>
             `).join('')}
         </div>
     `;
 }
 
-/**
- * Rendert die Elterninfo
- * @param {Object} elterninfo - Die Elterninformation
- */
-function renderElterninfo(elterninfo) {
+function renderElterninfo(info) {
     const container = document.getElementById('eltern-container');
-    if (!container) return;
+    if (!container || !info) return;
 
     container.innerHTML = `
         <div class="eltern-card">
             <div class="eltern-header">
-                <span class="eltern-icon">${elterninfo.icon}</span>
-                <h3 class="eltern-headline">${elterninfo.headline}</h3>
+                <span class="eltern-icon">${info.icon || '👨‍👩‍👧'}</span>
+                <h3>${info.headline || 'Information für Eltern'}</h3>
             </div>
-
             <div class="eltern-section">
                 <h4>Kernbotschaften</h4>
-                <ul class="kern-liste">
-                    ${elterninfo.kernbotschaften.map(k => `<li>${k}</li>`).join('')}
-                </ul>
+                <ul>${(info.kernbotschaften || []).map(k => `<li>${k}</li>`).join('')}</ul>
             </div>
-
-            ${elterninfo.spezifisch.length > 0 ? `
+            ${info.spezifisch && info.spezifisch.length > 0 ? `
                 <div class="eltern-section spezifisch">
                     <h4>Spezifische Informationen</h4>
-                    <ul class="spezifisch-liste">
-                        ${elterninfo.spezifisch.map(s => `<li>${s}</li>`).join('')}
-                    </ul>
+                    <ul>${info.spezifisch.map(s => `<li>${s}</li>`).join('')}</ul>
                 </div>
             ` : ''}
-
-            <div class="eltern-section ressourcen">
-                <h4>Hilfreiche Anlaufstellen</h4>
-                <ul class="ressourcen-liste">
-                    ${elterninfo.ressourcen.map(r => `<li>📌 ${r}</li>`).join('')}
-                </ul>
-            </div>
+            ${info.ressourcen && info.ressourcen.length > 0 ? `
+                <div class="eltern-section ressourcen">
+                    <h4>Hilfreiche Anlaufstellen</h4>
+                    <ul>${info.ressourcen.map(r => `<li>📌 ${r}</li>`).join('')}</ul>
+                </div>
+            ` : ''}
         </div>
     `;
 }
 
-/**
- * Druckt die Bedienungsanleitung
- */
-function printBedienungsanleitung() {
-    window.print();
-}
+// ============================================================
+// UTILITIES
+// ============================================================
 
-/**
- * Gibt die aktuellen Falldaten zurück
- * @returns {Object} caseData
- */
-function getCaseData() {
-    return caseData;
-}
-
-/**
- * Setzt das Formular und die Falldaten zurück
- */
-function resetCaseData() {
-    caseData = {
-        grunddaten: {
-            name: '',
-            alter: '',
-            geschlecht: ''
-        },
-        hauptproblem: '',
-        symptome: [],
-        kontext: [],
-        freitext: ''
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
     };
-
-    // Alle Akkordeon-Zähler zurücksetzen
-    document.querySelectorAll('.accordion-count').forEach(badge => {
-        badge.textContent = '0';
-        badge.classList.remove('has-items');
-    });
 }
 
-// ============================================================
-// TOAST NOTIFICATIONS
-// ============================================================
-
-/**
- * Initialisiert den Toast-Container
- */
 function initToastContainer() {
     if (!document.getElementById('toast-container')) {
         const container = document.createElement('div');
@@ -949,12 +1161,6 @@ function initToastContainer() {
     }
 }
 
-/**
- * Zeigt eine Toast-Benachrichtigung
- * @param {string} message - Nachricht
- * @param {string} type - Typ: 'success', 'error', 'info'
- * @param {number} duration - Anzeigedauer in ms (default: 3000)
- */
 function showToast(message, type = 'info', duration = 3000) {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -962,97 +1168,64 @@ function showToast(message, type = 'info', duration = 3000) {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
 
-    const icons = {
-        success: '✓',
-        error: '✗',
-        info: 'ℹ'
-    };
-
+    const icons = { success: '✓', error: '✗', info: 'ℹ', warning: '⚠' };
     toast.innerHTML = `
         <span class="toast-icon">${icons[type] || icons.info}</span>
         <span class="toast-message">${message}</span>
     `;
 
     container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
 
-    // Animation starten
-    requestAnimationFrame(() => {
-        toast.classList.add('show');
-    });
-
-    // Auto-hide
     setTimeout(() => {
         toast.classList.remove('show');
-        setTimeout(() => {
-            toast.remove();
-        }, 300);
+        setTimeout(() => toast.remove(), 300);
     }, duration);
 }
 
 // ============================================================
-// LOCAL STORAGE - SPEICHERUNG
+// STORAGE
 // ============================================================
 
-/**
- * Speichert den aktuellen Fall in LocalStorage
- */
 function saveCurrentCase() {
     const savedCase = {
         id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
-        name: caseData.grunddaten.name || 'Unbenannter Fall',
+        name: caseData.identifikation?.alter ? `Kind ${caseData.identifikation.alter}J` : 'Unbenannt',
         savedAt: new Date().toISOString(),
         caseData: JSON.parse(JSON.stringify(caseData)),
         analysis: analysisResult ? JSON.parse(JSON.stringify(analysisResult)) : null
     };
 
-    // Aktuellen Fall speichern
     localStorage.setItem(STORAGE_KEYS.CURRENT_CASE, JSON.stringify(savedCase));
 
-    // Zum Archiv hinzufügen (nur wenn Analyse vorhanden)
     if (analysisResult) {
         addToArchive(savedCase);
     }
 }
 
-/**
- * Fügt einen Fall zum Archiv hinzu
- * @param {Object} savedCase - Der zu speichernde Fall
- */
 function addToArchive(savedCase) {
     let archive = getArchive();
-
-    // Prüfen ob Fall mit gleicher ID bereits existiert
     const existingIndex = archive.findIndex(c => c.id === savedCase.id);
+
     if (existingIndex >= 0) {
         archive[existingIndex] = savedCase;
     } else {
         archive.unshift(savedCase);
     }
 
-    // Maximal 10 Fälle behalten
     archive = archive.slice(0, 10);
-
     localStorage.setItem(STORAGE_KEYS.CASE_ARCHIVE, JSON.stringify(archive));
     updateSavedCasesDropdown();
 }
 
-/**
- * Lädt das Fallarchiv
- * @returns {Array} Array von gespeicherten Fällen
- */
 function getArchive() {
     try {
-        const archive = localStorage.getItem(STORAGE_KEYS.CASE_ARCHIVE);
-        return archive ? JSON.parse(archive) : [];
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.CASE_ARCHIVE)) || [];
     } catch (e) {
-        console.error('Fehler beim Laden des Archivs:', e);
         return [];
     }
 }
 
-/**
- * Lädt den aktuellen Fall aus LocalStorage
- */
 function loadCurrentCase() {
     try {
         const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_CASE);
@@ -1067,14 +1240,10 @@ function loadCurrentCase() {
             }
         }
     } catch (e) {
-        console.error('Fehler beim Laden des Falls:', e);
+        console.error('Error loading case:', e);
     }
 }
 
-/**
- * Lädt einen Fall aus dem Archiv
- * @param {string} caseId - ID des Falls
- */
 function loadCaseFromArchive(caseId) {
     const archive = getArchive();
     const savedCase = archive.find(c => c.id === caseId);
@@ -1082,7 +1251,6 @@ function loadCaseFromArchive(caseId) {
     if (savedCase) {
         caseData = savedCase.caseData;
         analysisResult = savedCase.analysis;
-
         restoreFormFromCaseData();
 
         if (analysisResult) {
@@ -1090,146 +1258,83 @@ function loadCaseFromArchive(caseId) {
             renderBedienungsanleitung(analysisResult);
         }
 
-        showToast(`Fall "${savedCase.name}" geladen`, 'success');
+        showToast('Fall geladen', 'success');
         closeSavedCasesDropdown();
     }
 }
 
-/**
- * Stellt das Formular aus caseData wieder her
- */
-function restoreFormFromCaseData() {
-    const form = document.getElementById('case-form');
-    if (!form) return;
-
-    // Grunddaten
-    const nameInput = form.querySelector('#name');
-    const alterSelect = form.querySelector('#alter');
-    const geschlechtSelect = form.querySelector('#geschlecht');
-
-    if (nameInput) nameInput.value = caseData.grunddaten.name || '';
-    if (alterSelect) alterSelect.value = caseData.grunddaten.alter || '';
-    if (geschlechtSelect) geschlechtSelect.value = caseData.grunddaten.geschlecht || '';
-
-    // Hauptproblem
-    const hauptproblemRadio = form.querySelector(`input[name="hauptproblem"][value="${caseData.hauptproblem}"]`);
-    if (hauptproblemRadio) hauptproblemRadio.checked = true;
-
-    // Symptome
-    form.querySelectorAll('input[name="symptome[]"]').forEach(cb => {
-        cb.checked = caseData.symptome.includes(cb.value);
-    });
-
-    // Kontext
-    form.querySelectorAll('input[name="kontext[]"]').forEach(cb => {
-        cb.checked = caseData.kontext.includes(cb.value);
-    });
-
-    // Freitext
-    const freitextArea = form.querySelector('#freitext');
-    if (freitextArea) freitextArea.value = caseData.freitext || '';
-
-    // Akkordeon-Zähler aktualisieren
-    document.querySelectorAll('.accordion').forEach(accordion => {
-        const header = accordion.querySelector('.accordion-header');
-        if (header) {
-            const accordionId = header.dataset.accordion;
-            updateAccordionCount(accordionId);
-        }
-    });
-}
-
-/**
- * Startet den Autosave
- */
 function startAutosave() {
-    if (autosaveInterval) {
-        clearInterval(autosaveInterval);
-    }
+    if (autosaveInterval) clearInterval(autosaveInterval);
 
     autosaveInterval = setInterval(() => {
-        if (caseData.grunddaten.name || caseData.symptome.length > 0) {
+        if (Object.keys(caseData).length > 1) {
             const savedCase = {
                 id: 'current',
-                name: caseData.grunddaten.name || 'Aktueller Fall',
+                name: 'Aktueller Fall',
                 savedAt: new Date().toISOString(),
                 caseData: JSON.parse(JSON.stringify(caseData)),
-                analysis: analysisResult ? JSON.parse(JSON.stringify(analysisResult)) : null
+                analysis: analysisResult
             };
             localStorage.setItem(STORAGE_KEYS.CURRENT_CASE, JSON.stringify(savedCase));
         }
-    }, 30000); // Alle 30 Sekunden
+    }, 30000);
 }
 
-/**
- * Startet einen neuen Fall (mit Bestätigung)
- */
 function newCase() {
-    const hasData = caseData.grunddaten.name || caseData.symptome.length > 0;
-
-    if (hasData) {
-        if (!confirm('Möchten Sie wirklich einen neuen Fall beginnen? Nicht gespeicherte Änderungen gehen verloren.')) {
+    if (Object.keys(caseData).length > 1) {
+        if (!confirm('Neuen Fall beginnen? Nicht gespeicherte Änderungen gehen verloren.')) {
             return;
         }
     }
 
-    // Formular zurücksetzen
     const form = document.getElementById('case-form');
-    if (form) {
-        form.reset();
-    }
+    if (form) form.reset();
 
-    // Daten zurücksetzen
-    resetCaseData();
+    initializeCaseData();
     analysisResult = null;
 
-    // Placeholder-Karten wieder anzeigen
+    document.querySelectorAll('.accordion-count').forEach(badge => {
+        badge.textContent = '0';
+        badge.classList.remove('has-items');
+    });
+
     resetPlaceholders();
-
-    // LocalStorage leeren
     localStorage.removeItem(STORAGE_KEYS.CURRENT_CASE);
-
-    // Zum ersten Tab wechseln
     switchToTab('fallbeschreibung');
-
     showToast('Neuer Fall gestartet', 'info');
 }
 
-/**
- * Setzt die Placeholder-Karten zurück
- */
+function resetForm() {
+    if (confirm('Formular wirklich zurücksetzen?')) {
+        const form = document.getElementById('case-form');
+        if (form) form.reset();
+        initializeCaseData();
+
+        document.querySelectorAll('.accordion-count').forEach(badge => {
+            badge.textContent = '0';
+            badge.classList.remove('has-items');
+        });
+
+        showToast('Formular zurückgesetzt', 'info');
+    }
+}
+
 function resetPlaceholders() {
-    const placeholderHTML = `
-        <div class="placeholder-card">
-            <p>Bitte füllen Sie zuerst die Fallbeschreibung aus und starten Sie die Analyse.</p>
-        </div>
-    `;
+    const placeholder = '<div class="placeholder-card"><p>Bitte füllen Sie die Anamnese aus und starten Sie die Analyse.</p></div>';
 
-    const containers = [
-        'summary-container', 'hypotheses-container', 'differential-container',
-        'model-container', 'grundhaltung-container', 'ampel-container',
-        'rezepte-container', 'dos-donts-container', 'notfall-container',
-        'beziehung-container', 'eltern-container'
-    ];
-
-    containers.forEach(id => {
-        const container = document.getElementById(id);
-        if (container) {
-            container.innerHTML = placeholderHTML;
-        }
+    ['ace-container', 'risiko-container', 'hypothesen-container', 'synthese-container',
+     'interventionen-container', 'grundhaltung-container', 'ampel-container',
+     'rezepte-container', 'dos-donts-container', 'notfall-container',
+     'beziehung-container', 'eltern-container'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = placeholder;
     });
 }
 
-/**
- * Initialisiert das Dropdown für gespeicherte Fälle
- */
 function initSavedCasesDropdown() {
     updateSavedCasesDropdown();
 }
 
-/**
- * Aktualisiert das Dropdown für gespeicherte Fälle
- */
 function updateSavedCasesDropdown() {
     const dropdown = document.getElementById('saved-cases-list');
     if (!dropdown) return;
@@ -1241,242 +1346,63 @@ function updateSavedCasesDropdown() {
         return;
     }
 
-    dropdown.innerHTML = archive.map(savedCase => {
-        const date = new Date(savedCase.savedAt);
+    dropdown.innerHTML = archive.map(c => {
+        const date = new Date(c.savedAt);
         const dateStr = date.toLocaleDateString('de-DE', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
+            day: '2-digit', month: '2-digit', year: '2-digit',
+            hour: '2-digit', minute: '2-digit'
         });
-
         return `
-            <button type="button" class="dropdown-item" onclick="loadCaseFromArchive('${savedCase.id}')">
-                <span class="case-name">${savedCase.name || 'Unbenannt'}</span>
+            <button type="button" class="dropdown-item" onclick="loadCaseFromArchive('${c.id}')">
+                <span class="case-name">${c.name || 'Unbenannt'}</span>
                 <span class="case-date">${dateStr}</span>
             </button>
         `;
     }).join('');
 }
 
-/**
- * Öffnet/schließt das Dropdown für gespeicherte Fälle
- */
 function toggleSavedCasesDropdown() {
-    const dropdown = document.getElementById('saved-cases-dropdown');
-    if (dropdown) {
-        dropdown.classList.toggle('open');
-    }
+    document.getElementById('saved-cases-dropdown')?.classList.toggle('open');
 }
 
-/**
- * Schließt das Dropdown für gespeicherte Fälle
- */
 function closeSavedCasesDropdown() {
-    const dropdown = document.getElementById('saved-cases-dropdown');
-    if (dropdown) {
-        dropdown.classList.remove('open');
-    }
-}
-
-// ============================================================
-// EXPORT-FUNKTIONEN
-// ============================================================
-
-/**
- * Exportiert die Bedienungsanleitung als Textdatei
- */
-function exportAsText() {
-    if (!analysisResult) {
-        showToast('Bitte führen Sie zuerst eine Analyse durch.', 'error');
-        return;
-    }
-
-    const name = caseData.grunddaten.name || 'Unbenannt';
-    const date = new Date().toLocaleDateString('de-DE');
-    const anleitung = analysisResult.bedienungsanleitung;
-
-    let text = `
-═══════════════════════════════════════════════════════════════
-                    BEDIENUNGSANLEITUNG
-═══════════════════════════════════════════════════════════════
-
-Name: ${name}
-Datum: ${date}
-VERTRAULICH - Nur für autorisiertes Fachpersonal
-
-───────────────────────────────────────────────────────────────
-ZUSAMMENFASSUNG
-───────────────────────────────────────────────────────────────
-
-${analysisResult.modell.zusammenfassung}
-
-───────────────────────────────────────────────────────────────
-GRUNDHALTUNG
-───────────────────────────────────────────────────────────────
-
-Leitsatz: "${anleitung.grundhaltung.leitsatz}"
-
-${anleitung.grundhaltung.erklaerung}
-
-Mantra: "${anleitung.grundhaltung.mantra}"
-
-───────────────────────────────────────────────────────────────
-AMPELSYSTEM - SIGNALE ERKENNEN
-───────────────────────────────────────────────────────────────
-
-GRÜN - Kind ist stabil:
-${anleitung.ampelsystem.gruen.map(s => `  • ${s.signal}`).join('\n')}
-
-GELB - Vorsicht:
-${anleitung.ampelsystem.gelb.map(s => `  • ${s.signal}`).join('\n')}
-
-ROT - Krise:
-${anleitung.ampelsystem.rot.map(s => `  • ${s.signal}`).join('\n')}
-
-───────────────────────────────────────────────────────────────
-DO'S AND DON'TS
-───────────────────────────────────────────────────────────────
-
-TU DAS:
-${anleitung.dosAndDonts.tuDas.map(d => `  ✓ ${d.tipp}`).join('\n')}
-
-LASS DAS:
-${anleitung.dosAndDonts.lassDas.map(d => `  ✗ ${d.tipp}`).join('\n')}
-
-───────────────────────────────────────────────────────────────
-NOTFALLPLAN
-───────────────────────────────────────────────────────────────
-
-${anleitung.notfallplan.schritte.map((s, i) => `${i + 1}. ${s.text}`).join('\n')}
-
-WICHTIG: ${anleitung.notfallplan.wichtig}
-
-───────────────────────────────────────────────────────────────
-BEZIEHUNGSTIPPS
-───────────────────────────────────────────────────────────────
-
-${anleitung.beziehungstipps.map(t => `${t.tipp}\n${t.beschreibung}`).join('\n\n')}
-
-───────────────────────────────────────────────────────────────
-INFORMATION FÜR ELTERN
-───────────────────────────────────────────────────────────────
-
-${anleitung.elterninfo.kernbotschaften.map(k => `• ${k}`).join('\n')}
-
-${anleitung.elterninfo.spezifisch.length > 0 ? 'Spezifische Informationen:\n' + anleitung.elterninfo.spezifisch.map(s => `• ${s}`).join('\n') : ''}
-
-═══════════════════════════════════════════════════════════════
-Erstellt mit PädoPsych Advisor
-Dieses Tool ersetzt keine professionelle Diagnostik
-═══════════════════════════════════════════════════════════════
-`;
-
-    // Download erstellen
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${name}_Bedienungsanleitung_${date.replace(/\./g, '-')}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    showToast('Export als Text heruntergeladen', 'success');
-}
-
-/**
- * Druckt die Bedienungsanleitung (verbesserte Version)
- */
-function printBedienungsanleitung() {
-    if (!analysisResult) {
-        showToast('Bitte führen Sie zuerst eine Analyse durch.', 'error');
-        return;
-    }
-
-    // Print-Header hinzufügen
-    const name = caseData.grunddaten.name || 'Unbenannt';
-    const date = new Date().toLocaleDateString('de-DE');
-
-    // Temporären Print-Header erstellen
-    const printHeader = document.createElement('div');
-    printHeader.id = 'print-header';
-    printHeader.innerHTML = `
-        <div class="print-header-content">
-            <div class="print-title">Bedienungsanleitung für ${name}</div>
-            <div class="print-meta">
-                <span>Datum: ${date}</span>
-                <span class="print-confidential">VERTRAULICH</span>
-            </div>
-        </div>
-    `;
-
-    document.body.insertBefore(printHeader, document.body.firstChild);
-
-    // Drucken
-    window.print();
-
-    // Header wieder entfernen
-    printHeader.remove();
+    document.getElementById('saved-cases-dropdown')?.classList.remove('open');
 }
 
 // ============================================================
 // KEYBOARD SHORTCUTS
 // ============================================================
 
-/**
- * Initialisiert Tastaturkürzel
- */
 function initKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + Enter: Analyse starten (wenn in Tab 1)
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            const tab1Active = document.getElementById('fallbeschreibung')?.classList.contains('active');
-            if (tab1Active) {
+            if (document.getElementById('fallbeschreibung')?.classList.contains('active')) {
                 e.preventDefault();
                 startAnalysis();
             }
         }
 
-        // Ctrl/Cmd + P: Drucken (wenn in Tab 3)
-        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-            const tab3Active = document.getElementById('bedienungsanleitung')?.classList.contains('active');
-            if (tab3Active && analysisResult) {
-                e.preventDefault();
-                printBedienungsanleitung();
-            }
-        }
-
-        // Ctrl/Cmd + S: Fall speichern
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             saveCurrentCase();
             showToast('Fall gespeichert', 'success');
         }
 
-        // Tasten 1, 2, 3: Tab-Wechsel (nur wenn nicht in Eingabefeld)
         if (!e.target.matches('input, textarea, select')) {
             if (e.key === '1') switchToTab('fallbeschreibung');
             if (e.key === '2') switchToTab('analyse');
             if (e.key === '3') switchToTab('bedienungsanleitung');
         }
 
-        // Escape: Dropdown schließen
         if (e.key === 'Escape') {
             closeSavedCasesDropdown();
         }
     });
 
-    // Klick außerhalb des Dropdowns schließt es
     document.addEventListener('click', (e) => {
         const dropdown = document.getElementById('saved-cases-dropdown');
-        if (dropdown && dropdown.classList.contains('open')) {
-            // Prüfen ob der Klick innerhalb des Dropdowns war
-            if (!dropdown.contains(e.target)) {
-                closeSavedCasesDropdown();
-            }
+        if (dropdown?.classList.contains('open') && !dropdown.contains(e.target)) {
+            closeSavedCasesDropdown();
         }
     });
 }
@@ -1485,34 +1411,94 @@ function initKeyboardShortcuts() {
 // DARK MODE
 // ============================================================
 
-/**
- * Initialisiert den Dark Mode
- */
 function initDarkMode() {
-    const savedMode = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
-    if (savedMode === 'true') {
+    if (localStorage.getItem(STORAGE_KEYS.DARK_MODE) === 'true') {
         document.body.classList.add('dark-mode');
         updateDarkModeButton(true);
     }
 }
 
-/**
- * Schaltet den Dark Mode um
- */
 function toggleDarkMode() {
     const isDark = document.body.classList.toggle('dark-mode');
     localStorage.setItem(STORAGE_KEYS.DARK_MODE, isDark.toString());
     updateDarkModeButton(isDark);
 }
 
-/**
- * Aktualisiert den Dark Mode Button
- * @param {boolean} isDark - Ist Dark Mode aktiv?
- */
 function updateDarkModeButton(isDark) {
     const btn = document.getElementById('dark-mode-btn');
     if (btn) {
         btn.innerHTML = isDark ? '☀️' : '🌙';
-        btn.title = isDark ? 'Light Mode aktivieren' : 'Dark Mode aktivieren';
+        btn.title = isDark ? 'Light Mode' : 'Dark Mode';
     }
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+
+function exportAsText() {
+    if (!analysisResult) {
+        showToast('Bitte führen Sie zuerst eine Analyse durch', 'error');
+        return;
+    }
+
+    const date = new Date().toLocaleDateString('de-DE');
+    let text = `
+═══════════════════════════════════════════════════════════════
+            PädoPsych Advisor - Fallanalyse
+═══════════════════════════════════════════════════════════════
+
+Datum: ${date}
+VERTRAULICH - Nur für autorisiertes Fachpersonal
+
+───────────────────────────────────────────────────────────────
+ACE-SCORE: ${analysisResult.aceScore?.score || 0}/10
+───────────────────────────────────────────────────────────────
+
+${analysisResult.aceScore?.interpretation || ''}
+
+───────────────────────────────────────────────────────────────
+DIAGNOSTISCHE HYPOTHESEN
+───────────────────────────────────────────────────────────────
+
+${(analysisResult.hypothesen || []).map((h, i) => `${i + 1}. ${h.name} (${h.konfidenz}%) - ${h.icd10 || ''}`).join('\n')}
+
+───────────────────────────────────────────────────────────────
+INTERVENTIONEN
+───────────────────────────────────────────────────────────────
+
+SOFORT:
+${(analysisResult.interventionen?.sofort || []).map(i => `  - ${i}`).join('\n') || '  - Keine'}
+
+KURZFRISTIG:
+${(analysisResult.interventionen?.kurzfristig || []).map(i => `  - ${i}`).join('\n') || '  - Keine'}
+
+MITTELFRISTIG:
+${(analysisResult.interventionen?.mittelfristig || []).map(i => `  - ${i}`).join('\n') || '  - Keine'}
+
+═══════════════════════════════════════════════════════════════
+Erstellt mit PädoPsych Advisor
+Dieses Tool ersetzt keine professionelle Diagnostik
+═══════════════════════════════════════════════════════════════
+`;
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `PadoPsych_Analyse_${date.replace(/\./g, '-')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('Export heruntergeladen', 'success');
+}
+
+function printBedienungsanleitung() {
+    if (!analysisResult) {
+        showToast('Bitte führen Sie zuerst eine Analyse durch', 'error');
+        return;
+    }
+    window.print();
 }

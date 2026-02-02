@@ -3,226 +3,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PädoPsych Advisor - Klinisches Beratungstool</title>
-    <!-- Inline CSS für bessere Kompatibilität -->
+    <title>PädoPsych Advisor - Umfassendes Klinisches Assessment</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
-    /* FALLBACK CSS - Falls externe Datei nicht lädt */
-    :root{--primary-color:#6366f1;--primary-hover:#4f46e5;--primary-light:#e0e7ff;--text-primary:#1e293b;--text-secondary:#64748b;--text-muted:#94a3b8;--bg-primary:#f8fafc;--bg-secondary:#fff;--border-color:#e2e8f0;--border-radius:12px;--border-radius-sm:8px;--shadow-sm:0 1px 2px rgba(0,0,0,.05);--shadow-md:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);--shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--transition:all .2s ease;--success-color:#10b981;--success-light:#d1fae5;--warning-color:#f59e0b;--warning-light:#fef3c7;--danger-color:#ef4444;--danger-light:#fee2e2}
+    /* COMPREHENSIVE CSS FOR V2 */
+    :root{--primary-color:#6366f1;--primary-hover:#4f46e5;--primary-light:#e0e7ff;--text-primary:#1e293b;--text-secondary:#64748b;--text-muted:#94a3b8;--bg-primary:#f8fafc;--bg-secondary:#fff;--border-color:#e2e8f0;--border-radius:12px;--border-radius-sm:8px;--shadow-sm:0 1px 2px rgba(0,0,0,.05);--shadow-md:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);--shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--transition:all .2s ease;--success-color:#10b981;--success-light:#d1fae5;--warning-color:#f59e0b;--warning-light:#fef3c7;--danger-color:#ef4444;--danger-light:#fee2e2;--info-color:#3b82f6;--info-light:#dbeafe}
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background-color:var(--bg-primary);color:var(--text-primary);line-height:1.6;min-height:100vh}
-    .app-container{max-width:1200px;margin:0 auto;padding:20px;min-height:100vh;display:flex;flex-direction:column}
-    .app-header{text-align:center;padding:40px 20px;background:linear-gradient(135deg,var(--primary-color) 0%,var(--primary-hover) 100%);border-radius:var(--border-radius);margin-bottom:24px;color:#fff;box-shadow:var(--shadow-lg)}
-    .app-title{font-size:2.5rem;font-weight:700;margin-bottom:8px}
-    .app-subtitle{font-size:1.1rem;opacity:.9}
+    .app-container{max-width:1400px;margin:0 auto;padding:20px;min-height:100vh;display:flex;flex-direction:column}
+    .app-header{text-align:center;padding:30px 20px;background:linear-gradient(135deg,var(--primary-color) 0%,var(--primary-hover) 100%);border-radius:var(--border-radius);margin-bottom:24px;color:#fff;box-shadow:var(--shadow-lg)}
+    .app-title{font-size:2rem;font-weight:700;margin-bottom:4px}
+    .app-subtitle{font-size:1rem;opacity:.9}
     .header-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
     .header-brand{display:flex;align-items:center;gap:16px}
-    .header-logo{font-size:3rem}
+    .header-logo{font-size:2.5rem}
     .header-titles{text-align:left}
     .header-controls{display:flex;align-items:center;gap:8px}
-    .header-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;background-color:rgba(255,255,255,.15);border:2px solid transparent;border-radius:var(--border-radius-sm);color:#fff;font-size:.9rem;font-weight:500;cursor:pointer;transition:var(--transition)}
+    .header-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;background-color:rgba(255,255,255,.15);border:none;border-radius:var(--border-radius-sm);color:#fff;font-size:.9rem;font-weight:500;cursor:pointer;transition:var(--transition)}
     .header-btn:hover{background-color:rgba(255,255,255,.25)}
-    .header-btn.icon-only{padding:10px 12px}
     .tab-navigation{display:flex;gap:8px;background-color:var(--bg-secondary);padding:8px;border-radius:var(--border-radius);margin-bottom:24px;box-shadow:var(--shadow-sm);border:1px solid var(--border-color)}
-    .tab-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;background:transparent;border:2px solid transparent;border-radius:var(--border-radius-sm);font-size:1rem;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:var(--transition)}
+    .tab-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;background:transparent;border:none;border-radius:var(--border-radius-sm);font-size:1rem;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:var(--transition)}
     .tab-btn:hover{background-color:var(--primary-light);color:var(--primary-color)}
     .tab-btn.active{background-color:var(--primary-color);color:#fff;box-shadow:var(--shadow-md)}
-    .tab-icon{font-size:1.2rem}
     .tab-content{flex:1}
-    .tab-panel{display:none;background-color:var(--bg-secondary);border-radius:var(--border-radius);padding:32px;box-shadow:var(--shadow-sm);border:1px solid var(--border-color)}
+    .tab-panel{display:none;background-color:var(--bg-secondary);border-radius:var(--border-radius);padding:24px;box-shadow:var(--shadow-sm);border:1px solid var(--border-color)}
     .tab-panel.active{display:block}
-    .panel-header{margin-bottom:32px;padding-bottom:20px;border-bottom:2px solid var(--border-color);position:relative}
-    .panel-header h2{font-size:1.5rem;font-weight:600;margin-bottom:8px}
-    .panel-header p{color:var(--text-secondary);font-size:.95rem}
-    .case-form{display:grid;gap:32px}
-    .form-group{display:flex;flex-direction:column;gap:8px}
-    .form-group label{font-weight:500;font-size:.95rem}
-    .form-group input,.form-group select,.form-group textarea{padding:12px 16px;border:2px solid var(--border-color);border-radius:var(--border-radius-sm);font-size:1rem;font-family:inherit;transition:var(--transition);background-color:var(--bg-primary)}
-    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--primary-color);box-shadow:0 0 0 3px var(--primary-light)}
-    .form-section{background-color:var(--bg-primary);border-radius:var(--border-radius);padding:24px;border:1px solid var(--border-color)}
-    .form-section-title{font-size:1.1rem;font-weight:600;color:var(--primary-color);margin-bottom:8px}
-    .form-section-hint{font-size:.9rem;color:var(--text-secondary);margin-bottom:16px}
-    .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
-    .radio-group{display:flex;flex-direction:column;gap:12px}
-    .radio-option{display:flex;align-items:flex-start;gap:12px;padding:16px;background-color:var(--bg-secondary);border:2px solid var(--border-color);border-radius:var(--border-radius-sm);cursor:pointer;transition:var(--transition)}
-    .radio-option:hover{border-color:var(--primary-light);background-color:#fafaff}
-    .radio-option input[type="radio"]{width:20px;height:20px;margin-top:2px;accent-color:var(--primary-color);cursor:pointer}
-    .radio-label{display:flex;flex-direction:column;gap:2px}
-    .radio-label strong{font-size:1rem}
-    .radio-label small{font-size:.85rem;color:var(--text-secondary)}
-    .accordion{margin-bottom:8px}
-    .accordion-header{width:100%;display:flex;align-items:center;gap:12px;padding:16px;background-color:var(--bg-secondary);border:2px solid var(--border-color);border-radius:var(--border-radius-sm);font-size:1rem;font-weight:500;cursor:pointer;transition:var(--transition);text-align:left}
+    .panel-header{margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--border-color);position:relative}
+    .panel-header h2{font-size:1.4rem;font-weight:600;margin-bottom:4px}
+    .panel-header p{color:var(--text-secondary);font-size:.9rem}
+
+    /* Form Sections */
+    .form-section{background-color:var(--bg-primary);border-radius:var(--border-radius);margin-bottom:16px;border:1px solid var(--border-color);overflow:hidden}
+    .section-header{display:flex;align-items:center;gap:12px;padding:16px 20px;background-color:var(--bg-secondary);cursor:pointer;border-bottom:1px solid var(--border-color);transition:var(--transition)}
+    .section-header:hover{background-color:var(--primary-light)}
+    .section-icon{font-size:1.5rem}
+    .form-section-title{flex:1;font-size:1.1rem;font-weight:600;color:var(--primary-color);margin:0}
+    .section-toggle{font-size:1rem;color:var(--text-muted)}
+    .section-content{padding:20px;transition:all .3s ease}
+    .section-content.collapsed{display:none}
+
+    /* Fields */
+    .fields-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    .form-group label{font-weight:500;font-size:.9rem;color:var(--text-secondary)}
+    .form-input,.form-select,.form-textarea{padding:10px 14px;border:2px solid var(--border-color);border-radius:var(--border-radius-sm);font-size:.95rem;font-family:inherit;transition:var(--transition);background-color:var(--bg-secondary)}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--primary-color);box-shadow:0 0 0 3px var(--primary-light)}
+    .form-textarea{resize:vertical;min-height:60px}
+    .range-container{display:flex;align-items:center;gap:12px}
+    .range-container input[type="range"]{flex:1}
+    .range-value{min-width:30px;text-align:center;font-weight:600;color:var(--primary-color)}
+
+    /* Subsections/Accordions */
+    .subsection{margin-bottom:12px}
+    .accordion-header{width:100%;display:flex;align-items:center;gap:12px;padding:12px 16px;background-color:var(--bg-secondary);border:2px solid var(--border-color);border-radius:var(--border-radius-sm);font-size:.95rem;font-weight:500;cursor:pointer;transition:var(--transition);text-align:left}
     .accordion-header:hover{border-color:var(--primary-color);background-color:#fafaff}
     .accordion-header.active{border-color:var(--primary-color);border-bottom-left-radius:0;border-bottom-right-radius:0;background-color:var(--primary-light);color:var(--primary-color)}
-    .accordion-icon{display:flex;align-items:center;justify-content:center;width:24px;height:24px;background-color:var(--primary-light);color:var(--primary-color);border-radius:4px;font-weight:700;font-size:1.1rem}
+    .accordion-icon{display:flex;align-items:center;justify-content:center;width:20px;height:20px;background-color:var(--primary-light);color:var(--primary-color);border-radius:4px;font-weight:700;font-size:.9rem}
     .accordion-header.active .accordion-icon{background-color:var(--primary-color);color:#fff}
-    .accordion-count{margin-left:auto;padding:4px 10px;background-color:var(--border-color);color:var(--text-secondary);border-radius:12px;font-size:.8rem;font-weight:600;min-width:28px;text-align:center}
+    .accordion-count{margin-left:auto;padding:2px 8px;background-color:var(--border-color);color:var(--text-secondary);border-radius:10px;font-size:.75rem;font-weight:600}
     .accordion-count.has-items{background-color:var(--primary-color);color:#fff}
     .accordion-content{display:none;padding:16px;background-color:var(--bg-secondary);border:2px solid var(--primary-color);border-top:none;border-bottom-left-radius:var(--border-radius-sm);border-bottom-right-radius:var(--border-radius-sm)}
     .accordion-content.open{display:block}
-    .checkbox-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-    .checkbox-list{display:flex;flex-direction:column;gap:10px}
-    .checkbox-option{display:flex;align-items:center;gap:10px;padding:10px 14px;background-color:var(--bg-primary);border:2px solid transparent;border-radius:var(--border-radius-sm);cursor:pointer;transition:var(--transition)}
+
+    /* Checkboxes */
+    .checkbox-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+    .checkbox-option{display:flex;align-items:center;gap:10px;padding:8px 12px;background-color:var(--bg-primary);border:2px solid transparent;border-radius:var(--border-radius-sm);cursor:pointer;transition:var(--transition);font-size:.9rem}
     .checkbox-option:hover{background-color:var(--primary-light)}
-    .checkbox-option input[type="checkbox"]{width:18px;height:18px;accent-color:var(--primary-color);cursor:pointer}
-    .checkbox-option span{font-size:.95rem}
-    .form-actions{display:flex;gap:16px;margin-top:16px;justify-content:center}
-    .btn{padding:14px 28px;border:none;border-radius:var(--border-radius-sm);font-size:1rem;font-weight:500;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;justify-content:center;gap:8px}
-    .btn-large{padding:18px 48px;font-size:1.1rem}
+    .checkbox-option input[type="checkbox"]{width:16px;height:16px;accent-color:var(--primary-color);cursor:pointer}
+    .checkbox-option.positive-factor{background-color:var(--success-light);border-color:var(--success-color)}
+    .checkbox-option.high-risk{background-color:var(--warning-light)}
+    .checkbox-option.critical-risk{background-color:var(--danger-light)}
+    .subsection-textfield{margin-top:12px}
+
+    /* Buttons */
+    .form-actions{display:flex;gap:16px;margin-top:24px;justify-content:center;flex-wrap:wrap}
+    .btn{padding:12px 24px;border:none;border-radius:var(--border-radius-sm);font-size:1rem;font-weight:500;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;justify-content:center;gap:8px}
+    .btn-large{padding:16px 40px;font-size:1.1rem}
     .btn-primary{background-color:var(--primary-color);color:#fff}
     .btn-primary:hover{background-color:var(--primary-hover);transform:translateY(-1px);box-shadow:var(--shadow-md)}
     .btn-secondary{background-color:var(--bg-primary);color:var(--text-secondary);border:2px solid var(--border-color)}
     .btn-secondary:hover{background-color:var(--border-color);color:var(--text-primary)}
-    .section-title{font-size:1.2rem;font-weight:600;margin-bottom:16px;padding-left:12px;border-left:4px solid var(--primary-color)}
-    .placeholder-card{background-color:var(--bg-primary);border:2px dashed var(--border-color);border-radius:var(--border-radius-sm);padding:40px 24px;text-align:center;color:var(--text-muted)}
-    .analysis-container,.guide-container{display:flex;flex-direction:column;gap:32px}
-    .hypotheses-section,.differential-section,.summary-section,.model-section,.grundhaltung-section,.ampel-section,.rezepte-section,.dos-donts-section,.notfall-section,.beziehung-section,.eltern-section{background-color:var(--bg-primary);border-radius:var(--border-radius);padding:24px}
-    .app-footer{margin-top:24px;padding:20px;text-align:center}
-    .disclaimer{font-size:.85rem;max-width:600px;margin:0 auto;padding:16px;background-color:#fef3c7;border-radius:var(--border-radius-sm);border:1px solid #f59e0b;color:#92400e}
-    .disclaimer strong{color:#b45309}
-    .keyboard-hints{display:flex;justify-content:center;gap:24px;margin-top:12px;font-size:.75rem;color:var(--text-muted)}
-    .keyboard-hints span{padding:4px 8px;background-color:var(--bg-primary);border-radius:4px;font-family:monospace}
-    .dropdown-wrapper{position:relative;z-index:100}
-    .dropdown-menu{display:none;position:absolute;top:calc(100% + 8px);right:0;min-width:280px;background-color:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--border-radius-sm);box-shadow:var(--shadow-lg);z-index:1000;max-height:400px;overflow-y:auto}
-    .dropdown-wrapper.open .dropdown-menu{display:block}
-    .dropdown-item{display:flex;flex-direction:column;gap:4px;width:100%;padding:12px 16px;background:none;border:none;border-bottom:1px solid var(--border-color);text-align:left;cursor:pointer;transition:var(--transition)}
-    .dropdown-item:hover{background-color:var(--primary-light)}
-    .dropdown-empty{padding:20px;text-align:center;color:var(--text-muted)}
+    .btn:disabled{opacity:.7;cursor:not-allowed}
+    .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Analysis Containers */
+    .section-title{font-size:1.1rem;font-weight:600;margin-bottom:16px;padding-left:12px;border-left:4px solid var(--primary-color)}
+    .placeholder-card{background-color:var(--bg-primary);border:2px dashed var(--border-color);border-radius:var(--border-radius-sm);padding:30px 20px;text-align:center;color:var(--text-muted)}
+
+    /* ACE Card */
+    .ace-card{display:flex;gap:24px;padding:24px;border-radius:var(--border-radius);align-items:center}
+    .ace-card.success{background-color:var(--success-light);border:2px solid var(--success-color)}
+    .ace-card.warning{background-color:var(--warning-light);border:2px solid var(--warning-color)}
+    .ace-card.danger{background-color:var(--danger-light);border:2px solid var(--danger-color)}
+    .ace-score-display{text-align:center}
+    .ace-number{font-size:3rem;font-weight:700;display:block}
+    .ace-label{font-size:.9rem;color:var(--text-secondary)}
+    .ace-content{flex:1}
+    .ace-content h4{margin-bottom:8px}
+    .ace-items{margin-top:12px}
+    .ace-items ul{margin-top:8px;padding-left:20px}
+
+    /* Risk Grid */
+    .risiko-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+    .risiko-section{padding:20px;border-radius:var(--border-radius-sm);border-left:4px solid var(--border-color)}
+    .risiko-section.critical{background-color:var(--danger-light);border-left-color:var(--danger-color)}
+    .risiko-section.warning{background-color:var(--warning-light);border-left-color:var(--warning-color)}
+    .risiko-section.success{background-color:var(--success-light);border-left-color:var(--success-color)}
+    .risiko-section h4{margin-bottom:12px}
+    .risiko-section ul{list-style:none}
+    .risiko-section li{padding:6px 0;border-bottom:1px solid rgba(0,0,0,.1)}
+
+    /* Hypotheses */
+    .hypothesis-card{background-color:var(--bg-secondary);border:2px solid var(--border-color);border-radius:var(--border-radius);overflow:hidden;margin-bottom:12px;border-left:4px solid var(--primary-color)}
+    .hypothesis-card.primary{border-left-width:6px;box-shadow:var(--shadow-md)}
+    .hypothesis-header{display:flex;align-items:center;gap:16px;padding:16px;cursor:pointer;background-color:var(--bg-secondary)}
+    .hypothesis-header:hover{background-color:var(--bg-primary)}
+    .hypothesis-rank{width:32px;height:32px;background-color:var(--primary-color);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+    .hypothesis-info{flex:1}
+    .hypothesis-info h4{margin:0 0 4px 0}
+    .hypothesis-icd{font-size:.85rem;color:var(--text-muted)}
+    .hypothesis-score{text-align:right}
+    .confidence-value{font-size:1.2rem;font-weight:700}
+    .confidence-bar{width:80px;height:6px;background-color:var(--border-color);border-radius:3px;margin-top:4px}
+    .confidence-fill{height:100%;background-color:var(--primary-color);border-radius:3px}
+    .expand-icon{color:var(--text-muted)}
+    .hypothesis-details{display:none;padding:16px;background-color:var(--bg-primary);border-top:1px solid var(--border-color)}
+    .hypothesis-details.open{display:block}
+    .interpretation-box,.evidence-box{background-color:var(--bg-secondary);padding:12px;border-radius:var(--border-radius-sm);margin-bottom:12px}
+    .interpretation-box h5,.evidence-box h5{font-size:.85rem;color:var(--text-secondary);margin-bottom:8px}
+    .evidence-item{padding:6px 10px;margin:4px 0;border-radius:var(--border-radius-sm)}
+    .evidence-item.positive{background-color:var(--success-light);color:#065f46}
+
+    /* Synthese Tabs */
+    .synthese-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;padding-bottom:16px;border-bottom:2px solid var(--border-color)}
+    .synthese-tab{padding:10px 16px;border:2px solid var(--border-color);border-radius:var(--border-radius-sm);background-color:var(--bg-secondary);cursor:pointer;font-size:.85rem;font-weight:500;transition:var(--transition)}
+    .synthese-tab:hover{border-color:var(--primary-color);background-color:var(--primary-light)}
+    .synthese-tab.active{background-color:var(--primary-color);color:#fff;border-color:var(--primary-color)}
+    .synthese-panel{display:none}
+    .synthese-panel.active{display:block}
+
+    /* Model Sections */
+    .bps-model{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+    .bps-section{background-color:var(--bg-secondary);padding:20px;border-radius:var(--border-radius-sm);border-left:4px solid var(--primary-color)}
+    .bps-section.bio{border-left-color:#8b5cf6}
+    .bps-section.psycho{border-left-color:var(--warning-color)}
+    .bps-section.sozial{border-left-color:var(--info-color)}
+    .bps-section h4{margin-bottom:12px;font-size:.95rem}
+    .bps-section ul{list-style:none}
+    .bps-section li{padding:4px 0;font-size:.9rem;color:var(--text-secondary)}
+    .bps-summary{margin-top:16px;padding:16px;background-color:var(--primary-light);border-radius:var(--border-radius-sm)}
+
+    .systemisch-content,.trauma-content,.bindung-content,.entwicklung-content,.resilienz-content{padding:16px 0}
+    .sys-section,.trauma-section,.bindung-section,.entw-section,.res-section{background-color:var(--bg-secondary);padding:16px;border-radius:var(--border-radius-sm);margin-bottom:12px}
+    .sys-section h4,.trauma-section h4,.bindung-section h4,.entw-section h4,.res-section h4{margin-bottom:8px;font-size:.95rem}
+    .sys-hypothesis,.bindung-impl,.res-summary{padding:12px;background-color:var(--primary-light);border-radius:var(--border-radius-sm);margin-top:12px}
+    .trauma-ace{font-size:1.5rem;font-weight:700;color:var(--danger-color);margin-bottom:16px}
+    .entw-section.warning{background-color:var(--warning-light)}
+    .entw-section.success{background-color:var(--success-light)}
+
+    .oeko-model{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+    .oeko-level{padding:16px;border-radius:var(--border-radius-sm);text-align:center}
+    .oeko-level.mikro{background-color:var(--primary-light)}
+    .oeko-level.meso{background-color:var(--info-light)}
+    .oeko-level.exo{background-color:var(--warning-light)}
+    .oeko-level.makro{background-color:var(--success-light)}
+    .oeko-level h4{margin-bottom:8px;font-size:.9rem}
+
+    /* Interventions */
+    .interventionen-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+    .intervention-section{padding:20px;border-radius:var(--border-radius-sm);border-top:4px solid var(--border-color)}
+    .intervention-section.critical{background-color:var(--danger-light);border-top-color:var(--danger-color)}
+    .intervention-section.warning{background-color:var(--warning-light);border-top-color:var(--warning-color)}
+    .intervention-section.info{background-color:var(--info-light);border-top-color:var(--info-color)}
+    .intervention-section.success{background-color:var(--success-light);border-top-color:var(--success-color)}
+    .intervention-section h4{margin-bottom:12px}
+    .intervention-section ul{list-style:none}
+    .intervention-section li{padding:6px 0;border-bottom:1px solid rgba(0,0,0,.1)}
+
+    /* Bedienungsanleitung */
+    .grundhaltung-card{display:flex;gap:24px;background:linear-gradient(135deg,var(--primary-color) 0%,var(--primary-hover) 100%);border-radius:var(--border-radius);padding:24px;color:#fff;box-shadow:var(--shadow-lg)}
+    .grundhaltung-icon{font-size:3rem}
+    .grundhaltung-content{flex:1}
+    .grundhaltung-leitsatz{font-size:1.4rem;font-weight:700;margin-bottom:12px}
+    .grundhaltung-erklaerung{font-size:1rem;opacity:.95;margin-bottom:16px}
+    .mantra-box{background-color:rgba(255,255,255,.15);border-radius:var(--border-radius-sm);padding:12px 16px}
+    .mantra-label{font-size:.8rem;font-weight:600;text-transform:uppercase;opacity:.8;display:block;margin-bottom:4px}
+    .mantra-text{font-size:1.1rem;font-style:italic}
+
+    .ampel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+    .ampel-section{background-color:var(--bg-secondary);border-radius:var(--border-radius-sm);padding:20px;border-top:4px solid var(--border-color)}
+    .ampel-section.gruen{border-top-color:var(--success-color)}
+    .ampel-section.gelb{border-top-color:var(--warning-color)}
+    .ampel-section.rot{border-top-color:var(--danger-color)}
+    .ampel-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .ampel-light{width:20px;height:20px;border-radius:50%}
+    .ampel-light.green{background-color:var(--success-color);box-shadow:0 0 8px rgba(16,185,129,.5)}
+    .ampel-light.yellow{background-color:var(--warning-color);box-shadow:0 0 8px rgba(245,158,11,.5)}
+    .ampel-light.red{background-color:var(--danger-color);box-shadow:0 0 8px rgba(239,68,68,.5)}
+    .ampel-list{list-style:none}
+    .ampel-list li{display:flex;gap:8px;padding:6px 0;font-size:.9rem}
+
+    .rezept-accordion{margin-bottom:8px}
+    .rezept-header{width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;background-color:var(--bg-secondary);border:2px solid var(--border-color);border-radius:var(--border-radius-sm);cursor:pointer;text-align:left}
+    .rezept-header:hover{border-color:var(--primary-color)}
+    .rezept-icon{font-size:1.2rem}
+    .rezept-situation{flex:1;font-weight:500}
+    .rezept-expand{color:var(--primary-color);font-weight:700}
+    .rezept-content{display:none;padding:16px;background-color:var(--bg-secondary);border:2px solid var(--primary-color);border-top:none;border-radius:0 0 var(--border-radius-sm) var(--border-radius-sm)}
+    .rezept-content.open{display:block}
+    .rezept-schritte{list-style:none}
+    .rezept-schritte li{padding:10px;margin:6px 0;border-radius:var(--border-radius-sm);background-color:var(--bg-primary)}
+    .rezept-schritte li.dont{background-color:var(--danger-light);border-left:4px solid var(--danger-color)}
+    .rezept-schritte li.do{background-color:var(--success-light);border-left:4px solid var(--success-color)}
+
+    .dos-donts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+    .dos-section,.donts-section{background-color:var(--bg-secondary);border-radius:var(--border-radius-sm);padding:20px}
+    .dos-section{border-top:4px solid var(--success-color)}
+    .donts-section{border-top:4px solid var(--danger-color)}
+    .dos-section h4{color:var(--success-color);margin-bottom:12px}
+    .donts-section h4{color:var(--danger-color);margin-bottom:12px}
+    .dos-list,.donts-list{list-style:none}
+    .dos-list li,.donts-list li{display:flex;gap:10px;padding:8px 0}
+
+    .notfall-card{background-color:var(--bg-secondary);border:2px solid var(--danger-color);border-radius:var(--border-radius);padding:24px}
+    .notfall-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--danger-light)}
+    .notfall-icon{font-size:2rem}
+    .notfall-title{font-size:1.2rem;font-weight:700;color:var(--danger-color)}
+    .notfall-schritte{list-style:none;margin-bottom:20px}
+    .notfall-schritt{display:flex;gap:12px;padding:12px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm);margin-bottom:8px}
+    .notfall-wichtig{padding:12px;background-color:var(--danger-light);border-radius:var(--border-radius-sm);color:#991b1b;margin-bottom:16px}
+    .nach-krise{padding:16px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm)}
+    .nach-krise h4{margin-bottom:8px}
+    .nach-krise ul{list-style:none}
+    .nach-krise li{padding:4px 0}
+
+    .beziehung-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+    .beziehung-card{background-color:var(--bg-secondary);border-radius:var(--border-radius-sm);padding:20px;text-align:center;border:1px solid var(--border-color);transition:var(--transition)}
+    .beziehung-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+    .beziehung-icon{font-size:2rem;margin-bottom:8px}
+    .beziehung-card h4{color:var(--primary-color);margin-bottom:8px}
+    .beziehung-card p{font-size:.9rem;color:var(--text-secondary)}
+
+    .eltern-card{background-color:var(--bg-secondary);border-radius:var(--border-radius);padding:24px;border:1px solid var(--border-color)}
+    .eltern-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--border-color)}
+    .eltern-icon{font-size:2rem}
+    .eltern-section{margin-bottom:16px}
+    .eltern-section h4{color:var(--primary-color);margin-bottom:8px;font-size:.95rem}
+    .eltern-section ul{list-style:none}
+    .eltern-section li{padding:8px 12px;margin:4px 0;background-color:var(--bg-primary);border-radius:var(--border-radius-sm)}
+
+    /* Utility */
     .panel-actions{display:flex;gap:8px;position:absolute;top:0;right:0}
     #toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
     .toast{display:flex;align-items:center;gap:12px;padding:14px 20px;background-color:var(--bg-secondary);border-radius:var(--border-radius-sm);box-shadow:var(--shadow-lg);border-left:4px solid var(--primary-color);opacity:0;transform:translateX(100px);transition:all .3s ease}
     .toast.show{opacity:1;transform:translateX(0)}
     .toast-success{border-left-color:var(--success-color)}
     .toast-error{border-left-color:var(--danger-color)}
-    .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:spin .8s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .btn:disabled{opacity:.7;cursor:not-allowed}
-    .validation-error{border-color:var(--danger-color)!important}
-    /* Hypothesen & Analyse */
-    .hypotheses-grid,.differential-grid{display:flex;flex-direction:column;gap:16px}
-    .hypothesis-card{background-color:var(--bg-secondary);border:2px solid var(--border-color);border-radius:var(--border-radius);overflow:hidden;border-left:4px solid var(--primary-color)}
-    .hypothesis-card.primary{border-left-width:6px;box-shadow:var(--shadow-md)}
-    .hypothesis-header{display:flex;align-items:center;gap:16px;padding:20px;cursor:pointer;background-color:var(--bg-secondary)}
-    .hypothesis-header:hover{background-color:var(--bg-primary)}
-    .hypothesis-rank{display:flex;align-items:center;justify-content:center;width:36px;height:36px;background-color:var(--primary-color);color:#fff;border-radius:50%;font-weight:700}
-    .hypothesis-info{flex:1}
-    .hypothesis-name{font-size:1.1rem;font-weight:600;margin-bottom:4px}
-    .hypothesis-icd{font-size:.85rem;color:var(--text-muted)}
-    .hypothesis-score{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-    .confidence-value{font-size:1.2rem;font-weight:700}
-    .confidence-bar{width:100px;height:8px;background-color:var(--border-color);border-radius:4px;overflow:hidden}
-    .confidence-fill{height:100%;border-radius:4px}
-    .hypothesis-details{display:none;padding:0 20px 20px 20px;background-color:var(--bg-primary);border-top:1px solid var(--border-color)}
-    .hypothesis-details.open{display:block}
-    .interpretation-box,.evidence-box,.counter-evidence-box{margin-top:16px;padding:16px;background-color:var(--bg-secondary);border-radius:var(--border-radius-sm)}
-    .interpretation-box h5,.evidence-box h5,.counter-evidence-box h5{font-size:.9rem;font-weight:600;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
-    .evidence-list{list-style:none;display:flex;flex-direction:column;gap:8px}
-    .evidence-item{padding:8px 12px;border-radius:var(--border-radius-sm);font-size:.95rem}
-    .evidence-item.positive{background-color:var(--success-light);color:#065f46}
-    .evidence-item.negative{background-color:var(--warning-light);color:#92400e}
-    .important-note{margin-top:16px;padding:16px;background-color:var(--danger-light);border-radius:var(--border-radius-sm);border-left:4px solid var(--danger-color);color:#991b1b}
-    .differential-card{display:flex;gap:16px;padding:20px;background-color:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--border-radius-sm)}
-    .differential-card.wichtig,.differential-card.vorsicht{border-left:4px solid var(--warning-color);background-color:var(--warning-light)}
-    .differential-card.empfehlung{border-left:4px solid var(--primary-color);background-color:var(--primary-light)}
-    .differential-icon{font-size:1.5rem}
-    .differential-content{flex:1}
-    .differential-title{font-size:1rem;font-weight:600;margin-bottom:8px}
-    .differential-text{font-size:.95rem;color:var(--text-secondary);line-height:1.6}
-    .bps-model{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
-    .bps-section{background-color:var(--bg-secondary);border-radius:var(--border-radius-sm);padding:20px;border-left:4px solid var(--primary-color)}
-    .bps-section.praedisponierend{border-left-color:#8b5cf6}
-    .bps-section.ausloesend{border-left-color:var(--warning-color)}
-    .bps-section.aufrechterhaltend{border-left-color:var(--danger-color)}
-    .bps-section.protektiv{border-left-color:var(--success-color)}
-    .bps-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-    .bps-header h4{font-size:.95rem;font-weight:600}
-    .bps-list{list-style:none;display:flex;flex-direction:column;gap:8px}
-    .bps-list li{font-size:.9rem;color:var(--text-secondary);padding-left:16px;position:relative}
-    .bps-list li::before{content:"•";position:absolute;left:0;color:var(--text-muted)}
-    /* Bedienungsanleitung */
-    .grundhaltung-card{display:flex;gap:24px;background:linear-gradient(135deg,var(--primary-color) 0%,var(--primary-hover) 100%);border-radius:var(--border-radius);padding:32px;color:#fff;box-shadow:var(--shadow-lg)}
-    .grundhaltung-icon{font-size:4rem}
-    .grundhaltung-content{flex:1}
-    .grundhaltung-leitsatz{font-size:1.8rem;font-weight:700;margin-bottom:16px;line-height:1.3}
-    .grundhaltung-erklaerung{font-size:1.1rem;opacity:.95;line-height:1.6;margin-bottom:20px}
-    .mantra-box{background-color:rgba(255,255,255,.15);border-radius:var(--border-radius-sm);padding:16px 20px}
-    .mantra-label{font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;opacity:.8;display:block;margin-bottom:8px}
-    .mantra-text{font-size:1.2rem;font-style:italic;font-weight:500}
-    .ampel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-    .ampel-section{background-color:var(--bg-secondary);border-radius:var(--border-radius-sm);padding:20px;border-top:4px solid var(--border-color)}
-    .ampel-section.gruen{border-top-color:var(--success-color)}
-    .ampel-section.gelb{border-top-color:var(--warning-color)}
-    .ampel-section.rot{border-top-color:var(--danger-color)}
-    .ampel-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-    .ampel-light{width:24px;height:24px;border-radius:50%}
-    .ampel-light.green{background-color:var(--success-color);box-shadow:0 0 12px rgba(16,185,129,.5)}
-    .ampel-light.yellow{background-color:var(--warning-color);box-shadow:0 0 12px rgba(245,158,11,.5)}
-    .ampel-light.red{background-color:var(--danger-color);box-shadow:0 0 12px rgba(239,68,68,.5)}
-    .ampel-header h4{font-size:1rem;font-weight:600}
-    .ampel-list{list-style:none;display:flex;flex-direction:column;gap:10px}
-    .ampel-list li{display:flex;align-items:flex-start;gap:10px;font-size:.95rem;color:var(--text-secondary)}
-    .rezept-accordion{margin-bottom:8px}
-    .rezept-header{width:100%;display:flex;align-items:center;gap:12px;padding:16px 20px;background-color:var(--bg-secondary);border:2px solid var(--border-color);border-radius:var(--border-radius-sm);cursor:pointer;text-align:left}
-    .rezept-header:hover{border-color:var(--primary-color)}
-    .rezept-icon{font-size:1.5rem}
-    .rezept-situation{flex:1;font-size:1rem;font-weight:500}
-    .rezept-expand{font-size:1.2rem;color:var(--primary-color);font-weight:700}
-    .rezept-content{display:none;padding:20px;background-color:var(--bg-secondary);border:2px solid var(--primary-color);border-top:none;border-radius:0 0 var(--border-radius-sm) var(--border-radius-sm)}
-    .rezept-content.open{display:block}
-    .rezept-schritte{list-style:none;display:flex;flex-direction:column;gap:12px}
-    .rezept-schritte li{padding:12px 16px;border-radius:var(--border-radius-sm);font-size:.95rem;background-color:var(--bg-primary)}
-    .rezept-schritte li.dont{background-color:var(--danger-light);color:#991b1b;border-left:4px solid var(--danger-color)}
-    .rezept-schritte li.do{background-color:var(--success-light);color:#065f46;border-left:4px solid var(--success-color)}
-    .dos-donts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
-    .dos-section,.donts-section{background-color:var(--bg-secondary);border-radius:var(--border-radius-sm);padding:24px}
-    .dos-section{border-top:4px solid var(--success-color)}
-    .donts-section{border-top:4px solid var(--danger-color)}
-    .dos-title{font-size:1.1rem;font-weight:600;color:var(--success-color);margin-bottom:16px}
-    .donts-title{font-size:1.1rem;font-weight:600;color:var(--danger-color);margin-bottom:16px}
-    .dos-list,.donts-list{list-style:none;display:flex;flex-direction:column;gap:12px}
-    .dos-item,.donts-item{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:var(--border-radius-sm);background-color:var(--bg-primary)}
-    .item-icon{font-size:1.2rem}
-    .item-text{font-size:.95rem;line-height:1.5}
-    .notfall-card{background-color:var(--bg-secondary);border:2px solid var(--danger-color);border-radius:var(--border-radius);padding:24px}
-    .notfall-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--danger-light)}
-    .notfall-icon{font-size:2.5rem}
-    .notfall-title{font-size:1.3rem;font-weight:700;color:var(--danger-color)}
-    .notfall-schritte{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
-    .notfall-schritt{display:flex;align-items:flex-start;gap:16px;padding:16px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm)}
-    .schritt-icon{font-size:1.3rem}
-    .schritt-text{font-size:1rem;line-height:1.5}
-    .notfall-wichtig{padding:16px;background-color:var(--danger-light);border-radius:var(--border-radius-sm);color:#991b1b;margin-bottom:20px}
-    .nach-krise{padding:16px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm)}
-    .nach-krise h4{font-size:1rem;font-weight:600;margin-bottom:12px}
-    .nach-krise ul{list-style:none;display:flex;flex-direction:column;gap:8px}
-    .nach-krise li{font-size:.95rem;color:var(--text-secondary);padding-left:20px;position:relative}
-    .nach-krise li::before{content:"→";position:absolute;left:0;color:var(--primary-color)}
-    .beziehung-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-    .beziehung-card{background-color:var(--bg-secondary);border-radius:var(--border-radius-sm);padding:24px;text-align:center;border:1px solid var(--border-color)}
-    .beziehung-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-    .beziehung-icon{font-size:2.5rem;margin-bottom:12px}
-    .beziehung-title{font-size:1.1rem;font-weight:600;color:var(--primary-color);margin-bottom:12px}
-    .beziehung-text{font-size:.95rem;color:var(--text-secondary);line-height:1.6}
-    .eltern-card{background-color:var(--bg-secondary);border-radius:var(--border-radius);padding:24px;border:1px solid var(--border-color)}
-    .eltern-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--border-color)}
-    .eltern-icon{font-size:2.5rem}
-    .eltern-headline{font-size:1.3rem;font-weight:600}
-    .eltern-section{margin-bottom:20px}
-    .eltern-section h4{font-size:1rem;font-weight:600;color:var(--primary-color);margin-bottom:12px}
-    .kern-liste,.spezifisch-liste,.ressourcen-liste{list-style:none;display:flex;flex-direction:column;gap:10px}
-    .kern-liste li,.spezifisch-liste li,.ressourcen-liste li{font-size:.95rem;color:var(--text-secondary);padding:12px 16px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm);line-height:1.5}
-    .summary-box{background-color:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--border-radius-sm);padding:20px;position:relative}
-    .summary-text{font-size:1rem;line-height:1.7;margin-bottom:16px}
-    .copy-btn{position:absolute;top:12px;right:12px;padding:8px 16px!important;font-size:.85rem!important}
+    .dropdown-wrapper{position:relative;z-index:100}
+    .dropdown-menu{display:none;position:absolute;top:calc(100% + 8px);right:0;min-width:280px;background-color:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--border-radius-sm);box-shadow:var(--shadow-lg);max-height:400px;overflow-y:auto}
+    .dropdown-wrapper.open .dropdown-menu{display:block}
+    .dropdown-item{display:flex;flex-direction:column;gap:4px;width:100%;padding:12px 16px;background:none;border:none;border-bottom:1px solid var(--border-color);text-align:left;cursor:pointer;transition:var(--transition)}
+    .dropdown-item:hover{background-color:var(--primary-light)}
+    .dropdown-empty{padding:20px;text-align:center;color:var(--text-muted)}
+    .app-footer{margin-top:24px;padding:16px;text-align:center}
+    .disclaimer{font-size:.8rem;max-width:600px;margin:0 auto;padding:12px;background-color:#fef3c7;border-radius:var(--border-radius-sm);border:1px solid #f59e0b;color:#92400e}
+    .keyboard-hints{display:flex;justify-content:center;gap:16px;margin-top:8px;font-size:.7rem;color:var(--text-muted)}
+    .keyboard-hints span{padding:2px 6px;background-color:var(--bg-primary);border-radius:4px;font-family:monospace}
+
     /* Dark Mode */
-    body.dark-mode{--primary-color:#818cf8;--primary-hover:#6366f1;--primary-light:#312e81;--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;--bg-primary:#0f172a;--bg-secondary:#1e293b;--border-color:#334155;--success-light:#064e3b;--warning-light:#78350f;--danger-light:#7f1d1d}
+    body.dark-mode{--primary-color:#818cf8;--primary-hover:#6366f1;--primary-light:#312e81;--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;--bg-primary:#0f172a;--bg-secondary:#1e293b;--border-color:#334155;--success-light:#064e3b;--warning-light:#78350f;--danger-light:#7f1d1d;--info-light:#1e3a5f}
     body.dark-mode .app-header{background:linear-gradient(135deg,#4338ca 0%,#3730a3 100%)}
-    body.dark-mode .disclaimer{background-color:#422006;border-color:#92400e;color:#fbbf24}
     body.dark-mode .grundhaltung-card{background:linear-gradient(135deg,#4338ca 0%,#3730a3 100%)}
+    body.dark-mode .disclaimer{background-color:#422006;border-color:#92400e;color:#fbbf24}
+
     /* Responsive */
-    @media(max-width:768px){.app-container{padding:12px}.app-header{padding:30px 16px}.app-title{font-size:1.8rem}.header-top{flex-direction:column;text-align:center}.header-brand{flex-direction:column;gap:8px}.header-titles{text-align:center}.header-controls{width:100%;justify-content:center;flex-wrap:wrap}.header-btn .btn-text{display:none}.tab-navigation{flex-direction:column}.tab-btn{justify-content:flex-start;padding:12px 16px}.tab-panel{padding:20px}.form-actions{flex-direction:column}.btn{width:100%}.grundhaltung-card{flex-direction:column;text-align:center}.bps-model,.ampel-grid,.dos-donts-grid,.beziehung-grid{grid-template-columns:1fr}.panel-actions{position:static;margin-top:16px;width:100%;flex-direction:column}}
+    @media(max-width:768px){.app-container{padding:12px}.app-header{padding:20px 16px}.app-title{font-size:1.5rem}.header-top{flex-direction:column;text-align:center}.header-controls{width:100%;justify-content:center;flex-wrap:wrap}.tab-navigation{flex-direction:column}.tab-btn{justify-content:flex-start;padding:12px 16px}.tab-panel{padding:16px}.form-actions{flex-direction:column}.btn{width:100%}.grundhaltung-card{flex-direction:column;text-align:center}.bps-model,.ampel-grid,.dos-donts-grid,.beziehung-grid,.risiko-grid,.interventionen-grid,.oeko-model{grid-template-columns:1fr}.panel-actions{position:static;margin-top:12px;width:100%;flex-direction:column}.synthese-tabs{flex-direction:column}.synthese-tab{text-align:center}}
     </style>
-    <!-- Favicon als SVG inline -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
 </head>
 <body>
@@ -234,24 +291,22 @@
                     <span class="header-logo">🧠</span>
                     <div class="header-titles">
                         <h1 class="app-title">PädoPsych Advisor</h1>
-                        <p class="app-subtitle">Klinisches Beratungstool für Kinder- und Jugendpsychiatrie</p>
+                        <p class="app-subtitle">Umfassendes klinisches Assessment - Kinder- und Jugendpsychiatrie</p>
                     </div>
                 </div>
                 <div class="header-controls">
-                    <button type="button" class="header-btn" onclick="newCase()" title="Neuer Fall (Strg+N)">
-                        <span>➕</span>
-                        <span class="btn-text">Neuer Fall</span>
+                    <button type="button" class="header-btn" onclick="newCase()" title="Neuer Fall">
+                        <span>➕</span> Neu
                     </button>
                     <div class="dropdown-wrapper" id="saved-cases-dropdown">
-                        <button type="button" class="header-btn" id="saved-cases-btn" onclick="toggleSavedCasesDropdown()" title="Gespeicherte Fälle">
-                            <span>📁</span>
-                            <span class="btn-text">Letzte Fälle</span>
+                        <button type="button" class="header-btn" onclick="toggleSavedCasesDropdown()">
+                            <span>📁</span> Fälle
                         </button>
                         <div class="dropdown-menu" id="saved-cases-list">
                             <div class="dropdown-empty">Keine gespeicherten Fälle</div>
                         </div>
                     </div>
-                    <button type="button" class="header-btn icon-only" id="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode umschalten">
+                    <button type="button" class="header-btn" id="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">
                         🌙
                     </button>
                 </div>
@@ -261,400 +316,89 @@
         <!-- Tab Navigation -->
         <nav class="tab-navigation">
             <button type="button" class="tab-btn active" data-tab="fallbeschreibung">
-                <span class="tab-icon">📋</span>
-                Fallbeschreibung
+                <span>📋</span> Anamnese
             </button>
             <button type="button" class="tab-btn" data-tab="analyse">
-                <span class="tab-icon">🔍</span>
-                Analyse
+                <span>🔍</span> Analyse & Synthese
             </button>
             <button type="button" class="tab-btn" data-tab="bedienungsanleitung">
-                <span class="tab-icon">📖</span>
-                Bedienungsanleitung
+                <span>📖</span> Bedienungsanleitung
             </button>
         </nav>
 
         <!-- Tab Content -->
         <main class="tab-content">
-            <!-- Tab 1: Fallbeschreibung -->
+            <!-- Tab 1: Comprehensive Anamnesis -->
             <section id="fallbeschreibung" class="tab-panel active">
                 <div class="panel-header">
-                    <h2>Fallbeschreibung eingeben</h2>
-                    <p>Beschreiben Sie das Kind und die beobachteten Symptome</p>
+                    <h2>Umfassende Anamnese</h2>
+                    <p>Systematische Erfassung aller relevanten klinischen Informationen (10 Bereiche)</p>
                 </div>
 
-                <form id="case-form" class="case-form">
-                    <!-- ABSCHNITT 1: Grunddaten -->
-                    <div class="form-section">
-                        <h3 class="form-section-title">Grunddaten</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="name">Name / Pseudonym</label>
-                                <input type="text" id="name" name="name" placeholder="z.B. Max M.">
-                            </div>
-                            <div class="form-group">
-                                <label for="alter">Alter</label>
-                                <select id="alter" name="alter">
-                                    <option value="">Bitte wählen...</option>
-                                    <option value="3">3 Jahre</option>
-                                    <option value="4">4 Jahre</option>
-                                    <option value="5">5 Jahre</option>
-                                    <option value="6">6 Jahre</option>
-                                    <option value="7">7 Jahre</option>
-                                    <option value="8">8 Jahre</option>
-                                    <option value="9">9 Jahre</option>
-                                    <option value="10">10 Jahre</option>
-                                    <option value="11">11 Jahre</option>
-                                    <option value="12">12 Jahre</option>
-                                    <option value="13">13 Jahre</option>
-                                    <option value="14">14 Jahre</option>
-                                    <option value="15">15 Jahre</option>
-                                    <option value="16">16 Jahre</option>
-                                    <option value="17">17 Jahre</option>
-                                    <option value="18">18 Jahre</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="geschlecht">Geschlecht</label>
-                                <select id="geschlecht" name="geschlecht">
-                                    <option value="">Bitte wählen...</option>
-                                    <option value="maennlich">Männlich</option>
-                                    <option value="weiblich">Weiblich</option>
-                                    <option value="divers">Divers</option>
-                                </select>
-                            </div>
+                <form id="case-form" class="case-form" onsubmit="event.preventDefault(); startAnalysis();">
+                    <!-- Dynamic form will be generated here -->
+                    <div id="dynamic-form-container">
+                        <div class="placeholder-card">
+                            <p>Formular wird geladen...</p>
                         </div>
-                    </div>
-
-                    <!-- ABSCHNITT 2: Hauptproblem -->
-                    <div class="form-section" id="hauptproblem-section" data-section="hauptproblem-section">
-                        <h3 class="form-section-title">Hauptproblem</h3>
-                        <p class="form-section-hint">Wählen Sie das primäre Problemfeld</p>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="hauptproblem" value="externalisierend">
-                                <span class="radio-label">
-                                    <strong>Externalisierend</strong>
-                                    <small>Wut, Aggression, Opposition</small>
-                                </span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="hauptproblem" value="internalisierend">
-                                <span class="radio-label">
-                                    <strong>Internalisierend</strong>
-                                    <small>Rückzug, Angst, Traurigkeit</small>
-                                </span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="hauptproblem" value="aufmerksamkeit">
-                                <span class="radio-label">
-                                    <strong>Aufmerksamkeit / Konzentration</strong>
-                                    <small>Ablenkbarkeit, Unruhe</small>
-                                </span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="hauptproblem" value="sozial">
-                                <span class="radio-label">
-                                    <strong>Soziale Schwierigkeiten</strong>
-                                    <small>Kontaktprobleme, Isolation</small>
-                                </span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="hauptproblem" value="schulisch">
-                                <span class="radio-label">
-                                    <strong>Schulische Probleme</strong>
-                                    <small>Leistung, Verweigerung</small>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- ABSCHNITT 3: Symptom-Checkliste -->
-                    <div class="form-section" id="symptom-section" data-section="symptom-section">
-                        <h3 class="form-section-title">Symptom-Checkliste</h3>
-                        <p class="form-section-hint">Wählen Sie alle zutreffenden Symptome</p>
-
-                        <!-- Akkordeon: Aufmerksamkeit & Aktivität -->
-                        <div class="accordion">
-                            <button type="button" class="accordion-header" data-accordion="aufmerksamkeit" aria-expanded="false">
-                                <span class="accordion-icon">+</span>
-                                Aufmerksamkeit & Aktivität
-                                <span class="accordion-count" data-count="aufmerksamkeit">0</span>
-                            </button>
-                            <div class="accordion-content" id="aufmerksamkeit">
-                                <div class="checkbox-grid">
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="nicht_stillsitzen">
-                                        <span>Kann nicht stillsitzen</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="unterbricht">
-                                        <span>Unterbricht andere</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="verliert_sachen">
-                                        <span>Verliert Sachen</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="hoert_nicht_zu">
-                                        <span>Hört nicht zu</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="beendet_nicht">
-                                        <span>Beendet Aufgaben nicht</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="ablenkbar">
-                                        <span>Leicht ablenkbar</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Akkordeon: Emotionen -->
-                        <div class="accordion">
-                            <button type="button" class="accordion-header" data-accordion="emotionen">
-                                <span class="accordion-icon">+</span>
-                                Emotionen
-                                <span class="accordion-count" data-count="emotionen">0</span>
-                            </button>
-                            <div class="accordion-content" id="emotionen">
-                                <div class="checkbox-grid">
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="wutausbrueche">
-                                        <span>Häufige Wutausbrüche</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="frustriert">
-                                        <span>Schnell frustriert</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="aengstlich">
-                                        <span>Ängstlich / besorgt</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="traurig">
-                                        <span>Traurig / niedergeschlagen</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="stimmungsschwankungen">
-                                        <span>Stimmungsschwankungen</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="weint_viel">
-                                        <span>Weint viel</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Akkordeon: Soziales Verhalten -->
-                        <div class="accordion">
-                            <button type="button" class="accordion-header" data-accordion="soziales">
-                                <span class="accordion-icon">+</span>
-                                Soziales Verhalten
-                                <span class="accordion-count" data-count="soziales">0</span>
-                            </button>
-                            <div class="accordion-content" id="soziales">
-                                <div class="checkbox-grid">
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="wenig_freunde">
-                                        <span>Wenig Freunde</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="wird_gemobbt">
-                                        <span>Wird gemobbt</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="mobbt_andere">
-                                        <span>Mobbt andere</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="spielt_allein">
-                                        <span>Spielt lieber allein</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="soziale_regeln">
-                                        <span>Versteht soziale Regeln nicht</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="kein_blickkontakt">
-                                        <span>Kein Blickkontakt</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Akkordeon: Opposition & Aggression -->
-                        <div class="accordion">
-                            <button type="button" class="accordion-header" data-accordion="opposition">
-                                <span class="accordion-icon">+</span>
-                                Opposition & Aggression
-                                <span class="accordion-count" data-count="opposition">0</span>
-                            </button>
-                            <div class="accordion-content" id="opposition">
-                                <div class="checkbox-grid">
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="verweigert">
-                                        <span>Verweigert Anweisungen</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="streitet">
-                                        <span>Streitet mit Erwachsenen</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="provoziert">
-                                        <span>Provoziert absichtlich</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="handgreiflich">
-                                        <span>Wird handgreiflich</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="zerstoert">
-                                        <span>Zerstört Sachen</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="luegt">
-                                        <span>Lügt häufig</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Akkordeon: Trauma & Belastung -->
-                        <div class="accordion">
-                            <button type="button" class="accordion-header" data-accordion="trauma">
-                                <span class="accordion-icon">+</span>
-                                Trauma & Belastung
-                                <span class="accordion-count" data-count="trauma">0</span>
-                            </button>
-                            <div class="accordion-content" id="trauma">
-                                <div class="checkbox-grid">
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="elterntrennung">
-                                        <span>Elterntrennung</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="verlust_trauer">
-                                        <span>Verlust / Trauer</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="haeusliche_konflikte">
-                                        <span>Häusliche Konflikte</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="schulwechsel">
-                                        <span>Schulwechsel</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="gewalterfahrung">
-                                        <span>Gewalterfahrung</span>
-                                    </label>
-                                    <label class="checkbox-option">
-                                        <input type="checkbox" name="symptome[]" value="vernachlaessigung">
-                                        <span>Vernachlässigung</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ABSCHNITT 4: Kontext -->
-                    <div class="form-section">
-                        <h3 class="form-section-title">Kontext</h3>
-                        <p class="form-section-hint">Wo und seit wann treten die Symptome auf?</p>
-                        <div class="checkbox-list">
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="kontext[]" value="nur_schule">
-                                <span>Symptome nur in der Schule</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="kontext[]" value="nur_zuhause">
-                                <span>Symptome nur zuhause</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="kontext[]" value="ueberall">
-                                <span>Symptome überall</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="kontext[]" value="seit_immer">
-                                <span>Seit Geburt / immer schon</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="kontext[]" value="nach_ereignis">
-                                <span>Nach Ereignis begonnen</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="kontext[]" value="familiaer">
-                                <span>Familiäre Vorbelastung (ADHS, Depression, etc.)</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- ABSCHNITT 5: Freitext -->
-                    <div class="form-section">
-                        <h3 class="form-section-title">Ergänzende Beobachtungen</h3>
-                        <div class="form-group">
-                            <label for="freitext">Was fällt Ihnen noch auf? (optional)</label>
-                            <textarea id="freitext" name="freitext" rows="4"
-                                placeholder="Weitere Beobachtungen, Stärken des Kindes, besondere Umstände..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary btn-large">
-                            Analyse starten
-                        </button>
                     </div>
                 </form>
             </section>
 
-            <!-- Tab 2: Analyse -->
+            <!-- Tab 2: Analysis & Multi-Model Synthesis -->
             <section id="analyse" class="tab-panel">
                 <div class="panel-header">
-                    <h2>Klinische Analyse</h2>
-                    <p>Hypothesen und differentialdiagnostische Überlegungen</p>
+                    <h2>Klinische Analyse & Multi-Modell-Synthese</h2>
+                    <p>ACE-Score, Risikoprofil, diagnostische Hypothesen und 7 theoretische Perspektiven</p>
                 </div>
 
                 <div class="analysis-container">
-                    <!-- Zusammenfassung -->
-                    <div class="summary-section">
-                        <h3 class="section-title">Fallzusammenfassung</h3>
-                        <div id="summary-container">
+                    <!-- ACE Score -->
+                    <div class="analysis-section">
+                        <h3 class="section-title">ACE-Score (Adverse Childhood Experiences)</h3>
+                        <div id="ace-container">
                             <div class="placeholder-card">
-                                <p>Die Zusammenfassung wird nach der Analyse angezeigt.</p>
+                                <p>ACE-Score wird nach der Analyse angezeigt.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Hypothesen-Karten -->
-                    <div class="hypotheses-section">
-                        <h3 class="section-title">Klinische Hypothesen</h3>
-                        <div id="hypotheses-container" class="hypotheses-grid">
+                    <!-- Risk Profile -->
+                    <div class="analysis-section" style="margin-top:24px">
+                        <h3 class="section-title">Risiko- & Schutzfaktoren-Profil</h3>
+                        <div id="risiko-container">
                             <div class="placeholder-card">
-                                <p>Bitte füllen Sie zuerst die Fallbeschreibung aus und starten Sie die Analyse.</p>
+                                <p>Risikoprofil wird nach der Analyse angezeigt.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Differentialdiagnosen -->
-                    <div class="differential-section">
-                        <h3 class="section-title">Differentialdiagnostische Überlegungen</h3>
-                        <div id="differential-container" class="differential-grid">
+                    <!-- Hypotheses -->
+                    <div class="analysis-section" style="margin-top:24px">
+                        <h3 class="section-title">Diagnostische Hypothesen</h3>
+                        <div id="hypothesen-container">
                             <div class="placeholder-card">
-                                <p>Differentialdiagnosen werden nach der Analyse angezeigt.</p>
+                                <p>Hypothesen werden nach der Analyse angezeigt.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Bio-Psycho-Soziales Modell -->
-                    <div class="model-section">
-                        <h3 class="section-title">Bio-Psycho-Soziales Modell</h3>
-                        <div id="model-container">
+                    <!-- Multi-Model Synthesis -->
+                    <div class="analysis-section" style="margin-top:24px">
+                        <h3 class="section-title">Multi-Modell-Synthese</h3>
+                        <div id="synthese-container">
                             <div class="placeholder-card">
-                                <p>Das klinische Modell wird nach der Analyse angezeigt.</p>
+                                <p>Synthese aus 7 theoretischen Perspektiven wird nach der Analyse angezeigt.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interventions -->
+                    <div class="analysis-section" style="margin-top:24px">
+                        <h3 class="section-title">Interventionsempfehlungen</h3>
+                        <div id="interventionen-container">
+                            <div class="placeholder-card">
+                                <p>Interventionen werden nach der Analyse angezeigt.</p>
                             </div>
                         </div>
                     </div>
@@ -664,86 +408,65 @@
             <!-- Tab 3: Bedienungsanleitung -->
             <section id="bedienungsanleitung" class="tab-panel">
                 <div class="panel-header">
-                    <h2>Bedienungsanleitung</h2>
-                    <p>Praktische Empfehlungen für den Umgang mit dem Kind</p>
+                    <h2>Bedienungsanleitung für das Kind</h2>
+                    <p>Praktische Empfehlungen für Bezugspersonen und Fachpersonal</p>
                     <div class="panel-actions">
-                        <button class="btn btn-secondary" onclick="exportAsText()" title="Als Text exportieren">
+                        <button type="button" class="btn btn-secondary" onclick="exportAsText()">
                             <span>📄</span> Export
                         </button>
-                        <button class="btn btn-secondary" onclick="printBedienungsanleitung()" title="Drucken (Strg+P)">
+                        <button type="button" class="btn btn-secondary" onclick="printBedienungsanleitung()">
                             <span>🖨️</span> Drucken
                         </button>
                     </div>
                 </div>
 
                 <div class="guide-container">
-                    <!-- Grundhaltung -->
-                    <div class="grundhaltung-section">
+                    <div class="guide-section">
                         <h3 class="section-title">Grundhaltung</h3>
                         <div id="grundhaltung-container">
-                            <div class="placeholder-card">
-                                <p>Die Grundhaltung wird nach der Analyse angezeigt.</p>
-                            </div>
+                            <div class="placeholder-card"><p>Wird nach der Analyse angezeigt.</p></div>
                         </div>
                     </div>
 
-                    <!-- Ampelsystem -->
-                    <div class="ampel-section">
+                    <div class="guide-section" style="margin-top:24px">
                         <h3 class="section-title">Ampelsystem - Signale erkennen</h3>
                         <div id="ampel-container">
-                            <div class="placeholder-card">
-                                <p>Das Ampelsystem wird nach der Analyse angezeigt.</p>
-                            </div>
+                            <div class="placeholder-card"><p>Wird nach der Analyse angezeigt.</p></div>
                         </div>
                     </div>
 
-                    <!-- Situationsrezepte -->
-                    <div class="rezepte-section">
-                        <h3 class="section-title">Situationsrezepte - Wenn-Dann-Anleitungen</h3>
+                    <div class="guide-section" style="margin-top:24px">
+                        <h3 class="section-title">Situationsrezepte</h3>
                         <div id="rezepte-container">
-                            <div class="placeholder-card">
-                                <p>Situationsrezepte werden nach der Analyse angezeigt.</p>
-                            </div>
+                            <div class="placeholder-card"><p>Wird nach der Analyse angezeigt.</p></div>
                         </div>
                     </div>
 
-                    <!-- Do's and Don'ts -->
-                    <div class="dos-donts-section">
+                    <div class="guide-section" style="margin-top:24px">
                         <h3 class="section-title">Do's and Don'ts</h3>
                         <div id="dos-donts-container">
-                            <div class="placeholder-card">
-                                <p>Verhaltensempfehlungen werden nach der Analyse angezeigt.</p>
-                            </div>
+                            <div class="placeholder-card"><p>Wird nach der Analyse angezeigt.</p></div>
                         </div>
                     </div>
 
-                    <!-- Notfallplan -->
-                    <div class="notfall-section">
+                    <div class="guide-section" style="margin-top:24px">
                         <h3 class="section-title">Notfallplan</h3>
                         <div id="notfall-container">
-                            <div class="placeholder-card">
-                                <p>Der Notfallplan wird nach der Analyse angezeigt.</p>
-                            </div>
+                            <div class="placeholder-card"><p>Wird nach der Analyse angezeigt.</p></div>
                         </div>
                     </div>
 
-                    <!-- Beziehungstipps -->
-                    <div class="beziehung-section">
+                    <div class="guide-section" style="margin-top:24px">
                         <h3 class="section-title">Beziehungstipps</h3>
                         <div id="beziehung-container">
-                            <div class="placeholder-card">
-                                <p>Beziehungstipps werden nach der Analyse angezeigt.</p>
-                            </div>
+                            <div class="placeholder-card"><p>Wird nach der Analyse angezeigt.</p></div>
                         </div>
                     </div>
 
-                    <!-- Elterninfo -->
-                    <div class="eltern-section">
+                    <div class="guide-section" style="margin-top:24px">
                         <h3 class="section-title">Information für Eltern</h3>
                         <div id="eltern-container">
-                            <div class="placeholder-card">
-                                <p>Elterninformationen werden nach der Analyse angezeigt.</p>
-                            </div>
+                            <div class="placeholder-card"><p>Wird nach der Analyse angezeigt.</p></div>
                         </div>
                     </div>
                 </div>
@@ -757,328 +480,16 @@
                 Es ersetzt keine professionelle Diagnostik oder Behandlung.
             </p>
             <div class="keyboard-hints">
-                <span title="Analyse starten">Strg+Enter: Analyse</span>
-                <span title="Fall speichern">Strg+S: Speichern</span>
-                <span title="Tab wechseln">1/2/3: Tabs</span>
+                <span>Strg+Enter: Analyse</span>
+                <span>Strg+S: Speichern</span>
+                <span>1/2/3: Tabs</span>
             </div>
         </footer>
     </div>
 
-    <!-- Toast Container -->
-    <div id="toast-container"></div>
-
-    <!-- Inline JavaScript für bessere Kompatibilität bei lokalem Zugriff -->
+    <!-- Scripts -->
     <script src="js/clinical-knowledge.js"></script>
     <script src="js/clinical-engine.js"></script>
     <script src="js/app.js"></script>
-
-    <!-- Fallback: Wenn externe JS-Dateien nicht laden, wird dies verwendet -->
-    <script>
-    // Prüfen ob die externen Skripte geladen wurden
-    if (typeof CLINICAL_KNOWLEDGE === 'undefined') {
-        console.log('Externe JS-Dateien nicht geladen, verwende Inline-Fallback...');
-
-        // === CLINICAL_KNOWLEDGE ===
-        const CLINICAL_KNOWLEDGE = {
-            hypothesen: {
-                adhs: { name: "ADHS", vollname: "Aufmerksamkeitsdefizit-Hyperaktivitätsstörung", kategorie: "Entwicklungsstörung", icd10: "F90.0", kernSymptome: { unaufmerksamkeit: ["ablenkbar", "hoert_nicht_zu", "beendet_nicht", "verliert_sachen"], hyperaktivitaet: ["nicht_stillsitzen", "unterbricht"], impulsivitaet: ["unterbricht"] }, gewichtung: { "nicht_stillsitzen": 2, "ablenkbar": 2, "unterbricht": 1.5, "hoert_nicht_zu": 1.5, "beendet_nicht": 1.5, "verliert_sachen": 1, "frustriert": 0.5, "wutausbrueche": 0.5 }, staerkendeFaktoren: ["seit_immer", "ueberall", "familiaer"], schwächendeFaktoren: ["nach_ereignis", "nur_schule", "nur_zuhause"], differentialDiagnosen: ["trauma", "angst", "hochbegabung", "emotionsregulation"], interpretation: { hoch: "Die Symptomkonstellation ist hochgradig vereinbar mit ADHS.", mittel: "Hinweise auf mögliche ADHS, differenzierte Abklärung empfohlen.", niedrig: "Einzelne Aufmerksamkeitsprobleme vorhanden." } },
-                angst: { name: "Angststörung", vollname: "Angststörung im Kindes- und Jugendalter", kategorie: "Emotionale Störung", icd10: "F93 / F40 / F41", kernSymptome: { kernsymptome: ["aengstlich", "weint_viel"], vermeidung: ["spielt_allein", "wenig_freunde"], koerperlich: [] }, gewichtung: { "aengstlich": 2.5, "weint_viel": 1.5, "spielt_allein": 1, "wenig_freunde": 1, "traurig": 0.5, "stimmungsschwankungen": 0.5 }, staerkendeFaktoren: ["familiaer", "nach_ereignis"], schwächendeFaktoren: ["seit_immer", "handgreiflich", "provoziert"], differentialDiagnosen: ["depression", "trauma", "asd", "bindung"], interpretation: { hoch: "Klinisches Bild spricht für Angststörung.", mittel: "Hinweise auf ängstliche Symptomatik.", niedrig: "Leichte ängstliche Tendenzen." } },
-                depression: { name: "Depression", vollname: "Depressive Episode im Kindes- und Jugendalter", kategorie: "Emotionale Störung", icd10: "F32 / F33", kernSymptome: { affekt: ["traurig", "stimmungsschwankungen"], antrieb: ["spielt_allein", "wenig_freunde"], reizbarkeit: ["wutausbrueche", "frustriert"] }, gewichtung: { "traurig": 2.5, "stimmungsschwankungen": 1.5, "weint_viel": 1.5, "spielt_allein": 1, "wenig_freunde": 0.5, "wutausbrueche": 1, "frustriert": 1, "aengstlich": 0.5 }, staerkendeFaktoren: ["verlust_trauer", "nach_ereignis", "familiaer", "haeusliche_konflikte"], schwächendeFaktoren: ["seit_immer", "nicht_stillsitzen"], differentialDiagnosen: ["angst", "trauma", "emotionsregulation", "adhs"], wichtigerHinweis: "Bei Kindern äußert sich Depression häufig als Reizbarkeit!", interpretation: { hoch: "Symptomatik vereinbar mit depressiver Episode. Suizidalität explorieren!", mittel: "Depressive Symptome erkennbar.", niedrig: "Vereinzelte Stimmungsprobleme." } },
-                odd: { name: "Störung des Sozialverhaltens", vollname: "Oppositionelle Störung / Störung des Sozialverhaltens", kategorie: "Verhaltensstörung", icd10: "F91 / F92", kernSymptome: { opposition: ["verweigert", "streitet", "provoziert"], aggression: ["handgreiflich", "zerstoert", "mobbt_andere"], regelverletzung: ["luegt"] }, gewichtung: { "verweigert": 2, "streitet": 2, "provoziert": 2, "handgreiflich": 2.5, "zerstoert": 2, "luegt": 1.5, "mobbt_andere": 2, "wutausbrueche": 1, "frustriert": 0.5 }, staerkendeFaktoren: ["haeusliche_konflikte", "ueberall"], schwächendeFaktoren: ["nur_schule", "nach_ereignis", "aengstlich"], differentialDiagnosen: ["adhs", "trauma", "bindung", "emotionsregulation"], wichtigerHinweis: "ODD ist oft ein Symptom, nicht die Ursache!", interpretation: { hoch: "Deutliche oppositionell-aggressive Züge. Ursachen klären!", mittel: "Oppositionelles Verhalten vorhanden.", niedrig: "Gelegentliches Aufbegehren." } },
-                trauma: { name: "Traumafolgestörung", vollname: "Anpassungsstörung / PTBS", kategorie: "Belastungsreaktion", icd10: "F43.1 / F43.2", kernSymptome: { intrusion: [], vermeidung: ["spielt_allein", "aengstlich"], dysregulation: ["wutausbrueche", "stimmungsschwankungen", "frustriert", "weint_viel"] }, gewichtung: { "gewalterfahrung": 3, "vernachlaessigung": 3, "verlust_trauer": 2.5, "elterntrennung": 1.5, "haeusliche_konflikte": 2, "schulwechsel": 1, "wutausbrueche": 1.5, "stimmungsschwankungen": 1.5, "aengstlich": 1.5, "traurig": 1, "spielt_allein": 1 }, staerkendeFaktoren: ["gewalterfahrung", "vernachlaessigung", "verlust_trauer", "nach_ereignis", "haeusliche_konflikte"], schwächendeFaktoren: ["seit_immer"], differentialDiagnosen: ["depression", "angst", "odd", "bindung"], wichtigerHinweis: "Traumasensibles Vorgehen essentiell!", interpretation: { hoch: "Symptome sprechen für Traumafolgestörung.", mittel: "Belastungsreaktionen erkennbar.", niedrig: "Keine eindeutigen Traumafolgesymptome." } },
-                asd: { name: "Autismus-Spektrum", vollname: "Autismus-Spektrum-Störung", kategorie: "Entwicklungsstörung", icd10: "F84.0 / F84.5", kernSymptome: { sozial: ["kein_blickkontakt", "soziale_regeln", "spielt_allein", "wenig_freunde"], kommunikation: ["hoert_nicht_zu"], verhalten: [] }, gewichtung: { "kein_blickkontakt": 2.5, "soziale_regeln": 2.5, "spielt_allein": 2, "wenig_freunde": 1.5, "hoert_nicht_zu": 0.5 }, staerkendeFaktoren: ["seit_immer", "ueberall", "familiaer"], schwächendeFaktoren: ["nach_ereignis", "nur_schule", "nur_zuhause"], differentialDiagnosen: ["angst", "bindung", "adhs"], wichtigerHinweis: "Spezialisierte Diagnostik erforderlich!", interpretation: { hoch: "Merkmale des Autismus-Spektrums erkennbar.", mittel: "Einzelne autistische Züge vorhanden.", niedrig: "Keine eindeutigen ASD-Hinweise." } },
-                bindung: { name: "Bindungsproblematik", vollname: "Bindungsstörung / Bindungsunsicherheit", kategorie: "Beziehungsstörung", icd10: "F94.1 / F94.2", kernSymptome: { unsicher: ["aengstlich", "weint_viel"], desorganisiert: ["stimmungsschwankungen", "wutausbrueche"], vermeidend: ["spielt_allein", "wenig_freunde"] }, gewichtung: { "vernachlaessigung": 3, "haeusliche_konflikte": 2, "elterntrennung": 2, "aengstlich": 1, "weint_viel": 1, "stimmungsschwankungen": 1.5, "wutausbrueche": 1, "spielt_allein": 0.5 }, staerkendeFaktoren: ["vernachlaessigung", "haeusliche_konflikte", "elterntrennung", "gewalterfahrung"], schwächendeFaktoren: ["seit_immer"], differentialDiagnosen: ["angst", "trauma", "asd", "depression"], wichtigerHinweis: "Beziehungskontinuität priorisieren!", interpretation: { hoch: "Beziehungsmuster deuten auf Bindungsproblematik.", mittel: "Unsichere Bindungsanteile erkennbar.", niedrig: "Keine auffällige Bindungsproblematik." } },
-                emotionsregulation: { name: "Emotionsregulationsstörung", vollname: "Störung der Emotionsregulation", kategorie: "Entwicklungsbedingt", icd10: "F92.8", kernSymptome: { dysregulation: ["wutausbrueche", "frustriert", "stimmungsschwankungen"], intensitaet: ["weint_viel"] }, gewichtung: { "wutausbrueche": 2.5, "frustriert": 2, "stimmungsschwankungen": 2, "weint_viel": 1.5 }, staerkendeFaktoren: ["haeusliche_konflikte"], schwächendeFaktoren: [], differentialDiagnosen: ["adhs", "depression", "trauma", "odd"], wichtigerHinweis: "Co-Regulation durch Bezugspersonen wichtig!", interpretation: { hoch: "Deutliche Schwierigkeiten in der Emotionsregulation.", mittel: "Emotionsregulation noch unreif.", niedrig: "Altersgemäße emotionale Reaktionen." } }
-            },
-            symptomLabels: { "nicht_stillsitzen": "Kann nicht stillsitzen", "unterbricht": "Unterbricht andere", "verliert_sachen": "Verliert Sachen", "hoert_nicht_zu": "Hört nicht zu", "beendet_nicht": "Beendet Aufgaben nicht", "ablenkbar": "Leicht ablenkbar", "wutausbrueche": "Häufige Wutausbrüche", "frustriert": "Schnell frustriert", "aengstlich": "Ängstlich/besorgt", "traurig": "Traurig/niedergeschlagen", "stimmungsschwankungen": "Stimmungsschwankungen", "weint_viel": "Weint viel", "wenig_freunde": "Wenig Freunde", "wird_gemobbt": "Wird gemobbt", "mobbt_andere": "Mobbt andere", "spielt_allein": "Spielt lieber allein", "soziale_regeln": "Versteht soziale Regeln nicht", "kein_blickkontakt": "Kein Blickkontakt", "verweigert": "Verweigert Anweisungen", "streitet": "Streitet mit Erwachsenen", "provoziert": "Provoziert absichtlich", "handgreiflich": "Wird handgreiflich", "zerstoert": "Zerstört Sachen", "luegt": "Lügt häufig", "elterntrennung": "Elterntrennung", "verlust_trauer": "Verlust/Trauer", "haeusliche_konflikte": "Häusliche Konflikte", "schulwechsel": "Schulwechsel", "gewalterfahrung": "Gewalterfahrung", "vernachlaessigung": "Vernachlässigung" },
-            kontextLabels: { "nur_schule": "Nur in der Schule", "nur_zuhause": "Nur zuhause", "ueberall": "Überall/situationsübergreifend", "seit_immer": "Seit Geburt/immer schon", "nach_ereignis": "Nach Ereignis begonnen", "familiaer": "Familiäre Vorbelastung" },
-            hauptproblemRelevanz: { "externalisierend": ["odd", "adhs", "emotionsregulation", "trauma", "bindung"], "internalisierend": ["angst", "depression", "trauma", "bindung"], "aufmerksamkeit": ["adhs", "angst", "trauma", "asd"], "sozial": ["asd", "angst", "bindung", "adhs"], "schulisch": ["adhs", "angst", "depression", "trauma"] },
-            kategoriefarben: { "Entwicklungsstörung": "#6366f1", "Emotionale Störung": "#8b5cf6", "Verhaltensstörung": "#ef4444", "Belastungsreaktion": "#f59e0b", "Beziehungsstörung": "#ec4899", "Entwicklungsbedingt": "#10b981" }
-        };
-        window.CLINICAL_KNOWLEDGE = CLINICAL_KNOWLEDGE;
-
-        // === ClinicalEngine (vereinfachte Version) ===
-        const ClinicalEngine = {
-            analyze(caseData) {
-                const hypothesen = this.generateHypothesen(caseData);
-                return {
-                    hypothesen,
-                    differential: this.differentialDiagnose(hypothesen),
-                    modell: this.generateModell(hypothesen, caseData),
-                    bedienungsanleitung: this.generateBedienungsanleitung(hypothesen),
-                    caseData,
-                    timestamp: new Date().toISOString()
-                };
-            },
-            generateHypothesen(caseData) {
-                const results = [];
-                const symptome = [...(caseData.symptome || []), ...(caseData.kontext || [])];
-                const kontext = caseData.kontext || [];
-                const relevante = CLINICAL_KNOWLEDGE.hauptproblemRelevanz[caseData.hauptproblem] || [];
-
-                for (const [id, hypo] of Object.entries(CLINICAL_KNOWLEDGE.hypothesen)) {
-                    let score = relevante.includes(id) ? 2 : 0;
-                    const evidenz = [];
-
-                    for (const items of Object.values(hypo.kernSymptome)) {
-                        items.forEach(s => {
-                            const gewicht = hypo.gewichtung?.[s] || 1;
-                            if (symptome.includes(s)) {
-                                score += gewicht;
-                                evidenz.push(CLINICAL_KNOWLEDGE.symptomLabels[s] || s);
-                            }
-                        });
-                    }
-
-                    hypo.staerkendeFaktoren?.forEach(f => {
-                        if (kontext.includes(f) || symptome.includes(f)) {
-                            score += 1.5;
-                            evidenz.push((CLINICAL_KNOWLEDGE.kontextLabels[f] || f) + " (verstärkend)");
-                        }
-                    });
-
-                    const konfidenz = Math.min(100, Math.max(20, Math.round(score * 10)));
-
-                    if (konfidenz > 15 || evidenz.length >= 2) {
-                        results.push({
-                            id, name: hypo.name, vollname: hypo.vollname,
-                            kategorie: hypo.kategorie, icd10: hypo.icd10,
-                            konfidenz, evidenz, gegenEvidenz: [],
-                            interpretation: konfidenz >= 60 ? hypo.interpretation.hoch : konfidenz >= 35 ? hypo.interpretation.mittel : hypo.interpretation.niedrig,
-                            wichtigerHinweis: hypo.wichtigerHinweis || null,
-                            farbe: CLINICAL_KNOWLEDGE.kategoriefarben[hypo.kategorie] || '#6366f1',
-                            differentialDiagnosen: hypo.differentialDiagnosen || []
-                        });
-                    }
-                }
-                return results.sort((a, b) => b.konfidenz - a.konfidenz);
-            },
-            differentialDiagnose(hypothesen) {
-                const ueberlegungen = [];
-                const hypoIds = hypothesen.map(h => h.id);
-
-                if (hypoIds.includes('adhs') && hypoIds.includes('trauma')) {
-                    ueberlegungen.push({ typ: "wichtig", icon: "⚠️", titel: "ADHS vs. Trauma", text: "Traumatisierte Kinder zeigen oft ADHS-ähnliche Symptome. ENTSCHEIDEND: Gab es ein auslösendes Ereignis?" });
-                }
-                if (hypoIds.includes('angst') && hypoIds.includes('depression')) {
-                    ueberlegungen.push({ typ: "komorbidität", icon: "🔗", titel: "Komorbidität Angst/Depression", text: "Häufig gemeinsam auftretend. Beide Aspekte in Behandlung berücksichtigen." });
-                }
-                const oddHypo = hypothesen.find(h => h.id === 'odd');
-                if (oddHypo && oddHypo.konfidenz > 40) {
-                    ueberlegungen.push({ typ: "hinweis", icon: "💡", titel: "Opposition als Symptom", text: "Oppositionelles Verhalten ist oft ein SYMPTOM, nicht die Ursache!" });
-                }
-                return ueberlegungen;
-            },
-            generateModell(hypothesen, caseData) {
-                const name = caseData.grunddaten?.name || "Das Kind";
-                const topHypo = hypothesen[0];
-                const symptomCount = (caseData.symptome || []).length;
-
-                let zusammenfassung = `${name}`;
-                if (caseData.grunddaten?.alter) zusammenfassung += ` (${caseData.grunddaten.alter} Jahre)`;
-                zusammenfassung += ` wird vorgestellt. `;
-                if (symptomCount > 0) zusammenfassung += `Insgesamt wurden ${symptomCount} Symptome identifiziert. `;
-                if (topHypo) zusammenfassung += `Die Analyse ergibt mit ${topHypo.konfidenz}% Konfidenz Hinweise auf ${topHypo.vollname}.`;
-
-                return {
-                    zusammenfassung,
-                    biopsychosozial: {
-                        praedisponierend: ["Noch zu explorieren"],
-                        ausloesend: ["Noch zu explorieren"],
-                        aufrechterhaltend: ["Noch zu explorieren"],
-                        protektiv: ["Ressourcen sollten exploriert werden"]
-                    },
-                    haupthypothese: topHypo ? { id: topHypo.id, name: topHypo.vollname, konfidenz: topHypo.konfidenz, farbe: topHypo.farbe } : null
-                };
-            },
-            generateBedienungsanleitung(hypothesen) {
-                const topId = hypothesen[0]?.id || 'emotionsregulation';
-                const haltungen = {
-                    adhs: { leitsatz: "Struktur geben, nicht strafen", erklaerung: "Das Kind KANN nicht, es WILL nicht nicht.", mantra: "Kurz, klar, konsequent.", icon: "🎯" },
-                    angst: { leitsatz: "Sicherheit geben, mutig machen", erklaerung: "Das Kind erlebt echte Angst.", mantra: "Ich sehe deine Angst. Du schaffst das.", icon: "🛡️" },
-                    depression: { leitsatz: "Dabeibleiben, nicht aufgeben", erklaerung: "Depression zeigt sich oft als Reizbarkeit.", mantra: "Du bist wichtig.", icon: "💙" },
-                    odd: { leitsatz: "Verbindung vor Korrektur", erklaerung: "Hinter Opposition steckt ein Bedürfnis.", mantra: "Ich kämpfe für dich, nicht gegen dich.", icon: "🤝" },
-                    trauma: { leitsatz: "Sicherheit, Sicherheit, Sicherheit", erklaerung: "Das Nervensystem ist im Überlebensmodus.", mantra: "Du bist hier sicher.", icon: "🏠" },
-                    asd: { leitsatz: "Klar, konkret, visuell", erklaerung: "Das Kind denkt anders, nicht schlechter.", mantra: "Ich sage genau, was ich meine.", icon: "📋" },
-                    bindung: { leitsatz: "Beziehung ist die Intervention", erklaerung: "Das Kind hat gelernt, dass Beziehungen unsicher sind.", mantra: "Ich bleibe.", icon: "❤️" },
-                    emotionsregulation: { leitsatz: "Co-Regulation vor Selbstregulation", erklaerung: "Das Kind braucht Sie als externen Regler.", mantra: "Ich bleibe ruhig.", icon: "🌊" }
-                };
-
-                return {
-                    grundhaltung: haltungen[topId] || haltungen.emotionsregulation,
-                    ampelsystem: {
-                        gruen: [{ signal: "Kind ist ansprechbar", icon: "✓" }, { signal: "Kann Frustrationen aushalten", icon: "✓" }],
-                        gelb: [{ signal: "Zunehmende Unruhe", icon: "⚡" }, { signal: "Kürzere Zündschnur", icon: "⚡" }],
-                        rot: [{ signal: "Kontrollverlust", icon: "🔴" }, { signal: "Aggression/Flucht", icon: "🔴" }]
-                    },
-                    situationsrezepte: [
-                        { situation: "Kind verweigert", icon: "🚫", reaktion: ["NICHT: Druck erhöhen", "STATTDESSEN: Wahlmöglichkeit anbieten"] },
-                        { situation: "Kind wird wütend", icon: "😠", reaktion: ["NICHT: Laut werden", "STATTDESSEN: Stimme SENKEN, Raum geben"] }
-                    ],
-                    dosAndDonts: {
-                        tuDas: [{ tipp: "Ruhig bleiben", icon: "🧘" }, { tipp: "Beziehung priorisieren", icon: "❤️" }],
-                        lassDas: [{ tipp: "Machtkämpfe eingehen", icon: "❌" }, { tipp: "Vor anderen bloßstellen", icon: "❌" }]
-                    },
-                    notfallplan: {
-                        titel: "Krisenplan", icon: "🆘",
-                        schritte: [{ text: "STOPP - Eigene Atmung verlangsamen", icon: "🛑" }, { text: "Raum geben, NICHT bedrängen", icon: "↔️" }],
-                        wichtig: "Hilfe holen ist keine Schwäche!",
-                        nachDerKrise: ["Eigene Gefühle reflektieren"]
-                    },
-                    beziehungstipps: [{ tipp: "2-Minuten-Ritual", icon: "⏰", beschreibung: "Täglich 2 Min positive Zeit." }],
-                    elterninfo: {
-                        headline: "Was Eltern wissen sollten", icon: "👨‍👩‍👧",
-                        kernbotschaften: ["Das Kind macht das nicht absichtlich", "Professionelle Hilfe ist kein Versagen"],
-                        spezifisch: [], ressourcen: ["Erziehungsberatungsstellen"]
-                    }
-                };
-            }
-        };
-        window.ClinicalEngine = ClinicalEngine;
-
-        // === App.js Inline (Kurzversion) ===
-        let caseData = { grunddaten: { name: '', alter: '', geschlecht: '' }, hauptproblem: '', symptome: [], kontext: [], freitext: '' };
-        let analysisResult = null;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Tab Navigation
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.getElementById(btn.dataset.tab).classList.add('active');
-                });
-            });
-
-            // Akkordeons
-            document.querySelectorAll('.accordion-header').forEach(header => {
-                header.addEventListener('click', () => {
-                    const content = document.getElementById(header.dataset.accordion);
-                    const icon = header.querySelector('.accordion-icon');
-                    const isActive = header.classList.contains('active');
-                    header.classList.toggle('active', !isActive);
-                    content.classList.toggle('open', !isActive);
-                    icon.textContent = isActive ? '+' : '−';
-                });
-            });
-
-            // Checkbox Counter
-            document.querySelectorAll('.accordion').forEach(acc => {
-                const header = acc.querySelector('.accordion-header');
-                const content = acc.querySelector('.accordion-content');
-                const badge = header.querySelector('.accordion-count');
-                content.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                    cb.addEventListener('change', () => {
-                        const count = content.querySelectorAll('input:checked').length;
-                        badge.textContent = count;
-                        badge.classList.toggle('has-items', count > 0);
-                    });
-                });
-            });
-
-            // Form Handler
-            const form = document.getElementById('case-form');
-            if (form) {
-                form.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    updateCaseData();
-                    if (!caseData.grunddaten.alter) { alert('Bitte Alter angeben'); return; }
-                    if (!caseData.hauptproblem) { alert('Bitte Hauptproblem wählen'); return; }
-                    if (caseData.symptome.length < 1) { alert('Bitte mind. 1 Symptom wählen'); return; }
-
-                    const btn = form.querySelector('.btn-primary');
-                    btn.disabled = true;
-                    btn.innerHTML = 'Analysiere...';
-
-                    setTimeout(() => {
-                        analysisResult = ClinicalEngine.analyze(caseData);
-                        renderAnalysis(analysisResult);
-                        renderBedienungsanleitung(analysisResult);
-                        btn.disabled = false;
-                        btn.innerHTML = 'Analyse starten';
-                        document.querySelector('[data-tab="analyse"]').click();
-                    }, 500);
-                });
-            }
-
-            console.log('PädoPsych Advisor (Fallback) initialized');
-        });
-
-        function updateCaseData() {
-            const form = document.getElementById('case-form');
-            if (!form) return;
-            caseData.grunddaten.name = form.querySelector('#name')?.value || '';
-            caseData.grunddaten.alter = form.querySelector('#alter')?.value || '';
-            caseData.grunddaten.geschlecht = form.querySelector('#geschlecht')?.value || '';
-            const hp = form.querySelector('input[name="hauptproblem"]:checked');
-            caseData.hauptproblem = hp?.value || '';
-            caseData.symptome = Array.from(form.querySelectorAll('input[name="symptome[]"]:checked')).map(cb => cb.value);
-            caseData.kontext = Array.from(form.querySelectorAll('input[name="kontext[]"]:checked')).map(cb => cb.value);
-            caseData.freitext = form.querySelector('#freitext')?.value || '';
-        }
-
-        function renderAnalysis(result) {
-            const sum = document.getElementById('summary-container');
-            if (sum) sum.innerHTML = `<div class="summary-box"><p class="summary-text">${result.modell.zusammenfassung}</p></div>`;
-
-            const hyp = document.getElementById('hypotheses-container');
-            if (hyp && result.hypothesen.length > 0) {
-                hyp.innerHTML = result.hypothesen.map((h, i) => `
-                    <div class="hypothesis-card ${i === 0 ? 'primary' : ''}" style="--card-color: ${h.farbe}">
-                        <div class="hypothesis-header">
-                            <div class="hypothesis-rank">${i + 1}</div>
-                            <div class="hypothesis-info"><h4 class="hypothesis-name">${h.vollname}</h4><span class="hypothesis-icd">${h.icd10 || ''}</span></div>
-                            <div class="hypothesis-score"><span class="confidence-value">${h.konfidenz}%</span><div class="confidence-bar"><div class="confidence-fill" style="width:${h.konfidenz}%;background-color:${h.konfidenz >= 60 ? '#10b981' : '#f59e0b'}"></div></div></div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            const diff = document.getElementById('differential-container');
-            if (diff) {
-                diff.innerHTML = result.differential.map(d => `<div class="differential-card ${d.typ}"><div class="differential-icon">${d.icon}</div><div class="differential-content"><h4 class="differential-title">${d.titel}</h4><p class="differential-text">${d.text}</p></div></div>`).join('');
-            }
-
-            const model = document.getElementById('model-container');
-            if (model) {
-                const bps = result.modell.biopsychosozial;
-                model.innerHTML = `<div class="bps-model"><div class="bps-section praedisponierend"><h4>Prädisponierend</h4><ul class="bps-list">${bps.praedisponierend.map(f => `<li>${f}</li>`).join('')}</ul></div><div class="bps-section protektiv"><h4>Protektiv</h4><ul class="bps-list">${bps.protektiv.map(f => `<li>${f}</li>`).join('')}</ul></div></div>`;
-            }
-        }
-
-        function renderBedienungsanleitung(result) {
-            const a = result.bedienungsanleitung;
-
-            const gh = document.getElementById('grundhaltung-container');
-            if (gh) gh.innerHTML = `<div class="grundhaltung-card"><div class="grundhaltung-icon">${a.grundhaltung.icon}</div><div class="grundhaltung-content"><h3 class="grundhaltung-leitsatz">"${a.grundhaltung.leitsatz}"</h3><p class="grundhaltung-erklaerung">${a.grundhaltung.erklaerung}</p><div class="mantra-box"><span class="mantra-label">Mantra:</span><p class="mantra-text">"${a.grundhaltung.mantra}"</p></div></div></div>`;
-
-            const amp = document.getElementById('ampel-container');
-            if (amp) amp.innerHTML = `<div class="ampel-grid"><div class="ampel-section gruen"><div class="ampel-header"><span class="ampel-light green"></span><h4>Grün</h4></div><ul class="ampel-list">${a.ampelsystem.gruen.map(s => `<li>${s.icon} ${s.signal}</li>`).join('')}</ul></div><div class="ampel-section gelb"><div class="ampel-header"><span class="ampel-light yellow"></span><h4>Gelb</h4></div><ul class="ampel-list">${a.ampelsystem.gelb.map(s => `<li>${s.icon} ${s.signal}</li>`).join('')}</ul></div><div class="ampel-section rot"><div class="ampel-header"><span class="ampel-light red"></span><h4>Rot</h4></div><ul class="ampel-list">${a.ampelsystem.rot.map(s => `<li>${s.icon} ${s.signal}</li>`).join('')}</ul></div></div>`;
-
-            const rez = document.getElementById('rezepte-container');
-            if (rez) rez.innerHTML = a.situationsrezepte.map(r => `<div class="rezept-accordion"><div class="rezept-header">${r.icon} ${r.situation}</div><div class="rezept-content open"><ul class="rezept-schritte">${r.reaktion.map(s => `<li class="${s.startsWith('NICHT') ? 'dont' : s.startsWith('STATT') ? 'do' : ''}">${s}</li>`).join('')}</ul></div></div>`).join('');
-
-            const dd = document.getElementById('dos-donts-container');
-            if (dd) dd.innerHTML = `<div class="dos-donts-grid"><div class="dos-section"><h4 class="dos-title">✓ Tu das</h4><ul class="dos-list">${a.dosAndDonts.tuDas.map(d => `<li class="dos-item"><span class="item-icon">${d.icon}</span><span class="item-text">${d.tipp}</span></li>`).join('')}</ul></div><div class="donts-section"><h4 class="donts-title">✗ Lass das</h4><ul class="donts-list">${a.dosAndDonts.lassDas.map(d => `<li class="donts-item"><span class="item-icon">${d.icon}</span><span class="item-text">${d.tipp}</span></li>`).join('')}</ul></div></div>`;
-
-            const nf = document.getElementById('notfall-container');
-            if (nf) nf.innerHTML = `<div class="notfall-card"><div class="notfall-header"><span class="notfall-icon">${a.notfallplan.icon}</span><h3 class="notfall-title">${a.notfallplan.titel}</h3></div><ol class="notfall-schritte">${a.notfallplan.schritte.map(s => `<li class="notfall-schritt"><span class="schritt-icon">${s.icon}</span><span class="schritt-text">${s.text}</span></li>`).join('')}</ol><div class="notfall-wichtig"><strong>⚠️</strong> ${a.notfallplan.wichtig}</div></div>`;
-
-            const bz = document.getElementById('beziehung-container');
-            if (bz) bz.innerHTML = `<div class="beziehung-grid">${a.beziehungstipps.map(t => `<div class="beziehung-card"><div class="beziehung-icon">${t.icon}</div><h4 class="beziehung-title">${t.tipp}</h4><p class="beziehung-text">${t.beschreibung}</p></div>`).join('')}</div>`;
-
-            const el = document.getElementById('eltern-container');
-            if (el) el.innerHTML = `<div class="eltern-card"><div class="eltern-header"><span class="eltern-icon">${a.elterninfo.icon}</span><h3 class="eltern-headline">${a.elterninfo.headline}</h3></div><div class="eltern-section"><h4>Kernbotschaften</h4><ul class="kern-liste">${a.elterninfo.kernbotschaften.map(k => `<li>${k}</li>`).join('')}</ul></div></div>`;
-        }
-
-        // Globale Funktionen
-        window.newCase = function() { location.reload(); };
-        window.toggleSavedCasesDropdown = function() { const d = document.getElementById('saved-cases-dropdown'); if(d) d.classList.toggle('open'); };
-        window.toggleDarkMode = function() { document.body.classList.toggle('dark-mode'); const btn = document.getElementById('dark-mode-btn'); if(btn) btn.innerHTML = document.body.classList.contains('dark-mode') ? '☀️' : '🌙'; };
-        window.exportAsText = function() { alert('Export-Funktion: Bitte drucken Sie die Seite (Strg+P) und wählen Sie "Als PDF speichern"'); };
-        window.printBedienungsanleitung = function() { window.print(); };
-    }
-    </script>
 </body>
 </html>
