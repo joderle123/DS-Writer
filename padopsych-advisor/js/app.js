@@ -1528,7 +1528,8 @@ function initKeyboardShortcuts() {
         if (!e.target.matches('input, textarea, select')) {
             if (e.key === '1') switchToTab('fallbeschreibung');
             if (e.key === '2') switchToTab('analyse');
-            if (e.key === '3') switchToTab('bedienungsanleitung');
+            if (e.key === '3') switchToTab('tools');
+            if (e.key === '4') switchToTab('bedienungsanleitung');
         }
 
         if (e.key === 'Escape') {
@@ -1638,4 +1639,242 @@ function printBedienungsanleitung() {
         return;
     }
     window.print();
+}
+
+// ============================================================
+// TOOLS MODULE - TAB NAVIGATION & LOADERS
+// ============================================================
+
+/**
+ * Initialize tools tab navigation
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initToolsNavigation, 100);
+});
+
+function initToolsNavigation() {
+    const toolsTabs = document.querySelectorAll('.tools-tab');
+    const toolPanels = document.querySelectorAll('.tool-panel');
+
+    toolsTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTool = tab.dataset.tool;
+
+            toolsTabs.forEach(t => t.classList.remove('active'));
+            toolPanels.forEach(p => p.classList.remove('active'));
+
+            tab.classList.add('active');
+            document.getElementById(`tool-${targetTool}`)?.classList.add('active');
+        });
+    });
+}
+
+// ============================================================
+// ASSESSMENT TOOLS LOADERS
+// ============================================================
+
+function loadAssessment(type) {
+    const container = document.getElementById('assessment-content');
+    if (!container) return;
+
+    if (typeof AssessmentsModule === 'undefined') {
+        container.innerHTML = '<div class="error-box">AssessmentsModule nicht geladen</div>';
+        return;
+    }
+
+    switch (type) {
+        case 'sdq':
+            container.innerHTML = AssessmentsModule.generateSDQUI();
+            break;
+        case 'scared':
+            container.innerHTML = AssessmentsModule.generateSCAREDUI();
+            break;
+        case 'phqa':
+            container.innerHTML = AssessmentsModule.generatePHQAUI();
+            break;
+        default:
+            container.innerHTML = '<p>Unbekanntes Assessment</p>';
+    }
+}
+
+// ============================================================
+// SAFETY TOOLS LOADERS
+// ============================================================
+
+function loadSafetyTool(type) {
+    const container = document.getElementById('safety-content');
+    if (!container) return;
+
+    if (typeof SafetyModule === 'undefined') {
+        container.innerHTML = '<div class="error-box">SafetyModule nicht geladen</div>';
+        return;
+    }
+
+    switch (type) {
+        case 'screening':
+            container.innerHTML = SafetyModule.generateScreeningUI();
+            break;
+        case 'safetyplan':
+            container.innerHTML = SafetyModule.generateSafetyPlanUI();
+            break;
+        case 'resources':
+            container.innerHTML = SafetyModule.generateCrisisResourcesUI();
+            break;
+        default:
+            container.innerHTML = '<p>Unbekanntes Sicherheitstool</p>';
+    }
+}
+
+// ============================================================
+// TREATMENT TOOLS LOADERS
+// ============================================================
+
+function loadTreatmentTool(type) {
+    const container = document.getElementById('treatment-content');
+    if (!container) return;
+
+    if (typeof TreatmentModule === 'undefined') {
+        container.innerHTML = '<div class="error-box">TreatmentModule nicht geladen</div>';
+        return;
+    }
+
+    switch (type) {
+        case 'smart':
+            container.innerHTML = TreatmentModule.generateSMARTGoalUI();
+            break;
+        case 'modules':
+            container.innerHTML = TreatmentModule.generateTherapyModulesUI();
+            break;
+        case 'plan':
+            container.innerHTML = TreatmentModule.generateTreatmentPlanUI();
+            break;
+        default:
+            container.innerHTML = '<p>Unbekanntes Behandlungstool</p>';
+    }
+}
+
+// ============================================================
+// FAMILY TOOLS LOADERS
+// ============================================================
+
+function loadFamilyTool(type) {
+    const container = document.getElementById('family-content');
+    if (!container) return;
+
+    if (typeof FamilyToolsModule === 'undefined') {
+        container.innerHTML = '<div class="error-box">FamilyToolsModule nicht geladen</div>';
+        return;
+    }
+
+    switch (type) {
+        case 'genogramm':
+            container.innerHTML = FamilyToolsModule.generateGenogrammBuilderUI();
+            FamilyToolsModule.renderGenogramm();
+            break;
+        case 'ressourcen':
+            container.innerHTML = FamilyToolsModule.generateRessourcenUI();
+            break;
+        case 'circumplex':
+            container.innerHTML = FamilyToolsModule.generateCircumplexUI();
+            break;
+        default:
+            container.innerHTML = '<p>Unbekanntes Familien-Tool</p>';
+    }
+}
+
+// ============================================================
+// MONITORING TOOLS LOADERS
+// ============================================================
+
+function loadMonitoringTool(type) {
+    const container = document.getElementById('monitoring-content');
+    if (!container) return;
+
+    if (typeof MonitoringModule === 'undefined') {
+        container.innerHTML = '<div class="error-box">MonitoringModule nicht geladen</div>';
+        return;
+    }
+
+    switch (type) {
+        case 'tracker':
+            container.innerHTML = MonitoringModule.generateSymptomTrackerUI();
+            break;
+        case 'verlauf':
+            container.innerHTML = MonitoringModule.generateVerlaufsanzeigeUI();
+            MonitoringModule.updateVerlaufsanzeige();
+            break;
+        case 'gas':
+            container.innerHTML = MonitoringModule.generateGASUI();
+            MonitoringModule.renderGASZiele();
+            break;
+        case 'cgi':
+            container.innerHTML = MonitoringModule.generateCGIUI();
+            MonitoringModule.renderCGIVerlauf();
+            break;
+        default:
+            container.innerHTML = '<p>Unbekanntes Monitoring-Tool</p>';
+    }
+}
+
+// ============================================================
+// SESSION TOOLS LOADERS
+// ============================================================
+
+function loadSessionTool(type) {
+    const container = document.getElementById('session-content');
+    if (!container) return;
+
+    if (typeof SessionToolsModule === 'undefined') {
+        container.innerHTML = '<div class="error-box">SessionToolsModule nicht geladen</div>';
+        return;
+    }
+
+    switch (type) {
+        case 'thermometer':
+            container.innerHTML = SessionToolsModule.generateEmotionThermometerUI();
+            break;
+        case 'coping':
+            container.innerHTML = SessionToolsModule.generateCopingCardsUI();
+            break;
+        case 'breathing':
+            container.innerHTML = SessionToolsModule.generateBreathingExercisesUI();
+            break;
+        case 'mood':
+            container.innerHTML = SessionToolsModule.generateMoodDiaryUI();
+            SessionToolsModule.renderMoodHistory();
+            break;
+        case 'wheel':
+            container.innerHTML = SessionToolsModule.generateEmotionWheelUI();
+            break;
+        case 'traffic':
+            container.innerHTML = SessionToolsModule.generateTrafficLightUI();
+            break;
+        default:
+            container.innerHTML = '<p>Unbekanntes Session-Tool</p>';
+    }
+}
+
+// ============================================================
+// PSYCHOEDUCATION TOOLS LOADERS
+// ============================================================
+
+function loadPsychoeducationTool(type) {
+    const container = document.getElementById('psychoeducation-content');
+    if (!container) return;
+
+    if (typeof PsychoeducationModule === 'undefined') {
+        container.innerHTML = '<div class="error-box">PsychoeducationModule nicht geladen</div>';
+        return;
+    }
+
+    switch (type) {
+        case 'browser':
+            container.innerHTML = PsychoeducationModule.generateHandoutBrowserUI();
+            break;
+        case 'custom':
+            container.innerHTML = PsychoeducationModule.generateCustomHandoutUI();
+            break;
+        default:
+            container.innerHTML = '<p>Unbekanntes Psychoedukations-Tool</p>';
+    }
 }

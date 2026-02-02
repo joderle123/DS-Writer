@@ -271,6 +271,100 @@
     .keyboard-hints{display:flex;justify-content:center;gap:16px;margin-top:8px;font-size:.7rem;color:var(--text-muted)}
     .keyboard-hints span{padding:2px 6px;background-color:var(--bg-primary);border-radius:4px;font-family:monospace}
 
+    /* Tools Section */
+    .tools-subnav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;padding:12px;background-color:var(--bg-primary);border-radius:var(--border-radius);border:1px solid var(--border-color)}
+    .tools-tab{padding:10px 16px;border:2px solid var(--border-color);border-radius:var(--border-radius-sm);background-color:var(--bg-secondary);cursor:pointer;font-size:.85rem;font-weight:500;transition:var(--transition)}
+    .tools-tab:hover{border-color:var(--primary-color);background-color:var(--primary-light)}
+    .tools-tab.active{background-color:var(--primary-color);color:#fff;border-color:var(--primary-color)}
+    .tool-panel{display:none;padding:20px;background-color:var(--bg-secondary);border-radius:var(--border-radius);border:1px solid var(--border-color)}
+    .tool-panel.active{display:block}
+    .tool-header{margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--border-color)}
+    .tool-header h3{font-size:1.2rem;margin-bottom:4px}
+    .tool-header p{color:var(--text-secondary);font-size:.9rem}
+    .assessment-selector,.safety-selector,.treatment-selector,.family-selector,.monitoring-selector,.session-selector,.psychoeducation-selector{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+    .assessment-content,.safety-content,.treatment-content,.family-content,.monitoring-content,.session-content,.psychoeducation-content{min-height:300px}
+
+    /* Additional Tool Styles */
+    .symptom-slider-group{margin-bottom:16px;padding:12px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm)}
+    .symptom-slider-group label{display:flex;align-items:center;gap:8px;font-weight:500;margin-bottom:8px}
+    .symptom-icon{font-size:1.2rem}
+    .slider-container{display:flex;align-items:center;gap:12px}
+    .slider-container input[type="range"]{flex:1}
+    .slider-value{min-width:30px;text-align:center;font-weight:600;color:var(--primary-color)}
+    .slider-labels{display:flex;justify-content:space-between;font-size:.75rem;color:var(--text-muted)}
+    .bar-chart{display:flex;align-items:flex-end;gap:8px;height:200px;padding:16px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm)}
+    .bar-item{display:flex;flex-direction:column;align-items:center;flex:1;height:100%}
+    .bar-value{font-size:.75rem;font-weight:600;margin-bottom:4px}
+    .bar{width:100%;border-radius:4px 4px 0 0;transition:height .3s ease}
+    .bar-label{font-size:.7rem;margin-top:4px;writing-mode:vertical-rl;text-orientation:mixed}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px}
+    .stat-item{padding:12px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm);text-align:center}
+    .stat-label{font-size:.75rem;color:var(--text-muted);display:block}
+    .stat-value{font-size:1.1rem;font-weight:600;color:var(--primary-color)}
+    .stat-value.signifikant{color:var(--success-color)}
+    .genogramm-canvas{min-height:300px;border:2px dashed var(--border-color);border-radius:var(--border-radius);padding:20px;margin:16px 0}
+    .genogramm-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+    .btn-tool{padding:8px 16px;border:2px solid var(--border-color);border-radius:var(--border-radius-sm);background-color:var(--bg-secondary);cursor:pointer;font-size:.9rem;transition:var(--transition)}
+    .btn-tool:hover{border-color:var(--primary-color);background-color:var(--primary-light)}
+    .generation-row{display:flex;align-items:center;gap:16px;padding:12px;margin-bottom:8px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm)}
+    .generation-label{min-width:120px;font-weight:500;color:var(--text-secondary)}
+    .persons-row{display:flex;flex-wrap:wrap;gap:12px}
+    .person-node{display:flex;flex-direction:column;align-items:center;padding:12px;border:2px solid var(--border-color);border-radius:var(--border-radius-sm);cursor:pointer;transition:var(--transition);min-width:80px}
+    .person-node:hover,.person-node.selected{border-color:var(--primary-color);background-color:var(--primary-light)}
+    .person-node.index-patient{border-color:var(--warning-color);border-width:3px}
+    .person-symbol{font-size:1.5rem}
+    .person-symbol.verstorben{opacity:.5}
+    .person-symbol.has-illness::after{content:'◐';position:absolute;font-size:.8rem}
+    .person-name{font-size:.8rem;font-weight:500;margin-top:4px}
+    .person-alter{font-size:.7rem;color:var(--text-muted)}
+    .handout-liste{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+    .handout-item{padding:16px;background-color:var(--bg-primary);border:1px solid var(--border-color);border-radius:var(--border-radius-sm)}
+    .handout-item h4{margin:8px 0;font-size:1rem}
+    .handout-zielgruppe{font-size:.8rem;color:var(--text-muted);margin-bottom:12px}
+    .handout-kategorie{font-size:.75rem;padding:2px 8px;background-color:var(--primary-light);color:var(--primary-color);border-radius:10px}
+    .handout-actions{display:flex;gap:8px}
+    .handout-preview{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:800px;max-height:90vh;overflow-y:auto;background-color:var(--bg-secondary);border-radius:var(--border-radius);box-shadow:var(--shadow-lg);z-index:1000;padding:20px}
+    .preview-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:16px;border-bottom:2px solid var(--border-color)}
+    .btn-close{background:none;border:none;font-size:1.5rem;cursor:pointer}
+    .btn-tiny{padding:2px 6px;font-size:.75rem;border:none;background-color:var(--border-color);border-radius:4px;cursor:pointer}
+    .btn-tiny:hover{background-color:var(--primary-light)}
+    .btn-small{padding:4px 8px;font-size:.8rem;border:1px solid var(--border-color);background-color:var(--bg-secondary);border-radius:4px;cursor:pointer;margin-left:8px}
+    .bestaetigung{padding:12px;background-color:var(--success-light);color:#065f46;border-radius:var(--border-radius-sm);margin-top:16px;text-align:center}
+    .warnung{background-color:var(--danger-light);color:#991b1b;padding:12px;border-radius:var(--border-radius-sm);margin:8px 0}
+    .info-text{color:var(--text-secondary);font-size:.9rem;margin-bottom:16px}
+    .cgi-table{width:100%;border-collapse:collapse}
+    .cgi-table th,.cgi-table td{padding:10px;border:1px solid var(--border-color);text-align:left}
+    .cgi-table th{background-color:var(--bg-primary)}
+    .gas-ziele-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+    .gas-ziel-card{padding:16px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm);border-left:4px solid var(--primary-color)}
+    .ziel-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .ziel-nummer{width:24px;height:24px;background-color:var(--primary-color);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:600}
+    .ziel-bereich{font-size:.75rem;color:var(--text-muted)}
+    .ziel-gewichtung{margin-left:auto;font-size:.8rem;font-weight:600;color:var(--primary-color)}
+    .ziel-beschreibung{font-weight:500;margin-bottom:8px}
+    .ziel-letzte-bewertung{font-size:.8rem;color:var(--text-secondary)}
+    .gas-tscore{text-align:center;padding:20px;margin:16px 0}
+    .tscore-value{font-size:2rem;font-weight:700;display:block}
+    .tscore-interpretation{font-size:1rem}
+    .empfehlung-box{padding:16px;background-color:var(--primary-light);border-radius:var(--border-radius-sm);margin-top:16px}
+    .empfehlung-box h5{margin-bottom:8px;color:var(--primary-color)}
+    .referenz-box{margin-top:16px;padding:12px;background-color:var(--bg-primary);border-radius:var(--border-radius-sm);font-size:.8rem;color:var(--text-muted)}
+    .score-circle{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;margin:0 auto 16px}
+    .score-circle.hoch{background-color:var(--success-light);color:#065f46}
+    .score-circle.mittel{background-color:var(--warning-light);color:#92400e}
+    .score-circle.niedrig{background-color:var(--danger-light);color:#991b1b}
+    .score-circle.kritisch{background-color:#7f1d1d;color:#fff}
+    .kategorie-bar{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+    .kategorie-name{min-width:100px;font-size:.85rem}
+    .progress-bar{flex:1;height:8px;background-color:var(--border-color);border-radius:4px;overflow:hidden}
+    .progress-fill{height:100%;background-color:var(--primary-color);transition:width .3s ease}
+    .kategorie-prozent{min-width:40px;text-align:right;font-size:.85rem;font-weight:500}
+    .emotion-wheel{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:20px}
+    .emotion-btn{padding:12px 20px;border:2px solid var(--border-color);border-radius:var(--border-radius-sm);background-color:var(--bg-secondary);cursor:pointer;font-size:1rem;transition:var(--transition)}
+    .emotion-btn:hover{transform:scale(1.05)}
+    .breathing-animation{width:150px;height:150px;border-radius:50%;background:linear-gradient(135deg,var(--primary-color),var(--primary-hover));margin:20px auto;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600}
+    @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+
     /* Dark Mode */
     body.dark-mode{--primary-color:#818cf8;--primary-hover:#6366f1;--primary-light:#312e81;--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;--bg-primary:#0f172a;--bg-secondary:#1e293b;--border-color:#334155;--success-light:#064e3b;--warning-light:#78350f;--danger-light:#7f1d1d;--info-light:#1e3a5f}
     body.dark-mode .app-header{background:linear-gradient(135deg,#4338ca 0%,#3730a3 100%)}
@@ -320,6 +414,9 @@
             </button>
             <button type="button" class="tab-btn" data-tab="analyse">
                 <span>🔍</span> Analyse & Synthese
+            </button>
+            <button type="button" class="tab-btn" data-tab="tools">
+                <span>🧰</span> Klinische Tools
             </button>
             <button type="button" class="tab-btn" data-tab="bedienungsanleitung">
                 <span>📖</span> Bedienungsanleitung
@@ -405,7 +502,158 @@
                 </div>
             </section>
 
-            <!-- Tab 3: Bedienungsanleitung -->
+            <!-- Tab 3: Clinical Tools -->
+            <section id="tools" class="tab-panel">
+                <div class="panel-header">
+                    <h2>Klinische Tools</h2>
+                    <p>Assessments, Safety-Planning, Behandlungsplanung, Familien-Tools, Monitoring & mehr</p>
+                </div>
+
+                <!-- Tools Sub-Navigation -->
+                <div class="tools-subnav">
+                    <button type="button" class="tools-tab active" data-tool="assessments">📊 Assessments</button>
+                    <button type="button" class="tools-tab" data-tool="safety">🛡️ Sicherheit</button>
+                    <button type="button" class="tools-tab" data-tool="treatment">📋 Behandlung</button>
+                    <button type="button" class="tools-tab" data-tool="family">👨‍👩‍👧 Familie</button>
+                    <button type="button" class="tools-tab" data-tool="monitoring">📈 Monitoring</button>
+                    <button type="button" class="tools-tab" data-tool="session">🎯 Session-Tools</button>
+                    <button type="button" class="tools-tab" data-tool="psychoeducation">📚 Psychoedukation</button>
+                </div>
+
+                <!-- Tools Content Panels -->
+                <div class="tools-content">
+                    <!-- Assessments Panel -->
+                    <div id="tool-assessments" class="tool-panel active">
+                        <div class="tool-header">
+                            <h3>📊 Standardisierte Assessments</h3>
+                            <p>SDQ, SCARED, PHQ-A - validierte Screening-Instrumente</p>
+                        </div>
+                        <div class="assessment-selector">
+                            <button type="button" class="btn btn-secondary" onclick="loadAssessment('sdq')">SDQ (Stärken & Schwächen)</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadAssessment('scared')">SCARED (Angst-Screening)</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadAssessment('phqa')">PHQ-A (Depression)</button>
+                        </div>
+                        <div id="assessment-content" class="assessment-content">
+                            <div class="placeholder-card">
+                                <p>Wählen Sie ein Assessment aus, um zu beginnen.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safety Panel -->
+                    <div id="tool-safety" class="tool-panel">
+                        <div class="tool-header">
+                            <h3>🛡️ Sicherheitsmodul</h3>
+                            <p>Suizidalitäts-Screening & Safety-Plan (nach C-SSRS & Stanley-Brown)</p>
+                        </div>
+                        <div class="safety-selector">
+                            <button type="button" class="btn btn-secondary" onclick="loadSafetyTool('screening')">🔍 Suizidalitäts-Screening</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadSafetyTool('safetyplan')">📋 Safety Plan erstellen</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadSafetyTool('resources')">📞 Krisenressourcen</button>
+                        </div>
+                        <div id="safety-content" class="safety-content">
+                            <div class="placeholder-card">
+                                <p>Wählen Sie ein Tool aus, um zu beginnen.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Treatment Panel -->
+                    <div id="tool-treatment" class="tool-panel">
+                        <div class="tool-header">
+                            <h3>📋 Behandlungsplanung</h3>
+                            <p>SMART-Ziele, Therapiemodule, Behandlungspläne</p>
+                        </div>
+                        <div class="treatment-selector">
+                            <button type="button" class="btn btn-secondary" onclick="loadTreatmentTool('smart')">🎯 SMART-Ziele</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadTreatmentTool('modules')">📚 Therapiemodule</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadTreatmentTool('plan')">📋 Behandlungsplan</button>
+                        </div>
+                        <div id="treatment-content" class="treatment-content">
+                            <div class="placeholder-card">
+                                <p>Wählen Sie ein Tool aus, um zu beginnen.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Family Panel -->
+                    <div id="tool-family" class="tool-panel">
+                        <div class="tool-header">
+                            <h3>👨‍👩‍👧 Familien-Tools</h3>
+                            <p>Genogramm, Familienressourcen, Circumplex-Modell</p>
+                        </div>
+                        <div class="family-selector">
+                            <button type="button" class="btn btn-secondary" onclick="loadFamilyTool('genogramm')">🌳 Genogramm</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadFamilyTool('ressourcen')">💪 Familienressourcen</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadFamilyTool('circumplex')">📐 Circumplex-Modell</button>
+                        </div>
+                        <div id="family-content" class="family-content">
+                            <div class="placeholder-card">
+                                <p>Wählen Sie ein Tool aus, um zu beginnen.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monitoring Panel -->
+                    <div id="tool-monitoring" class="tool-panel">
+                        <div class="tool-header">
+                            <h3>📈 Verlaufsmonitoring</h3>
+                            <p>Symptom-Tracker, GAS, CGI</p>
+                        </div>
+                        <div class="monitoring-selector">
+                            <button type="button" class="btn btn-secondary" onclick="loadMonitoringTool('tracker')">📊 Symptom-Tracker</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadMonitoringTool('verlauf')">📈 Verlaufsanzeige</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadMonitoringTool('gas')">🎯 GAS</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadMonitoringTool('cgi')">📋 CGI</button>
+                        </div>
+                        <div id="monitoring-content" class="monitoring-content">
+                            <div class="placeholder-card">
+                                <p>Wählen Sie ein Tool aus, um zu beginnen.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Session Tools Panel -->
+                    <div id="tool-session" class="tool-panel">
+                        <div class="tool-header">
+                            <h3>🎯 Session-Tools</h3>
+                            <p>Interaktive Werkzeuge für die therapeutische Sitzung</p>
+                        </div>
+                        <div class="session-selector">
+                            <button type="button" class="btn btn-secondary" onclick="loadSessionTool('thermometer')">🌡️ Gefühlsthermometer</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadSessionTool('coping')">💪 Coping-Karten</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadSessionTool('breathing')">🫁 Atemübungen</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadSessionTool('mood')">📔 Stimmungstagebuch</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadSessionTool('wheel')">🎡 Gefühlsrad</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadSessionTool('traffic')">🚦 Ampelsystem</button>
+                        </div>
+                        <div id="session-content" class="session-content">
+                            <div class="placeholder-card">
+                                <p>Wählen Sie ein Tool aus, um zu beginnen.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Psychoeducation Panel -->
+                    <div id="tool-psychoeducation" class="tool-panel">
+                        <div class="tool-header">
+                            <h3>📚 Psychoedukation</h3>
+                            <p>Druckbare Handouts für Patienten, Eltern und Schulen</p>
+                        </div>
+                        <div class="psychoeducation-selector">
+                            <button type="button" class="btn btn-secondary" onclick="loadPsychoeducationTool('browser')">📄 Handout-Bibliothek</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadPsychoeducationTool('custom')">✏️ Eigenes Handout erstellen</button>
+                        </div>
+                        <div id="psychoeducation-content" class="psychoeducation-content">
+                            <div class="placeholder-card">
+                                <p>Wählen Sie eine Option aus, um zu beginnen.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 4: Bedienungsanleitung -->
             <section id="bedienungsanleitung" class="tab-panel">
                 <div class="panel-header">
                     <h2>Bedienungsanleitung für das Kind</h2>
@@ -483,7 +731,7 @@
             <div class="keyboard-hints">
                 <span>Strg+Enter: Analyse</span>
                 <span>Strg+S: Speichern</span>
-                <span>1/2/3: Tabs</span>
+                <span>1/2/3/4: Tabs</span>
             </div>
             <p style="font-size:.7rem;color:var(--text-muted);margin-top:8px;">
                 Wissenschaftliche Grundlagen: Felitti et al. (1998), Engel (1977), Bowlby (1969),
@@ -492,9 +740,19 @@
         </footer>
     </div>
 
+    <!-- Toast Container for notifications -->
+    <div id="toast-container"></div>
+
     <!-- Scripts -->
     <script src="js/clinical-knowledge.js"></script>
     <script src="js/clinical-engine.js"></script>
+    <script src="js/modules/safety-module.js"></script>
+    <script src="js/modules/assessments-module.js"></script>
+    <script src="js/modules/treatment-module.js"></script>
+    <script src="js/modules/family-tools.js"></script>
+    <script src="js/modules/monitoring-module.js"></script>
+    <script src="js/modules/psychoeducation-module.js"></script>
+    <script src="js/modules/session-tools.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
