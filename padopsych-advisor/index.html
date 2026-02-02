@@ -885,88 +885,44 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
+        <!-- Header - Simplified -->
         <header class="app-header">
             <div class="header-top">
                 <div class="header-brand">
                     <span class="header-logo">🧠</span>
                     <div class="header-titles">
                         <h1 class="app-title">PädoPsych Advisor</h1>
-                        <p class="app-subtitle">Umfassendes klinisches Assessment - Kinder- und Jugendpsychiatrie</p>
+                        <p class="app-subtitle">Klinisches Assessment für Kinder- und Jugendpsychiatrie</p>
                     </div>
                 </div>
                 <div class="header-controls">
-                    <div class="autosave-indicator saved" id="autosave-indicator">
-                        <span class="autosave-dot"></span>
-                        <span id="autosave-text">Automatisch gespeichert</span>
-                    </div>
-                    <button type="button" class="header-btn" onclick="newCase()" title="Neuer Fall" data-tooltip="Neuen Fall beginnen">
-                        <span>➕</span> Neu
+                    <span class="autosave-indicator saved" id="autosave-indicator" style="font-size: 0.8rem;">
+                        <span id="autosave-text">✓ Gespeichert</span>
+                    </span>
+                    <button type="button" class="header-btn" onclick="newCase()" title="Neuer Fall">
+                        ➕ Neu
                     </button>
                     <div class="dropdown-wrapper" id="saved-cases-dropdown">
-                        <button type="button" class="header-btn" onclick="toggleSavedCasesDropdown()" data-tooltip="Gespeicherte Fälle laden">
-                            <span>📁</span> Fälle
+                        <button type="button" class="header-btn" onclick="toggleSavedCasesDropdown()">
+                            📁 Fälle
                         </button>
                         <div class="dropdown-menu" id="saved-cases-list">
                             <div class="dropdown-empty">Keine gespeicherten Fälle</div>
                         </div>
                     </div>
-                    <button type="button" class="header-btn" id="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode" data-tooltip="Dunkelmodus umschalten">
+                    <button type="button" class="header-btn" id="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">
                         🌙
                     </button>
                 </div>
             </div>
-            <!-- Progress Indicator -->
-            <div class="progress-container" id="header-progress">
-                <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+            <!-- Simple Progress Bar -->
+            <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px;">
+                <div class="progress-container" id="header-progress" style="flex: 1; max-width: none;">
+                    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <span class="progress-text" id="progress-text" style="margin: 0; white-space: nowrap;">0/10</span>
             </div>
-            <p class="progress-text" id="progress-text">0 von 10 Bereichen ausgefüllt</p>
         </header>
-
-        <!-- Quick Navigation Sidebar -->
-        <nav class="quick-nav" id="quick-nav">
-            <button class="quick-nav-toggle" onclick="toggleQuickNav()">◀</button>
-            <button class="quick-nav-item active" data-section="identifikation" onclick="scrollToSection('identifikation')">
-                👤
-                <span class="quick-nav-tooltip">Identifikation</span>
-            </button>
-            <button class="quick-nav-item" data-section="aktuelleSymptomatik" onclick="scrollToSection('aktuelleSymptomatik')">
-                🎯
-                <span class="quick-nav-tooltip">Aktuelle Symptomatik</span>
-            </button>
-            <button class="quick-nav-item" data-section="entwicklungsanamnese" onclick="scrollToSection('entwicklungsanamnese')">
-                📈
-                <span class="quick-nav-tooltip">Entwicklungsanamnese</span>
-            </button>
-            <button class="quick-nav-item" data-section="medizinischeAnamnese" onclick="scrollToSection('medizinischeAnamnese')">
-                🏥
-                <span class="quick-nav-tooltip">Medizinische Anamnese</span>
-            </button>
-            <button class="quick-nav-item" data-section="familienanamnese" onclick="scrollToSection('familienanamnese')">
-                👨‍👩‍👧‍👦
-                <span class="quick-nav-tooltip">Familienanamnese</span>
-            </button>
-            <button class="quick-nav-item" data-section="psychosozialesUmfeld" onclick="scrollToSection('psychosozialesUmfeld')">
-                🌍
-                <span class="quick-nav-tooltip">Psychosoziales Umfeld</span>
-            </button>
-            <button class="quick-nav-item" data-section="traumaACEs" onclick="scrollToSection('traumaACEs')">
-                ⚠️
-                <span class="quick-nav-tooltip">Trauma & ACEs</span>
-            </button>
-            <button class="quick-nav-item" data-section="risikoSchutz" onclick="scrollToSection('risikoSchutz')">
-                🛡️
-                <span class="quick-nav-tooltip">Risiko & Schutzfaktoren</span>
-            </button>
-            <button class="quick-nav-item" data-section="psychopathBefund" onclick="scrollToSection('psychopathBefund')">
-                🧠
-                <span class="quick-nav-tooltip">Psychopathologischer Befund</span>
-            </button>
-            <button class="quick-nav-item" data-section="symptomChecklisten" onclick="scrollToSection('symptomChecklisten')">
-                📋
-                <span class="quick-nav-tooltip">Symptom-Checklisten</span>
-            </button>
-        </nav>
 
         <!-- Tab Navigation -->
         <nav class="tab-navigation">
@@ -11869,24 +11825,19 @@ function generateDynamicForm() {
         `;
     });
 
-    // Add submit button with keyboard hints
+    // Add submit button - simplified
     html += `
-        <div class="form-actions" style="flex-direction: column; align-items: center; gap: 16px;">
-            <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
-                <button type="button" class="btn btn-secondary" onclick="resetForm()" data-tooltip="Alle Eingaben löschen">
-                    🗑️ Zurücksetzen
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="toggleAllSections(true)" data-tooltip="Alle Bereiche öffnen">
-                    📂 Alle öffnen
-                </button>
-                <button type="submit" class="btn btn-primary btn-large" data-tooltip="Analyse der eingegebenen Daten starten">
-                    🔍 Analyse starten <kbd class="kbd">Strg+Enter</kbd>
-                </button>
-            </div>
-            <p style="font-size: .85rem; color: var(--text-muted); text-align: center;">
-                💡 <strong>Tipp:</strong> Nutzen Sie die Seitenleiste links für schnelle Navigation • Daten werden automatisch gespeichert
-            </p>
+        <div class="form-actions" style="justify-content: center; gap: 16px; margin-top: 32px;">
+            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                Zurücksetzen
+            </button>
+            <button type="submit" class="btn btn-primary btn-large">
+                🔍 Analyse starten
+            </button>
         </div>
+        <p style="font-size: .8rem; color: var(--text-muted); text-align: center; margin-top: 12px;">
+            Daten werden automatisch gespeichert • Strg+Enter für Schnellanalyse
+        </p>
     `;
 
     formContainer.innerHTML = html;
@@ -13068,49 +13019,335 @@ function generatePrognosis(resilienz, risikoprofil, aceScore, hypothesen) {
 }
 
 /**
- * Render Multi-Model Synthesis
+ * Render Multi-Model Synthesis - SIMPLIFIED & COHERENT VERSION
  */
 function renderSynthese(synthese) {
     const container = document.getElementById('synthese-container');
     if (!container || !synthese) return;
 
-    const models = [
-        { key: 'integriert', icon: '🎯', title: 'Ganzheitliche Fallkonzeption' },
-        { key: 'biopsychosozial', icon: '🧬', title: 'Bio-Psycho-Soziales Modell' },
-        { key: 'systemisch', icon: '👨‍👩‍👧', title: 'Systemische Perspektive' },
-        { key: 'trauma', icon: '💔', title: 'Trauma-Perspektive' },
-        { key: 'bindung', icon: '🤝', title: 'Bindungs-Perspektive' },
-        { key: 'entwicklung', icon: '📈', title: 'Entwicklungs-Perspektive' },
-        { key: 'oekologisch', icon: '🌍', title: 'Ökologisches Modell' },
-        { key: 'resilienz', icon: '💪', title: 'Resilienz-Profil' }
-    ];
-
     // Store full synthese for integrated view
     window.currentSynthese = synthese;
 
-    let html = '<div class="synthese-tabs">';
-    models.forEach((m, i) => {
-        html += `
-            <button type="button" class="synthese-tab ${i === 0 ? 'active' : ''}"
-                    onclick="switchSyntheseTab('${m.key}')">
-                ${m.icon} ${m.title}
-            </button>
-        `;
-    });
-    html += '</div><div class="synthese-content">';
+    // Get analysis result for context
+    const result = window.currentAnalysisResult || {};
+    const grunddaten = result.grunddaten || {};
+    const hypothesen = result.hypothesen || [];
+    const risikoprofil = result.risikoprofil || {};
+    const aceScore = result.aceScore || {};
 
-    models.forEach((m, i) => {
-        // For integrated view, pass full synthese; otherwise pass specific model data
-        const data = m.key === 'integriert' ? synthese : synthese[m.key];
-        html += `
-            <div class="synthese-panel ${i === 0 ? 'active' : ''}" id="synthese-${m.key}">
-                ${renderSyntheseContent(m.key, data)}
+    // Create ONE coherent narrative instead of multiple tabs
+    let html = `
+        <div class="coherent-synthesis">
+            <!-- Main Narrative Header -->
+            <div style="text-align: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid var(--border-color);">
+                <h2 style="margin: 0 0 8px; color: var(--primary-color);">Klinische Fallkonzeption</h2>
+                <p style="color: var(--text-secondary); margin: 0;">Integrierte Synthese aller Befunde und Perspektiven</p>
             </div>
+
+            ${renderCoherentNarrative(synthese, grunddaten, hypothesen, risikoprofil, aceScore)}
+
+            <!-- Collapsible Detail Views -->
+            <div style="margin-top: 32px; border-top: 2px solid var(--border-color); padding-top: 24px;">
+                <h3 style="margin: 0 0 16px; color: var(--text-secondary); font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                    <span>📚</span> Detailansichten der theoretischen Modelle
+                    <span style="font-weight: normal; font-size: 0.85rem;">(optional)</span>
+                </h3>
+                <div class="model-accordions">
+                    ${renderModelAccordions(synthese)}
+                </div>
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+function renderCoherentNarrative(synthese, grunddaten, hypothesen, risikoprofil, aceScore) {
+    const bps = synthese.biopsychosozial || {};
+    const sys = synthese.systemisch || {};
+    const trauma = synthese.trauma || {};
+    const bindung = synthese.bindung || {};
+    const entwicklung = synthese.entwicklung || {};
+    const resilienz = synthese.resilienz || {};
+
+    const alter = grunddaten.alter || '?';
+    const geschlecht = grunddaten.geschlecht;
+    const geschlechtText = geschlecht === 'weiblich' ? 'Mädchen' : geschlecht === 'männlich' ? 'Junge' : 'Kind/Jugendliche(r)';
+    const pronomen = geschlecht === 'weiblich' ? 'Sie' : geschlecht === 'männlich' ? 'Er' : 'Das Kind';
+    const possessiv = geschlecht === 'weiblich' ? 'ihre' : geschlecht === 'männlich' ? 'seine' : 'seine';
+    const hauptdiagnose = hypothesen[0]?.label || 'die vorliegende Symptomatik';
+
+    let html = '';
+
+    // ===== SECTION 1: ZUSAMMENFASSUNG (Kernaussage) =====
+    html += `
+        <section class="narrative-section" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+            <h3 style="margin: 0 0 12px; color: #1e40af; font-size: 1.1rem;">Zusammenfassung</h3>
+            <p style="font-size: 1rem; line-height: 1.8; margin: 0;">
+                <strong>${alter}-jährige${geschlecht === 'weiblich' ? 's' : 'r'} ${geschlechtText}</strong> mit
+                <strong>${hauptdiagnose}</strong> (Verdachtsgrad: ${hypothesen[0]?.verdachtsgrad || '?'}%).
+                ${hypothesen.length > 1 ? `Differentialdiagnostisch kommen ${hypothesen.slice(1, 3).map(h => h.label).join(' und ')} in Betracht.` : ''}
+                ${aceScore.score > 0 ? `Belastungsanamnese mit ACE-Score ${aceScore.score}/10.` : ''}
+                ${risikoprofil.cgas ? `Aktuelles Funktionsniveau: CGAS ${risikoprofil.cgas.score}/100.` : ''}
+            </p>
+        </section>
+    `;
+
+    // ===== SECTION 2: WIE ENTSTAND DIE PROBLEMATIK? =====
+    html += `
+        <section class="narrative-section" style="background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+            <h3 style="margin: 0 0 16px; color: var(--text-primary); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                <span style="background: #fef3c7; padding: 4px 8px; border-radius: 6px;">🔍</span>
+                Wie entstand die Problematik?
+            </h3>
+            <div style="font-size: 0.95rem; line-height: 1.8;">
+    `;
+
+    // Prädisponierende Faktoren als Fließtext
+    const predisposing = [];
+
+    // Biologische Vulnerabilität
+    const bioVuln = (bps.biologisch || []).slice(0, 3).map(f => typeof f === 'object' ? f.faktor : f);
+    if (bioVuln.length > 0) {
+        predisposing.push(`biologische Faktoren (${bioVuln.join(', ')})`);
+    }
+
+    // Bindungserfahrungen
+    if (bindung.einschätzung?.muster && !bindung.einschätzung.muster.includes('sicher')) {
+        predisposing.push(`${bindung.einschätzung.muster} Bindungsmuster`);
+    }
+
+    // Frühe Belastungen
+    if (aceScore.score >= 2) {
+        predisposing.push(`belastende Kindheitserfahrungen (${aceScore.identifiziert?.slice(0, 2).join(', ') || 'ACE positiv'})`);
+    }
+
+    // Entwicklungsauffälligkeiten
+    if (entwicklung.auffälligkeiten && entwicklung.auffälligkeiten.length > 0) {
+        predisposing.push(`Entwicklungsauffälligkeiten (${entwicklung.auffälligkeiten.slice(0, 2).join(', ')})`);
+    }
+
+    if (predisposing.length > 0) {
+        html += `<p><strong>Prädisponierende Faktoren:</strong> ${pronomen} zeigt eine Vulnerabilität durch ${predisposing.join(', ')}.</p>`;
+    }
+
+    // Auslösende Faktoren
+    if (trauma.trigger && trauma.trigger.length > 0) {
+        html += `<p><strong>Auslösende Situation:</strong> ${trauma.trigger.slice(0, 3).join('; ')}.</p>`;
+    }
+
+    html += `
+            </div>
+        </section>
+    `;
+
+    // ===== SECTION 3: WAS HÄLT DIE PROBLEMATIK AUFRECHT? =====
+    html += `
+        <section class="narrative-section" style="background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+            <h3 style="margin: 0 0 16px; color: var(--text-primary); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                <span style="background: #fee2e2; padding: 4px 8px; border-radius: 6px;">🔄</span>
+                Was hält die Problematik aufrecht?
+            </h3>
+            <div style="font-size: 0.95rem; line-height: 1.8;">
+    `;
+
+    const maintaining = [];
+
+    // Psychologische Faktoren
+    const psychoMaint = (bps.psychologisch || []).filter(f => {
+        const text = typeof f === 'object' ? f.faktor : f;
+        return text.toLowerCase().includes('vermeidung') || text.toLowerCase().includes('grübel') ||
+               text.toLowerCase().includes('negativ') || text.toLowerCase().includes('selbstwert');
+    }).slice(0, 2);
+    if (psychoMaint.length > 0) {
+        maintaining.push(`intrapsychische Muster (${psychoMaint.map(f => typeof f === 'object' ? f.faktor : f).join(', ')})`);
+    }
+
+    // Systemische Faktoren
+    if (sys.aspekte && sys.aspekte.length > 0) {
+        const sysFactors = sys.aspekte.slice(0, 2).map(a => a.name);
+        maintaining.push(`familiäre Dynamik (${sysFactors.join(', ')})`);
+    }
+
+    // Soziale Faktoren
+    const sozialMaint = (bps.sozial || []).filter(f => {
+        const text = typeof f === 'object' ? f.faktor : f;
+        return text.toLowerCase().includes('mobbing') || text.toLowerCase().includes('isolation') || text.toLowerCase().includes('konflikt');
+    }).slice(0, 2);
+    if (sozialMaint.length > 0) {
+        maintaining.push(`soziale Belastungen (${sozialMaint.map(f => typeof f === 'object' ? f.faktor : f).join(', ')})`);
+    }
+
+    if (maintaining.length > 0) {
+        html += `<p>Die Symptomatik wird aufrechterhalten durch ${maintaining.join(', ')}.</p>`;
+    } else {
+        html += `<p>Aufrechterhaltende Faktoren sind im Gespräch genauer zu explorieren.</p>`;
+    }
+
+    html += `
+            </div>
+        </section>
+    `;
+
+    // ===== SECTION 4: RESSOURCEN & SCHUTZFAKTOREN =====
+    const allResources = [
+        ...(resilienz.individuell || []).slice(0, 3),
+        ...(resilienz.familiär || []).slice(0, 2),
+        ...(resilienz.sozial || []).slice(0, 2)
+    ];
+
+    html += `
+        <section class="narrative-section" style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #10b981;">
+            <h3 style="margin: 0 0 16px; color: #065f46; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                <span style="background: #d1fae5; padding: 4px 8px; border-radius: 6px;">💪</span>
+                Ressourcen & Schutzfaktoren
+            </h3>
+            <div style="font-size: 0.95rem; line-height: 1.8;">
+                ${allResources.length > 0 ?
+                    `<p><strong>Identifizierte Stärken:</strong> ${allResources.join(', ')}.</p>` :
+                    `<p>Ressourcen sind im Gespräch gezielt zu explorieren (wichtig für Therapieplanung!).</p>`
+                }
+                ${risikoprofil.schutzfaktoren && risikoprofil.schutzfaktoren.length > 3 ?
+                    `<p style="color: #047857;"><strong>Ressourcenbilanz:</strong> Gute Schutzfaktoren-Ausstattung (${risikoprofil.schutzfaktoren.length} identifiziert).</p>` : ''
+                }
+            </div>
+        </section>
+    `;
+
+    // ===== SECTION 5: BEHANDLUNGSEMPFEHLUNG =====
+    html += `
+        <section class="narrative-section" style="background: linear-gradient(135deg, #f5f3ff, #ede9fe); padding: 20px; border-radius: 12px; border-left: 4px solid #7c3aed;">
+            <h3 style="margin: 0 0 16px; color: #5b21b6; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                <span style="background: #ede9fe; padding: 4px 8px; border-radius: 6px;">💊</span>
+                Behandlungsempfehlung
+            </h3>
+            <div style="font-size: 0.95rem; line-height: 1.8;">
+    `;
+
+    // Dringlichkeit
+    if (risikoprofil.dringlichkeit === 'sofort') {
+        html += `<p style="color: #dc2626; font-weight: 600;">⚠️ SOFORTIGER HANDLUNGSBEDARF aufgrund akuter Risikofaktoren!</p>`;
+    }
+
+    // Therapieempfehlung basierend auf Hauptdiagnose
+    html += `<p><strong>Empfohlenes Vorgehen:</strong></p><ul style="margin: 8px 0; padding-left: 24px;">`;
+
+    if (hypothesen[0]) {
+        const label = hypothesen[0].label.toLowerCase();
+        if (label.includes('depress')) {
+            html += `<li>Kognitive Verhaltenstherapie (KVT) als Erstlinienbehandlung</li>`;
+            html += `<li>Bei Jugendlichen: IPT-A als Alternative</li>`;
+        } else if (label.includes('angst') || label.includes('phobie')) {
+            html += `<li>Expositionsbasierte Verhaltenstherapie</li>`;
+            html += `<li>Angstbewältigungstraining</li>`;
+        } else if (label.includes('adhs') || label.includes('aufmerksamkeit')) {
+            html += `<li>Multimodale Behandlung (Elterntraining + Kind-zentrierte Intervention)</li>`;
+            html += `<li>Ggf. Medikation nach Leitlinie erwägen</li>`;
+        } else if (label.includes('trauma') || label.includes('ptbs')) {
+            html += `<li>Traumafokussierte KVT (TF-KVT) oder EMDR</li>`;
+            html += `<li>Stabilisierung vor Traumaexposition</li>`;
+        } else {
+            html += `<li>Störungsspezifische Psychotherapie nach Leitlinie</li>`;
+        }
+    }
+
+    html += `<li>Psychoedukation für Kind und Eltern</li>`;
+    if (alter < 12) {
+        html += `<li>Intensive Elterneinbindung (mind. 50% der Therapiezeit)</li>`;
+    }
+    html += `</ul>`;
+
+    // Prognose
+    const prognose = (resilienz.individuell?.length || 0) + (resilienz.familiär?.length || 0) >= 4 && aceScore.score < 4 ? 'günstig' :
+                     aceScore.score >= 6 || risikoprofil.akut?.length > 0 ? 'vorsichtig' : 'moderat';
+    const prognoseColor = prognose === 'günstig' ? '#059669' : prognose === 'vorsichtig' ? '#dc2626' : '#d97706';
+
+    html += `<p style="margin-top: 12px;"><strong>Prognose:</strong> <span style="color: ${prognoseColor}; font-weight: 600;">${prognose.toUpperCase()}</span></p>`;
+
+    html += `
+            </div>
+        </section>
+    `;
+
+    return html;
+}
+
+function renderModelAccordions(synthese) {
+    const models = [
+        { key: 'biopsychosozial', icon: '🧬', title: 'Bio-Psycho-Soziales Modell', data: synthese.biopsychosozial },
+        { key: 'systemisch', icon: '👨‍👩‍👧', title: 'Systemische Perspektive', data: synthese.systemisch },
+        { key: 'trauma', icon: '💔', title: 'Trauma-Perspektive', data: synthese.trauma },
+        { key: 'bindung', icon: '🤝', title: 'Bindungs-Perspektive', data: synthese.bindung },
+        { key: 'entwicklung', icon: '📈', title: 'Entwicklungs-Perspektive', data: synthese.entwicklung },
+        { key: 'resilienz', icon: '💪', title: 'Resilienz-Profil', data: synthese.resilienz }
+    ];
+
+    let html = '';
+    models.forEach(m => {
+        if (!m.data) return;
+
+        html += `
+            <details class="model-accordion" style="margin-bottom: 8px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                <summary style="padding: 12px 16px; background: var(--bg-primary); cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                    <span>${m.icon}</span> ${m.title}
+                </summary>
+                <div style="padding: 16px; background: var(--bg-secondary); font-size: 0.9rem;">
+                    ${renderModelDetail(m.key, m.data)}
+                </div>
+            </details>
         `;
     });
 
-    html += '</div>';
-    container.innerHTML = html;
+    return html;
+}
+
+function renderModelDetail(key, data) {
+    if (!data) return '<p>Keine Daten</p>';
+
+    const formatList = (items) => {
+        if (!items || items.length === 0) return '<em>Nicht dokumentiert</em>';
+        return '<ul style="margin: 4px 0; padding-left: 20px;">' +
+               items.map(f => `<li>${typeof f === 'object' ? f.faktor || f.name : f}</li>`).join('') +
+               '</ul>';
+    };
+
+    switch(key) {
+        case 'biopsychosozial':
+            return `
+                <p><strong>Biologisch:</strong></p>${formatList(data.biologisch)}
+                <p style="margin-top: 12px;"><strong>Psychologisch:</strong></p>${formatList(data.psychologisch)}
+                <p style="margin-top: 12px;"><strong>Sozial:</strong></p>${formatList(data.sozial)}
+            `;
+        case 'systemisch':
+            return `
+                <p><strong>Familienstruktur:</strong> ${data.struktur || '-'}</p>
+                <p><strong>Systemische Aspekte:</strong></p>
+                ${data.aspekte ? formatList(data.aspekte.map(a => `${a.name}: ${a.inhalt}`)) : '<em>Nicht dokumentiert</em>'}
+            `;
+        case 'trauma':
+            return `
+                <p><strong>Trauma-Typ:</strong></p>${formatList(data.traumatyp?.map(t => t.typ) || [])}
+                <p style="margin-top: 12px;"><strong>Reaktionsmuster:</strong> ${data.reaktionsmuster || '-'}</p>
+            `;
+        case 'bindung':
+            return `
+                <p><strong>Bindungsmuster:</strong> ${data.einschätzung?.muster || '-'}</p>
+                <p><strong>Beschreibung:</strong> ${data.einschätzung?.beschreibung || '-'}</p>
+            `;
+        case 'entwicklung':
+            return `
+                <p><strong>Phase:</strong> ${data.entwicklungsphase || '-'}</p>
+                <p><strong>Auffälligkeiten:</strong></p>${formatList(data.auffälligkeiten)}
+            `;
+        case 'resilienz':
+            return `
+                <p><strong>Individuell:</strong></p>${formatList(data.individuell)}
+                <p style="margin-top: 12px;"><strong>Familiär:</strong></p>${formatList(data.familiär)}
+                <p style="margin-top: 12px;"><strong>Sozial:</strong></p>${formatList(data.sozial)}
+            `;
+        default:
+            return '<p>Keine Details verfügbar</p>';
+    }
 }
 
 function switchSyntheseTab(key) {
@@ -15488,21 +15725,8 @@ function initFAB() {
     fabContainer.className = 'fab-container';
     fabContainer.id = 'fab-container';
     fabContainer.innerHTML = `
-        <button class="fab fab-secondary" onclick="scrollToTop()" data-tooltip="Nach oben scrollen">
-            ⬆️
-            <span class="fab-tooltip">Nach oben</span>
-        </button>
-        <button class="fab fab-secondary" onclick="toggleAllSections(true)" data-tooltip="Alle Bereiche aufklappen">
-            📂
-            <span class="fab-tooltip">Alle öffnen</span>
-        </button>
-        <button class="fab fab-secondary" onclick="toggleAllSections(false)" data-tooltip="Alle Bereiche zuklappen">
-            📁
-            <span class="fab-tooltip">Alle schließen</span>
-        </button>
-        <button class="fab fab-primary" onclick="startAnalysis()" data-tooltip="Analyse starten">
+        <button class="fab fab-primary" onclick="startAnalysis()" title="Analyse starten (Strg+Enter)" style="box-shadow: 0 4px 20px rgba(99,102,241,0.4);">
             🔍
-            <span class="fab-tooltip">Analyse starten</span>
         </button>
     `;
     document.body.appendChild(fabContainer);
@@ -15597,8 +15821,9 @@ function hideLoading() {
     }
 }
 
-// Welcome Card
+// Welcome Card - disabled for cleaner UI
 function initWelcomeCard() {
+    return; // Disabled - UI should be self-explanatory
     const dismissed = localStorage.getItem('padopsych_welcome_dismissed');
     if (dismissed) return;
 
