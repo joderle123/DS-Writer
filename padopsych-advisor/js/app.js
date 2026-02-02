@@ -4,6 +4,8 @@
  * Dynamic form generation from CLINICAL_KNOWLEDGE base
  */
 
+console.log('[APP.JS] Script loading started');
+
 // ============================================================
 // GLOBAL VARIABLES
 // ============================================================
@@ -50,20 +52,32 @@ const SECTION_ICONS = {
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('[INIT] DOMContentLoaded fired');
     try {
+        console.log('[INIT] 1. initializeCaseData...');
         initializeCaseData();
+        console.log('[INIT] 2. generateDynamicForm...');
         generateDynamicForm();
+        console.log('[INIT] 3. initTabNavigation...');
         initTabNavigation();
+        console.log('[INIT] 4. initToastContainer...');
         initToastContainer();
+        console.log('[INIT] 5. initKeyboardShortcuts...');
         initKeyboardShortcuts();
+        console.log('[INIT] 6. initSavedCasesDropdown...');
         initSavedCasesDropdown();
+        console.log('[INIT] 7. loadCurrentCase...');
         loadCurrentCase();
+        console.log('[INIT] 8. startAutosave...');
         startAutosave();
+        console.log('[INIT] 9. initDarkMode...');
         initDarkMode();
-        console.log('PädoPsych Advisor v2 initialized');
+        console.log('[INIT] ✓ PädoPsych Advisor v2 initialized successfully');
     } catch (e) {
-        console.error('Initialization error:', e);
-        showToast('Fehler bei der Initialisierung: ' + e.message, 'error');
+        console.error('[INIT] ✗ Initialization error:', e);
+        console.error('[INIT] Stack:', e.stack);
+        // Also show error visually
+        document.body.innerHTML = '<div style="padding:50px;color:red;font-size:18px;"><h1>Initialisierungsfehler</h1><p>' + e.message + '</p><pre>' + e.stack + '</pre></div>' + document.body.innerHTML;
     }
 });
 
