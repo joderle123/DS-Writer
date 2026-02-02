@@ -10877,24 +10877,24 @@ const SessionToolsModule = {
             const emojiX = centerX + emojiRadius * Math.cos(midAngle);
             const emojiY = centerY + emojiRadius * Math.sin(midAngle);
 
-            svgPaths += \`
-                <path d="M \${x1} \${y1} L \${x2} \${y2} A \${outerRadius} \${outerRadius} 0 0 1 \${x3} \${y3} L \${x4} \${y4} A \${innerRadius} \${innerRadius} 0 0 0 \${x1} \${y1}"
-                      fill="\${emotion.color}" fill-opacity="0.7" stroke="white" stroke-width="2"
+            svgPaths += `
+                <path d="M ${x1} ${y1} L ${x2} ${y2} A ${outerRadius} ${outerRadius} 0 0 1 ${x3} ${y3} L ${x4} ${y4} A ${innerRadius} ${innerRadius} 0 0 0 ${x1} ${y1}"
+                      fill="${emotion.color}" fill-opacity="0.7" stroke="white" stroke-width="2"
                       style="cursor: pointer; transition: all 0.3s ease;"
                       onmouseover="this.style.fillOpacity='1'; this.style.transform='scale(1.05)'; this.style.transformOrigin='center';"
                       onmouseout="this.style.fillOpacity='0.7'; this.style.transform='scale(1)';"
-                      onclick="SessionToolsModule.selectPrimaryEmotion('\${key}')" />
-            \`;
+                      onclick="SessionToolsModule.selectPrimaryEmotion('${key}')" />
+            `;
 
-            svgLabels += \`
-                <text x="\${emojiX}" y="\${emojiY}" text-anchor="middle" dominant-baseline="middle"
-                      font-size="28" style="pointer-events: none;">\${emotion.emoji}</text>
-                <text x="\${labelX}" y="\${labelY + 20}" text-anchor="middle" dominant-baseline="middle"
-                      font-size="12" font-weight="bold" fill="#1e293b" style="pointer-events: none;">\${emotion.name}</text>
-            \`;
+            svgLabels += `
+                <text x="${emojiX}" y="${emojiY}" text-anchor="middle" dominant-baseline="middle"
+                      font-size="28" style="pointer-events: none;">${emotion.emoji}</text>
+                <text x="${labelX}" y="${labelY + 20}" text-anchor="middle" dominant-baseline="middle"
+                      font-size="12" font-weight="bold" fill="#1e293b" style="pointer-events: none;">${emotion.name}</text>
+            `;
         });
 
-        return \`
+        return `
             <div class="emotion-wheel-container">
                 <div class="tool-info-box">
                     <h4>📚 Wissenschaftlicher Hintergrund</h4>
@@ -10910,13 +10910,13 @@ const SessionToolsModule = {
                         <!-- Background circle -->
                         <circle cx="200" cy="200" r="155" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
                         <!-- Emotion segments -->
-                        \${svgPaths}
+                        ${svgPaths}
                         <!-- Center circle -->
                         <circle cx="200" cy="200" r="55" fill="white" stroke="#e2e8f0" stroke-width="2"/>
                         <text x="200" y="195" text-anchor="middle" font-size="14" fill="#64748b">Wie</text>
                         <text x="200" y="212" text-anchor="middle" font-size="14" fill="#64748b">fühlst du?</text>
                         <!-- Labels -->
-                        \${svgLabels}
+                        ${svgLabels}
                     </svg>
                 </div>
 
@@ -10935,7 +10935,7 @@ const SessionToolsModule = {
                     <small>Referenz: Plutchik, R. (2001). The Nature of Emotions. American Scientist, 89(4), 344-350.</small>
                 </div>
             </div>
-        \`;
+        `;
     },
 
     selectedEmotion: null,
