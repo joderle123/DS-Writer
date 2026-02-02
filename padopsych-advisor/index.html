@@ -7495,7 +7495,7 @@ const FamilyToolsModule = {
         this.showPersonDetails(person);
     },
 
-    // Genogramm rendern
+    // Genogramm rendern mit SVG
     renderGenogramm: function() {
         const canvas = document.getElementById('genogramm-canvas');
         if (!canvas || !this.currentGenogramm) return;
@@ -7514,44 +7514,125 @@ const FamilyToolsModule = {
             generationen[m.generation].push(m);
         });
 
-        let html = '<div class="genogramm-visual">';
+        const sortedGens = Object.keys(generationen).sort((a, b) => parseInt(a) - parseInt(b));
+        const genCount = sortedGens.length;
+        const svgHeight = Math.max(300, genCount * 120);
+        const svgWidth = 600;
 
-        // Sortiere Generationen
-        Object.keys(generationen).sort((a, b) => parseInt(a) - parseInt(b)).forEach(gen => {
-            const genLabel = {
-                '-2': 'Großeltern',
-                '-1': 'Eltern',
-                '0': 'Patient/Geschwister',
-                '1': 'Kinder'
-            }[gen] || `Generation ${gen}`;
+        // Calculate positions for each person
+        const positions = {};
+        let yOffset = 50;
 
-            html += `<div class="generation-row" data-generation="${gen}">
-                <span class="generation-label">${genLabel}</span>
-                <div class="persons-row">`;
+        sortedGens.forEach((gen, genIndex) => {
+            const persons = generationen[gen];
+            const personWidth = svgWidth / (persons.length + 1);
 
-            generationen[gen].forEach(person => {
-                const symbol = this.genogrammSymbole.personen[person.geschlecht]?.symbol || '?';
-                const isIndex = this.currentGenogramm.indexpatient === person.id;
-                const isSelected = this.selectedPersonId === person.id;
-                const hasIllness = person.psychischeErkrankungen && person.psychischeErkrankungen.length > 0;
-
-                html += `
-                    <div class="person-node ${isSelected ? 'selected' : ''} ${isIndex ? 'index-patient' : ''}"
-                         onclick="FamilyToolsModule.selectPerson('${person.id}')">
-                        <span class="person-symbol ${!person.lebend ? 'verstorben' : ''} ${hasIllness ? 'has-illness' : ''}">
-                            ${symbol}${!person.lebend ? '✕' : ''}${hasIllness ? '◐' : ''}
-                        </span>
-                        <span class="person-name">${person.name || '?'}</span>
-                        ${person.alter ? `<span class="person-alter">${person.alter}J</span>` : ''}
-                    </div>
-                `;
+            persons.forEach((person, personIndex) => {
+                positions[person.id] = {
+                    x: personWidth * (personIndex + 1),
+                    y: yOffset,
+                    person: person
+                };
             });
-
-            html += '</div></div>';
+            yOffset += 100;
         });
 
-        html += '</div>';
-        canvas.innerHTML = html;
+        // Build SVG
+        let svgContent = `<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" style="max-width: 100%; background: #f8fafc; border-radius: 8px;">`;
+
+        // Draw connecting lines between generations
+        svgContent += '<g class="connection-lines">';
+        sortedGens.forEach((gen, genIndex) => {
+            if (genIndex < sortedGens.length - 1) {
+                const currentGen = generationen[gen];
+                const nextGen = generationen[sortedGens[genIndex + 1]];
+
+                // Draw lines from parents to children
+                currentGen.forEach(parent => {
+                    const parentPos = positions[parent.id];
+                    nextGen.forEach(child => {
+                        const childPos = positions[child.id];
+                        // Draw connecting line
+                        svgContent += `<line x1="${parentPos.x}" y1="${parentPos.y + 25}" x2="${childPos.x}" y2="${childPos.y - 25}" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,3"/>`;
+                    });
+                });
+
+                // Draw horizontal sibling line for same generation
+                if (currentGen.length > 1) {
+                    const firstPos = positions[currentGen[0].id];
+                    const lastPos = positions[currentGen[currentGen.length - 1].id];
+                    svgContent += `<line x1="${firstPos.x}" y1="${firstPos.y}" x2="${lastPos.x}" y2="${lastPos.y}" stroke="#cbd5e1" stroke-width="1"/>`;
+                }
+            }
+        });
+        svgContent += '</g>';
+
+        // Draw person symbols
+        svgContent += '<g class="persons">';
+        Object.values(positions).forEach(pos => {
+            const person = pos.person;
+            const isIndex = this.currentGenogramm.indexpatient === person.id;
+            const isSelected = this.selectedPersonId === person.id;
+            const hasIllness = person.psychischeErkrankungen && person.psychischeErkrankungen.length > 0;
+
+            // Symbol shape based on gender
+            let symbolShape = '';
+            const fillColor = hasIllness ? '#fef3c7' : (isIndex ? '#e0e7ff' : 'white');
+            const strokeColor = isSelected ? '#6366f1' : (isIndex ? '#4f46e5' : '#64748b');
+            const strokeWidth = isSelected ? 3 : 2;
+
+            if (person.geschlecht === 'maennlich') {
+                // Square for male
+                symbolShape = `<rect x="${pos.x - 20}" y="${pos.y - 20}" width="40" height="40" fill="${fillColor}" stroke="${strokeColor}" stroke-width="${strokeWidth}" rx="2" style="cursor:pointer;" onclick="FamilyToolsModule.selectPerson('${person.id}')"/>`;
+            } else if (person.geschlecht === 'weiblich') {
+                // Circle for female
+                symbolShape = `<circle cx="${pos.x}" cy="${pos.y}" r="22" fill="${fillColor}" stroke="${strokeColor}" stroke-width="${strokeWidth}" style="cursor:pointer;" onclick="FamilyToolsModule.selectPerson('${person.id}')"/>`;
+            } else {
+                // Diamond for diverse
+                symbolShape = `<polygon points="${pos.x},${pos.y - 22} ${pos.x + 22},${pos.y} ${pos.x},${pos.y + 22} ${pos.x - 22},${pos.y}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="${strokeWidth}" style="cursor:pointer;" onclick="FamilyToolsModule.selectPerson('${person.id}')"/>`;
+            }
+
+            svgContent += symbolShape;
+
+            // Deceased cross
+            if (!person.lebend) {
+                svgContent += `<line x1="${pos.x - 15}" y1="${pos.y - 15}" x2="${pos.x + 15}" y2="${pos.y + 15}" stroke="#ef4444" stroke-width="2"/>`;
+                svgContent += `<line x1="${pos.x + 15}" y1="${pos.y - 15}" x2="${pos.x - 15}" y2="${pos.y + 15}" stroke="#ef4444" stroke-width="2"/>`;
+            }
+
+            // Illness indicator
+            if (hasIllness) {
+                svgContent += `<circle cx="${pos.x + 15}" cy="${pos.y - 15}" r="6" fill="#f59e0b" stroke="white" stroke-width="1"/>`;
+            }
+
+            // Index patient marker
+            if (isIndex) {
+                svgContent += `<polygon points="${pos.x},${pos.y + 32} ${pos.x - 8},${pos.y + 45} ${pos.x + 8},${pos.y + 45}" fill="#6366f1"/>`;
+            }
+
+            // Name label
+            svgContent += `<text x="${pos.x}" y="${pos.y + 55}" text-anchor="middle" font-size="11" fill="#1e293b" font-weight="${isIndex ? 'bold' : 'normal'}">${person.name || '?'}</text>`;
+
+            // Age label
+            if (person.alter) {
+                svgContent += `<text x="${pos.x}" y="${pos.y + 68}" text-anchor="middle" font-size="10" fill="#64748b">${person.alter}J</text>`;
+            }
+        });
+        svgContent += '</g>';
+
+        svgContent += '</svg>';
+
+        // Add generation labels
+        let labelsHtml = '<div class="generation-labels" style="position: absolute; left: 5px; top: 50px;">';
+        let labelY = 50;
+        sortedGens.forEach(gen => {
+            const genLabel = {'-2': 'Großeltern', '-1': 'Eltern', '0': 'Patient', '1': 'Kinder'}[gen] || `Gen ${gen}`;
+            labelsHtml += `<div style="position: absolute; top: ${labelY - 10}px; font-size: 10px; color: #64748b; transform: rotate(-90deg); white-space: nowrap;">${genLabel}</div>`;
+            labelY += 100;
+        });
+        labelsHtml += '</div>';
+
+        canvas.innerHTML = `<div style="position: relative; padding-left: 30px;">${labelsHtml}${svgContent}</div>`;
     },
 
     // Person auswählen
@@ -10761,31 +10842,82 @@ const SessionToolsModule = {
     },
 
     generateEmotionWheelUI: function() {
-        let wheelHtml = '';
+        // Create SVG-based Plutchik emotion wheel
+        const emotions = Object.entries(this.emotionWheel);
+        const numEmotions = emotions.length;
+        const anglePerEmotion = 360 / numEmotions;
+        const centerX = 200, centerY = 200;
+        const innerRadius = 60, outerRadius = 150;
 
-        Object.entries(this.emotionWheel).forEach(([key, emotion]) => {
-            wheelHtml += `
-                <div class="emotion-wheel-segment" style="background-color: ${emotion.color}20; border-color: ${emotion.color};"
-                     onclick="SessionToolsModule.selectPrimaryEmotion('${key}')">
-                    <span class="emotion-emoji">${emotion.emoji}</span>
-                    <span class="emotion-name">${emotion.name}</span>
-                </div>
-            `;
+        let svgPaths = '';
+        let svgLabels = '';
+
+        emotions.forEach(([key, emotion], index) => {
+            const startAngle = (index * anglePerEmotion - 90) * Math.PI / 180;
+            const endAngle = ((index + 1) * anglePerEmotion - 90) * Math.PI / 180;
+            const midAngle = (startAngle + endAngle) / 2;
+
+            // Calculate path points
+            const x1 = centerX + innerRadius * Math.cos(startAngle);
+            const y1 = centerY + innerRadius * Math.sin(startAngle);
+            const x2 = centerX + outerRadius * Math.cos(startAngle);
+            const y2 = centerY + outerRadius * Math.sin(startAngle);
+            const x3 = centerX + outerRadius * Math.cos(endAngle);
+            const y3 = centerY + outerRadius * Math.sin(endAngle);
+            const x4 = centerX + innerRadius * Math.cos(endAngle);
+            const y4 = centerY + innerRadius * Math.sin(endAngle);
+
+            // Label position
+            const labelRadius = (innerRadius + outerRadius) / 2 + 10;
+            const labelX = centerX + labelRadius * Math.cos(midAngle);
+            const labelY = centerY + labelRadius * Math.sin(midAngle);
+
+            // Emoji position (closer to center)
+            const emojiRadius = innerRadius + 25;
+            const emojiX = centerX + emojiRadius * Math.cos(midAngle);
+            const emojiY = centerY + emojiRadius * Math.sin(midAngle);
+
+            svgPaths += \`
+                <path d="M \${x1} \${y1} L \${x2} \${y2} A \${outerRadius} \${outerRadius} 0 0 1 \${x3} \${y3} L \${x4} \${y4} A \${innerRadius} \${innerRadius} 0 0 0 \${x1} \${y1}"
+                      fill="\${emotion.color}" fill-opacity="0.7" stroke="white" stroke-width="2"
+                      style="cursor: pointer; transition: all 0.3s ease;"
+                      onmouseover="this.style.fillOpacity='1'; this.style.transform='scale(1.05)'; this.style.transformOrigin='center';"
+                      onmouseout="this.style.fillOpacity='0.7'; this.style.transform='scale(1)';"
+                      onclick="SessionToolsModule.selectPrimaryEmotion('\${key}')" />
+            \`;
+
+            svgLabels += \`
+                <text x="\${emojiX}" y="\${emojiY}" text-anchor="middle" dominant-baseline="middle"
+                      font-size="28" style="pointer-events: none;">\${emotion.emoji}</text>
+                <text x="\${labelX}" y="\${labelY + 20}" text-anchor="middle" dominant-baseline="middle"
+                      font-size="12" font-weight="bold" fill="#1e293b" style="pointer-events: none;">\${emotion.name}</text>
+            \`;
         });
 
-        return `
+        return \`
             <div class="emotion-wheel-container">
                 <div class="tool-info-box">
                     <h4>📚 Wissenschaftlicher Hintergrund</h4>
                     <p>Das Emotionsrad basiert auf <strong>Robert Plutchiks Theorie der Grundemotionen</strong> (2001).
                     Es unterscheidet 6-8 primäre Emotionen, die sich in Intensität und Kombination variieren.
-                    Das Rad hilft beim <strong>differenzierten Benennen</strong> von Gefühlen - eine Kernkompetenz
-                    der emotionalen Intelligenz und Voraussetzung für effektive Emotionsregulation.</p>
+                    Das Rad hilft beim <strong>differenzierten Benennen</strong> von Gefühlen.</p>
                 </div>
 
-                <h4>Wähle dein Grundgefühl:</h4>
-                <div class="emotion-wheel-grid">
-                    ${wheelHtml}
+                <h4 style="text-align: center; margin-bottom: 20px;">Klicke auf ein Gefühl im Rad:</h4>
+
+                <div style="display: flex; justify-content: center; margin: 20px 0;">
+                    <svg width="400" height="400" viewBox="0 0 400 400" style="max-width: 100%;">
+                        <!-- Background circle -->
+                        <circle cx="200" cy="200" r="155" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+                        <!-- Emotion segments -->
+                        \${svgPaths}
+                        <!-- Center circle -->
+                        <circle cx="200" cy="200" r="55" fill="white" stroke="#e2e8f0" stroke-width="2"/>
+                        <text x="200" y="195" text-anchor="middle" font-size="14" fill="#64748b">Wie</text>
+                        <text x="200" y="212" text-anchor="middle" font-size="14" fill="#64748b">fühlst du?</text>
+                        <!-- Labels -->
+                        \${svgLabels}
+                    </svg>
                 </div>
 
                 <div id="emotion-secondary" class="emotion-secondary-panel" style="display:none;">
@@ -10803,7 +10935,7 @@ const SessionToolsModule = {
                     <small>Referenz: Plutchik, R. (2001). The Nature of Emotions. American Scientist, 89(4), 344-350.</small>
                 </div>
             </div>
-        `;
+        \`;
     },
 
     selectedEmotion: null,
@@ -11882,22 +12014,79 @@ function renderSyntheseContent(key, data) {
     };
 
     if (key === 'biopsychosozial') {
+        // Count factors for visual sizing
+        const bioCount = (data.biologisch || []).length;
+        const psychoCount = (data.psychologisch || []).length;
+        const sozialCount = (data.sozial || []).length;
+        const maxCount = Math.max(bioCount, psychoCount, sozialCount, 1);
+
+        // Calculate circle sizes (min 40, max 70)
+        const bioSize = 40 + (bioCount / maxCount) * 30;
+        const psychoSize = 40 + (psychoCount / maxCount) * 30;
+        const sozialSize = 40 + (sozialCount / maxCount) * 30;
+
         return `
-            <div class="bps-model">
-                <div class="bps-section bio">
-                    <h4>🧬 Biologisch</h4>
-                    <ul>${renderList(data.biologisch)}</ul>
+            <div class="bps-model-visual">
+                <!-- SVG Venn Diagram -->
+                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                    <svg width="320" height="280" viewBox="0 0 320 280">
+                        <!-- Definitions for gradients -->
+                        <defs>
+                            <linearGradient id="bioGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#22c55e;stop-opacity:0.7"/>
+                                <stop offset="100%" style="stop-color:#16a34a;stop-opacity:0.7"/>
+                            </linearGradient>
+                            <linearGradient id="psychoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:0.7"/>
+                                <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0.7"/>
+                            </linearGradient>
+                            <linearGradient id="sozialGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.7"/>
+                                <stop offset="100%" style="stop-color:#2563eb;stop-opacity:0.7"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Three overlapping circles -->
+                        <circle cx="160" cy="90" r="${bioSize}" fill="url(#bioGrad)" stroke="#16a34a" stroke-width="2"/>
+                        <circle cx="110" cy="180" r="${psychoSize}" fill="url(#psychoGrad)" stroke="#7c3aed" stroke-width="2"/>
+                        <circle cx="210" cy="180" r="${sozialSize}" fill="url(#sozialGrad)" stroke="#2563eb" stroke-width="2"/>
+
+                        <!-- Center intersection (lighter) -->
+                        <circle cx="160" cy="150" r="25" fill="white" fill-opacity="0.8" stroke="#64748b" stroke-width="1" stroke-dasharray="3,3"/>
+
+                        <!-- Labels -->
+                        <text x="160" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">🧬 Bio</text>
+                        <text x="160" y="87" text-anchor="middle" font-size="11" fill="#166534">(${bioCount})</text>
+
+                        <text x="70" y="195" text-anchor="middle" font-size="13" font-weight="bold" fill="#5b21b6">🧠 Psycho</text>
+                        <text x="70" y="212" text-anchor="middle" font-size="11" fill="#5b21b6">(${psychoCount})</text>
+
+                        <text x="250" y="195" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">👥 Sozial</text>
+                        <text x="250" y="212" text-anchor="middle" font-size="11" fill="#1d4ed8">(${sozialCount})</text>
+
+                        <!-- Center label -->
+                        <text x="160" y="147" text-anchor="middle" font-size="10" fill="#64748b">Integration</text>
+                        <text x="160" y="159" text-anchor="middle" font-size="9" fill="#64748b">${bioCount + psychoCount + sozialCount} Faktoren</text>
+                    </svg>
                 </div>
-                <div class="bps-section psycho">
-                    <h4>🧠 Psychologisch</h4>
-                    <ul>${renderList(data.psychologisch)}</ul>
-                </div>
-                <div class="bps-section sozial">
-                    <h4>👥 Sozial</h4>
-                    <ul>${renderList(data.sozial)}</ul>
+
+                <!-- Factor lists -->
+                <div class="bps-model" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    <div class="bps-section bio" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 12px; border-radius: 8px; border-left: 4px solid #22c55e;">
+                        <h4 style="margin: 0 0 8px; font-size: 14px; color: #166534;">🧬 Biologisch</h4>
+                        <ul style="margin: 0; padding-left: 16px; font-size: 12px;">${renderList(data.biologisch)}</ul>
+                    </div>
+                    <div class="bps-section psycho" style="background: linear-gradient(135deg, #ede9fe, #ddd6fe); padding: 12px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                        <h4 style="margin: 0 0 8px; font-size: 14px; color: #5b21b6;">🧠 Psychologisch</h4>
+                        <ul style="margin: 0; padding-left: 16px; font-size: 12px;">${renderList(data.psychologisch)}</ul>
+                    </div>
+                    <div class="bps-section sozial" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 12px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                        <h4 style="margin: 0 0 8px; font-size: 14px; color: #1d4ed8;">👥 Sozial</h4>
+                        <ul style="margin: 0; padding-left: 16px; font-size: 12px;">${renderList(data.sozial)}</ul>
+                    </div>
                 </div>
             </div>
-            ${data.zusammenfassung ? `<div class="bps-summary"><p>${data.zusammenfassung}</p></div>` : ''}
+            ${data.zusammenfassung ? `<div class="bps-summary" style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; font-size: 13px;"><p style="margin: 0;">${data.zusammenfassung}</p></div>` : ''}
         `;
     }
 
@@ -12009,25 +12198,85 @@ function renderSyntheseContent(key, data) {
 
     if (key === 'oekologisch') {
         // Engine: { mikrosystem:{faktoren, belastung, ressourcen}, mesosystem:{}, exosystem:{}, makrosystem:{} }
-        const systems = ['mikrosystem', 'mesosystem', 'exosystem', 'makrosystem'];
-        const labels = {mikrosystem: '🏠 Mikrosystem', mesosystem: '🔗 Mesosystem', exosystem: '🏢 Exosystem', makrosystem: '🌍 Makrosystem'};
-        const colors = {mikrosystem: '#e0e7ff', mesosystem: '#dbeafe', exosystem: '#fef3c7', makrosystem: '#d1fae5'};
+        const systems = ['makrosystem', 'exosystem', 'mesosystem', 'mikrosystem']; // Outside to inside
+        const labels = {mikrosystem: 'Mikrosystem', mesosystem: 'Mesosystem', exosystem: 'Exosystem', makrosystem: 'Makrosystem'};
+        const emojis = {mikrosystem: '🏠', mesosystem: '🔗', exosystem: '🏢', makrosystem: '🌍'};
+        const radii = {makrosystem: 170, exosystem: 130, mesosystem: 90, mikrosystem: 50};
+        const colors = {makrosystem: '#d1fae5', exosystem: '#fef3c7', mesosystem: '#dbeafe', mikrosystem: '#e0e7ff'};
+        const strokeColors = {makrosystem: '#22c55e', exosystem: '#f59e0b', mesosystem: '#3b82f6', mikrosystem: '#6366f1'};
+
+        // Build SVG concentric circles
+        let svgCircles = '';
+        systems.forEach(sys => {
+            svgCircles += `
+                <circle cx="200" cy="200" r="${radii[sys]}" fill="${colors[sys]}" stroke="${strokeColors[sys]}" stroke-width="2" fill-opacity="0.7"/>
+            `;
+        });
+
+        // Add labels on the circles
+        const labelPositions = {
+            makrosystem: { x: 200, y: 45 },
+            exosystem: { x: 200, y: 85 },
+            mesosystem: { x: 200, y: 125 },
+            mikrosystem: { x: 200, y: 200 }
+        };
+
+        let svgLabels = '';
+        ['makrosystem', 'exosystem', 'mesosystem'].forEach(sys => {
+            svgLabels += `
+                <text x="${labelPositions[sys].x}" y="${labelPositions[sys].y}" text-anchor="middle" font-size="11" font-weight="bold" fill="${strokeColors[sys]}">${emojis[sys]} ${labels[sys]}</text>
+            `;
+        });
+
+        // Center child icon
+        svgLabels += `
+            <text x="200" y="190" text-anchor="middle" font-size="32">👶</text>
+            <text x="200" y="215" text-anchor="middle" font-size="10" fill="#6366f1">Kind</text>
+            <text x="200" y="227" text-anchor="middle" font-size="9" fill="#64748b">${emojis.mikrosystem} ${labels.mikrosystem}</text>
+        `;
+
+        // Collect all factors for display
+        const allFactors = systems.map(sys => {
+            const sysData = data[sys] || {};
+            const faktoren = sysData.faktoren || [];
+            const belastungen = sysData.familie?.belastungen || sysData.schule?.belastungen || sysData.peers?.belastungen || [];
+            const ressourcen = sysData.familie?.ressourcen || sysData.schule?.ressourcen || sysData.peers?.ressourcen || [];
+            return { sys, label: labels[sys], emoji: emojis[sys], color: strokeColors[sys], faktoren, belastung: sysData.belastung, ressourcen: sysData.ressourcen };
+        });
 
         return `
             <div class="oeko-content">
-                <div class="oeko-model">
-                    ${systems.map(sys => {
-                        const sysData = data[sys];
-                        if (!sysData) return '';
-                        const faktoren = sysData.faktoren || [];
-                        return `<div class="oeko-level" style="background:${colors[sys]};padding:16px;border-radius:8px;">
-                            <h4 style="margin:0 0 8px;">${labels[sys]}</h4>
-                            ${faktoren.length > 0 ? `<ul style="list-style:none;padding:0;margin:0;">${faktoren.map(f => `<li style="padding:4px 0;font-size:.9rem;">${f}</li>`).join('')}</ul>` : '<p style="font-size:.85rem;color:#64748b;">Keine Daten</p>'}
-                            ${sysData.belastung ? `<p style="margin:8px 0 0;font-size:.85rem;color:#dc2626;">⚠️ ${sysData.belastung}</p>` : ''}
-                            ${sysData.ressourcen ? `<p style="margin:4px 0 0;font-size:.85rem;color:#16a34a;">✓ ${sysData.ressourcen}</p>` : ''}
-                        </div>`;
-                    }).join('')}
+                <!-- SVG Bronfenbrenner Concentric Circles -->
+                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                    <svg width="400" height="400" viewBox="0 0 400 400" style="max-width: 100%;">
+                        <!-- Background -->
+                        <rect width="400" height="400" fill="#f8fafc"/>
+                        <!-- Concentric circles (outside to inside) -->
+                        ${svgCircles}
+                        <!-- Labels -->
+                        ${svgLabels}
+                        <!-- Arrows showing influence -->
+                        <path d="M 200 30 L 200 42" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <path d="M 370 200 L 358 200" stroke="#22c55e" stroke-width="2"/>
+                        <path d="M 30 200 L 42 200" stroke="#22c55e" stroke-width="2"/>
+                    </svg>
                 </div>
+
+                <!-- Factor details in grid -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                    ${allFactors.reverse().map(item => `
+                        <div style="background: ${colors[item.sys]}; padding: 12px; border-radius: 8px; border-left: 4px solid ${item.color};">
+                            <h4 style="margin: 0 0 8px; font-size: 13px; color: ${item.color};">${item.emoji} ${item.label}</h4>
+                            ${item.faktoren && item.faktoren.length > 0 ? `<ul style="margin: 0; padding-left: 16px; font-size: 11px;">${item.faktoren.map(f => `<li>${f}</li>`).join('')}</ul>` : '<p style="font-size: 11px; color: #64748b; margin: 0;">Keine Daten erfasst</p>'}
+                            ${item.belastung ? `<p style="margin: 6px 0 0; font-size: 11px; color: #dc2626;">⚠️ ${item.belastung}</p>` : ''}
+                            ${item.ressourcen ? `<p style="margin: 4px 0 0; font-size: 11px; color: #16a34a;">✓ ${item.ressourcen}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <p style="text-align: center; font-size: 11px; color: #64748b; margin-top: 16px;">
+                    Modell nach Bronfenbrenner (1979): Das Kind entwickelt sich im Kontext verschachtelter Umweltsysteme.
+                </p>
             </div>
         `;
     }
