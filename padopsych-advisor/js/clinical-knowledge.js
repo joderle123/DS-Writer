@@ -1,6 +1,75 @@
 /**
+ * ============================================================================
  * CLINICAL KNOWLEDGE BASE - Comprehensive Child & Adolescent Psychiatry
  * Umfassende Wissensbasis für Kinder- und Jugendpsychiatrische Anamnese
+ * ============================================================================
+ *
+ * WISSENSCHAFTLICHE GRUNDLAGEN & REFERENZEN
+ * =========================================
+ *
+ * Dieses Tool basiert auf etablierten Rahmenwerken der Kinder- und Jugendpsychiatrie:
+ *
+ * 1. ACE-SCORE (Adverse Childhood Experiences)
+ *    - Felitti et al. (1998): "Relationship of Childhood Abuse and Household
+ *      Dysfunction to Many of the Leading Causes of Death in Adults"
+ *      American Journal of Preventive Medicine, 14(4), 245-258
+ *    - Validiert in zahlreichen internationalen Studien
+ *    - Dose-Response-Beziehung zwischen ACEs und Gesundheitsoutcomes gut belegt
+ *
+ * 2. BIO-PSYCHO-SOZIALES MODELL
+ *    - Engel, G. L. (1977): "The Need for a New Medical Model"
+ *      Science, 196(4286), 129-136
+ *    - Internationaler Standard in der Psychiatrie (ICD-11, DSM-5)
+ *
+ * 3. BINDUNGSTHEORIE
+ *    - Bowlby, J. (1969): "Attachment and Loss, Vol. 1"
+ *    - Ainsworth, M. (1978): "Patterns of Attachment"
+ *    - Main & Solomon (1986): Desorganisierte Bindung
+ *    - Empirisch gut validierte Klassifikation (A, B, C, D)
+ *
+ * 4. SYSTEMISCHE PERSPEKTIVE
+ *    - Minuchin, S. (1974): "Families and Family Therapy"
+ *    - Watzlawick et al. (1967): "Pragmatics of Human Communication"
+ *    - Triangulierung, Parentifizierung als anerkannte Konstrukte
+ *
+ * 5. TRAUMA-MODELLE
+ *    - Van der Kolk, B. (2014): "The Body Keeps the Score"
+ *    - Perry, B. (2006): "The Boy Who Was Raised as a Dog"
+ *    - 4F-Modell (Fight/Flight/Freeze/Fawn): Walker, P. (2013)
+ *    - Typ I/II Trauma: Terr, L. (1991)
+ *
+ * 6. ÖKOLOGISCHES MODELL
+ *    - Bronfenbrenner, U. (1979): "The Ecology of Human Development"
+ *    - Mikro-/Meso-/Exo-/Makrosystem als Analyserahmen
+ *
+ * 7. ENTWICKLUNGSPSYCHOPATHOLOGIE
+ *    - Sroufe, L. A. (1997): "Psychopathology as an outcome of development"
+ *    - Cicchetti & Cohen (2006): "Developmental Psychopathology"
+ *    - Entwicklungsaufgaben nach Havighurst, Erikson
+ *
+ * 8. RESILIENZFORSCHUNG
+ *    - Werner & Smith (1982): "Vulnerable but Invincible" (Kauai-Studie)
+ *    - Masten, A. (2014): "Ordinary Magic"
+ *    - Schutzfaktoren: Individuell, familiär, sozial
+ *
+ * DIAGNOSTISCHE KRITERIEN
+ *    - ICD-10/ICD-11 (WHO)
+ *    - DSM-5 (APA)
+ *    - AWMF Leitlinien für Kinder- und Jugendpsychiatrie
+ *
+ * WICHTIGER HINWEIS
+ * =================
+ * Dieses Tool ist ein ENTSCHEIDUNGSUNTERSTÜTZUNGSSYSTEM für qualifiziertes
+ * Fachpersonal. Es ersetzt KEINE:
+ * - Professionelle klinische Diagnostik
+ * - Standardisierte Testverfahren (z.B. CBCL, SDQ, DISYPS, K-SADS)
+ * - Multiprofessionelle Fallkonferenzen
+ * - Klinisches Urteil und Erfahrung
+ *
+ * Die generierten Hypothesen dienen als DENKANSTÖSSE, nicht als Diagnosen.
+ * Konfidenzwerte sind HEURISTISCH, nicht statistisch validiert.
+ *
+ * ============================================================================
  */
 
 const CLINICAL_KNOWLEDGE = {

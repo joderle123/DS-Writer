@@ -510,6 +510,45 @@ function switchToTab(tabId) {
 // ============================================================
 
 /**
+ * Collect all checkbox values from nested caseData into flat object
+ * This is needed because the clinical engine expects caseData.checkboxes[id]
+ */
+function collectAllCheckboxes() {
+    const checkboxes = {};
+
+    // Traverse the form and collect all checkbox values by their ID
+    document.querySelectorAll('#case-form input[type="checkbox"]').forEach(cb => {
+        // Extract the checkbox ID from the data-path (last part after last dot)
+        const path = cb.dataset.path;
+        if (path) {
+            const parts = path.split('.');
+            const checkboxId = parts[parts.length - 1];
+            checkboxes[checkboxId] = cb.checked;
+        }
+    });
+
+    return checkboxes;
+}
+
+/**
+ * Collect all text/textarea/select values from nested caseData into flat object
+ */
+function collectAllFields() {
+    const fields = {};
+
+    document.querySelectorAll('#case-form input:not([type="checkbox"]), #case-form textarea, #case-form select').forEach(el => {
+        const path = el.dataset.path;
+        if (path) {
+            const parts = path.split('.');
+            const fieldId = parts[parts.length - 1];
+            fields[fieldId] = el.value;
+        }
+    });
+
+    return fields;
+}
+
+/**
  * Start analysis
  */
 function startAnalysis() {
@@ -521,6 +560,14 @@ function startAnalysis() {
         showToast('Bitte geben Sie das Alter an', 'error');
         return;
     }
+
+    // Collect all checkboxes into flat structure for the engine
+    caseData.checkboxes = collectAllCheckboxes();
+    caseData.fields = collectAllFields();
+
+    // Count checked items for feedback
+    const checkedCount = Object.values(caseData.checkboxes).filter(v => v === true).length;
+    console.log(`Analyse gestartet mit ${checkedCount} ausgewählten Checkboxen`);
 
     const submitBtn = document.querySelector('.btn-primary.btn-large');
     if (submitBtn) {
@@ -541,7 +588,7 @@ function startAnalysis() {
             renderBedienungsanleitung(analysisResult);
 
             saveCurrentCase();
-            showToast('Analyse abgeschlossen', 'success');
+            showToast(`Analyse abgeschlossen (${checkedCount} Faktoren ausgewertet)`, 'success');
             switchToTab('analyse');
 
         } catch (error) {
@@ -592,6 +639,9 @@ function renderACEScore(aceScore) {
     const riskLevel = aceScore.score >= 4 ? 'high' : aceScore.score >= 2 ? 'medium' : 'low';
     const riskClass = riskLevel === 'high' ? 'danger' : riskLevel === 'medium' ? 'warning' : 'success';
 
+    // Engine returns 'identifiziert' array, not 'items'
+    const aceItems = aceScore.identifiziert || aceScore.items || [];
+
     container.innerHTML = `
         <div class="ace-card ${riskClass}">
             <div class="ace-score-display">
@@ -600,15 +650,15 @@ function renderACEScore(aceScore) {
             </div>
             <div class="ace-content">
                 <h4>Adverse Childhood Experiences</h4>
-                <p>${aceScore.interpretation}</p>
-                ${aceScore.items.length > 0 ? `
+                <p>${aceScore.interpretation || 'Keine Interpretation verfügbar'}</p>
+                ${aceItems.length > 0 ? `
                     <div class="ace-items">
                         <strong>Identifizierte ACEs:</strong>
                         <ul>
-                            ${aceScore.items.map(item => `<li>${item}</li>`).join('')}
+                            ${aceItems.map(item => `<li>${item}</li>`).join('')}
                         </ul>
                     </div>
-                ` : ''}
+                ` : '<p><em>Keine ACEs dokumentiert.</em></p>'}
             </div>
         </div>
     `;
@@ -621,17 +671,20 @@ function renderRisikoprofil(profil) {
     const container = document.getElementById('risiko-container');
     if (!container || !profil) return;
 
+    // akut items are objects with 'label' property, chronisch and schutz are strings
+    const formatAkut = (items) => items.map(r => typeof r === 'object' ? r.label : r);
+
     container.innerHTML = `
         <div class="risiko-grid">
-            ${profil.akut.length > 0 ? `
+            ${profil.akut && profil.akut.length > 0 ? `
                 <div class="risiko-section critical">
                     <h4>🚨 Akute Risiken</h4>
                     <ul>
-                        ${profil.akut.map(r => `<li>${r}</li>`).join('')}
+                        ${formatAkut(profil.akut).map(r => `<li>${r}</li>`).join('')}
                     </ul>
                 </div>
             ` : ''}
-            ${profil.chronisch.length > 0 ? `
+            ${profil.chronisch && profil.chronisch.length > 0 ? `
                 <div class="risiko-section warning">
                     <h4>⚠️ Chronische Risiken</h4>
                     <ul>
@@ -642,8 +695,8 @@ function renderRisikoprofil(profil) {
             <div class="risiko-section success">
                 <h4>🛡️ Schutzfaktoren</h4>
                 <ul>
-                    ${profil.schutz.length > 0
-                        ? profil.schutz.map(r => `<li>${r}</li>`).join('')
+                    ${(profil.schutzfaktoren || profil.schutz || []).length > 0
+                        ? (profil.schutzfaktoren || profil.schutz || []).map(r => `<li>${r}</li>`).join('')
                         : '<li>Keine identifiziert</li>'}
                 </ul>
             </div>
@@ -659,16 +712,21 @@ function renderHypothesen(hypothesen) {
     if (!container) return;
 
     if (!hypothesen || hypothesen.length === 0) {
-        container.innerHTML = '<div class="placeholder-card">Keine Hypothesen generiert</div>';
+        container.innerHTML = '<div class="placeholder-card"><p>Keine diagnostischen Hypothesen generiert. Bitte mehr Informationen eingeben.</p></div>';
         return;
     }
 
-    container.innerHTML = hypothesen.map((hypo, i) => `
+    // Engine returns 'label' for name, 'erfuellteKriterien' for evidence
+    container.innerHTML = hypothesen.map((hypo, i) => {
+        const name = hypo.name || hypo.label || 'Unbekannt';
+        const evidenz = hypo.evidenz || hypo.erfuellteKriterien || [];
+
+        return `
         <div class="hypothesis-card ${i === 0 ? 'primary' : ''}" style="--card-color: ${hypo.farbe || '#6366f1'}">
             <div class="hypothesis-header" onclick="toggleHypothesisDetails('hypo-${i}')">
                 <div class="hypothesis-rank">${i + 1}</div>
                 <div class="hypothesis-info">
-                    <h4>${hypo.name}</h4>
+                    <h4>${name}</h4>
                     <span class="hypothesis-icd">${hypo.icd10 || ''}</span>
                 </div>
                 <div class="hypothesis-score">
@@ -684,15 +742,21 @@ function renderHypothesen(hypothesen) {
                     <h5>Interpretation</h5>
                     <p>${hypo.interpretation || 'Keine zusätzliche Interpretation'}</p>
                 </div>
-                ${hypo.evidenz && hypo.evidenz.length > 0 ? `
+                ${evidenz.length > 0 ? `
                     <div class="evidence-box">
-                        <h5>Hinweisende Symptome</h5>
-                        <ul>${hypo.evidenz.map(e => `<li class="evidence-item positive">✓ ${e}</li>`).join('')}</ul>
+                        <h5>Erfüllte Kriterien</h5>
+                        <ul>${evidenz.map(e => `<li class="evidence-item positive">✓ ${e}</li>`).join('')}</ul>
+                    </div>
+                ` : ''}
+                ${hypo.differentialHints && hypo.differentialHints.length > 0 ? `
+                    <div class="differential-box" style="margin-top:12px;padding:12px;background:#f0f9ff;border-radius:8px;">
+                        <h5 style="font-size:.85rem;color:#64748b;">Differentialdiagnostik</h5>
+                        <p style="font-size:.9rem;">${hypo.differentialHints.join(', ')}</p>
                     </div>
                 ` : ''}
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 function toggleHypothesisDetails(id) {
@@ -768,20 +832,33 @@ function switchSyntheseTab(key) {
 function renderSyntheseContent(key, data) {
     if (!data) return '<p>Keine Daten verfügbar</p>';
 
+    // Helper to format factors (can be string or object with 'faktor' property)
+    const formatFaktor = (f) => {
+        if (typeof f === 'object' && f.faktor) {
+            return `<span class="faktor-text">${f.faktor}</span>${f.typ ? `<span class="faktor-typ"> (${f.typ})</span>` : ''}`;
+        }
+        return f;
+    };
+
+    const renderList = (items) => {
+        if (!items || items.length === 0) return '<li class="empty-item">Keine Faktoren identifiziert</li>';
+        return items.map(f => `<li>${formatFaktor(f)}</li>`).join('');
+    };
+
     if (key === 'biopsychosozial') {
         return `
             <div class="bps-model">
                 <div class="bps-section bio">
                     <h4>🧬 Biologisch</h4>
-                    <ul>${(data.biologisch || []).map(f => `<li>${f}</li>`).join('') || '<li>-</li>'}</ul>
+                    <ul>${renderList(data.biologisch)}</ul>
                 </div>
                 <div class="bps-section psycho">
                     <h4>🧠 Psychologisch</h4>
-                    <ul>${(data.psychologisch || []).map(f => `<li>${f}</li>`).join('') || '<li>-</li>'}</ul>
+                    <ul>${renderList(data.psychologisch)}</ul>
                 </div>
                 <div class="bps-section sozial">
                     <h4>👥 Sozial</h4>
-                    <ul>${(data.sozial || []).map(f => `<li>${f}</li>`).join('') || '<li>-</li>'}</ul>
+                    <ul>${renderList(data.sozial)}</ul>
                 </div>
             </div>
             ${data.zusammenfassung ? `<div class="bps-summary"><p>${data.zusammenfassung}</p></div>` : ''}
@@ -789,92 +866,152 @@ function renderSyntheseContent(key, data) {
     }
 
     if (key === 'systemisch') {
+        // Engine returns: { aspekte: [{name, inhalt, icon}], empfehlung, familientherapie }
+        const aspekte = data.aspekte || [];
         return `
             <div class="systemisch-content">
-                ${data.familienstruktur ? `<div class="sys-section"><h4>Familienstruktur</h4><p>${data.familienstruktur}</p></div>` : ''}
-                ${data.dynamiken && data.dynamiken.length > 0 ? `
-                    <div class="sys-section"><h4>Familiendynamiken</h4>
-                    <ul>${data.dynamiken.map(d => `<li>${d}</li>`).join('')}</ul></div>
-                ` : ''}
-                ${data.muster && data.muster.length > 0 ? `
-                    <div class="sys-section"><h4>Interaktionsmuster</h4>
-                    <ul>${data.muster.map(m => `<li>${m}</li>`).join('')}</ul></div>
-                ` : ''}
-                ${data.hypothese ? `<div class="sys-hypothesis"><strong>Systemische Hypothese:</strong> ${data.hypothese}</div>` : ''}
+                ${aspekte.length > 0 ? aspekte.map(a => `
+                    <div class="sys-section">
+                        <h4>${a.icon || '📌'} ${a.name}</h4>
+                        <p>${a.inhalt}</p>
+                    </div>
+                `).join('') : '<p class="empty-hint">Keine auffälligen systemischen Dynamiken dokumentiert.</p>'}
+                ${data.empfehlung ? `<div class="sys-hypothesis"><strong>Empfehlung:</strong> ${data.empfehlung}</div>` : ''}
+                ${data.familientherapie ? '<div class="sys-hint" style="margin-top:12px;padding:8px;background:#e0f2fe;border-radius:6px;font-size:.9rem;">💡 Familientherapeutische Perspektive empfohlen</div>' : ''}
             </div>
         `;
     }
 
     if (key === 'trauma') {
+        // Engine returns: { relevant, aceScore, traumatyp: [{typ, beschreibung}], reaktionsmuster: [{muster, zeichen, umgang}], trigger, empfehlungen, wichtig }
+        if (data.relevant === false) {
+            return `<div class="trauma-content"><p class="empty-hint">${data.hinweis || 'Keine Traumatisierung dokumentiert.'}</p></div>`;
+        }
+        const traumatypen = data.traumatyp || [];
+        const reaktionsmuster = data.reaktionsmuster || [];
         return `
             <div class="trauma-content">
                 ${data.aceScore !== undefined ? `<div class="trauma-ace">ACE-Score: ${data.aceScore}/10</div>` : ''}
-                ${data.traumaTypen && data.traumaTypen.length > 0 ? `
+                ${traumatypen.length > 0 ? `
                     <div class="trauma-section"><h4>Trauma-Typen</h4>
-                    <ul>${data.traumaTypen.map(t => `<li>${t}</li>`).join('')}</ul></div>
+                    ${traumatypen.map(t => `<div class="trauma-type" style="margin:8px 0;padding:10px;background:#fef3c7;border-radius:6px;"><strong>${t.typ}</strong><p style="margin:4px 0 0;font-size:.9rem;">${t.beschreibung}</p></div>`).join('')}</div>
                 ` : ''}
-                ${data.reaktionsmuster ? `<div class="trauma-section"><h4>4F-Reaktionsmuster</h4><p>${data.reaktionsmuster}</p></div>` : ''}
-                ${data.folgen && data.folgen.length > 0 ? `
-                    <div class="trauma-section"><h4>Beobachtete Traumafolgen</h4>
-                    <ul>${data.folgen.map(f => `<li>${f}</li>`).join('')}</ul></div>
+                ${reaktionsmuster.length > 0 ? `
+                    <div class="trauma-section"><h4>4F-Reaktionsmuster</h4>
+                    ${reaktionsmuster.map(r => `<div class="reaction-pattern" style="margin:8px 0;padding:10px;background:#fee2e2;border-radius:6px;border-left:4px solid #ef4444;"><strong>${r.muster}</strong><p style="font-size:.85rem;color:#64748b;margin:4px 0;">Zeichen: ${r.zeichen}</p><p style="font-size:.9rem;margin:4px 0 0;"><em>Umgang: ${r.umgang}</em></p></div>`).join('')}</div>
                 ` : ''}
+                ${data.trigger && data.trigger.length > 0 ? `
+                    <div class="trauma-section"><h4>Identifizierte Trigger</h4>
+                    <ul>${data.trigger.map(t => `<li>${t}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${data.wichtig ? `<div class="trauma-important" style="margin-top:16px;padding:12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;"><strong>⚠️ Wichtig:</strong> ${data.wichtig}</div>` : ''}
             </div>
         `;
     }
 
     if (key === 'bindung') {
+        // Engine: { einschätzung: {muster, beschreibung, prognose}, früheFaktoren:[], aktuelleSignale:[], intervention:[] }
+        const einschätzung = data.einschätzung || {};
+        const früheFaktoren = data.früheFaktoren || [];
+        const aktuelleSignale = data.aktuelleSignale || [];
+        const intervention = data.intervention || [];
+
         return `
             <div class="bindung-content">
-                ${data.muster ? `<div class="bindung-pattern"><h4>Bindungsmuster</h4><p>${data.muster}</p></div>` : ''}
-                ${data.beschreibung ? `<p>${data.beschreibung}</p>` : ''}
-                ${data.hinweise && data.hinweise.length > 0 ? `
-                    <div class="bindung-section"><h4>Hinweise</h4>
-                    <ul>${data.hinweise.map(h => `<li>${h}</li>`).join('')}</ul></div>
+                ${einschätzung.muster ? `
+                    <div class="bindung-pattern" style="background:linear-gradient(135deg,#e0e7ff,#c7d2fe);padding:16px;border-radius:8px;margin-bottom:16px;">
+                        <h4 style="margin:0 0 8px;">${einschätzung.muster}</h4>
+                        <p style="margin:0;font-size:.95rem;">${einschätzung.beschreibung || ''}</p>
+                        ${einschätzung.prognose ? `<p style="margin:8px 0 0;font-size:.85rem;color:#059669;"><strong>Prognose:</strong> ${einschätzung.prognose}</p>` : ''}
+                    </div>
+                ` : '<p class="empty-hint">Bindungsmuster noch nicht einschätzbar.</p>'}
+                ${früheFaktoren.length > 0 ? `
+                    <div class="bindung-section"><h4>Frühe Bindungsfaktoren</h4>
+                    <ul>${früheFaktoren.map(f => `<li>${f}</li>`).join('')}</ul></div>
                 ` : ''}
-                ${data.implikationen ? `<div class="bindung-impl"><strong>Therapeutische Implikationen:</strong> ${data.implikationen}</div>` : ''}
+                ${aktuelleSignale.length > 0 ? `
+                    <div class="bindung-section"><h4>Aktuelle Bindungssignale</h4>
+                    <ul>${aktuelleSignale.map(s => `<li>${s}</li>`).join('')}</ul></div>
+                ` : ''}
+                ${intervention.length > 0 ? `
+                    <div class="bindung-impl" style="background:#d1fae5;padding:12px;border-radius:6px;margin-top:12px;">
+                        <strong>Therapeutische Implikationen:</strong>
+                        <ul style="margin:8px 0 0;">${intervention.map(i => `<li>${i}</li>`).join('')}</ul>
+                    </div>
+                ` : ''}
             </div>
         `;
     }
 
     if (key === 'entwicklung') {
+        // Engine: { alter, entwicklungsphase, entwicklungsaufgaben:[], auffälligkeiten:[], einschätzung, empfehlung }
+        if (data.relevant === false) {
+            return `<div class="entwicklung-content"><p class="empty-hint">${data.hinweis || 'Alter nicht angegeben.'}</p></div>`;
+        }
+        const aufgaben = data.entwicklungsaufgaben || [];
+        const auffälligkeiten = data.auffälligkeiten || [];
         return `
             <div class="entwicklung-content">
-                ${data.entwicklungsstand ? `<div class="entw-section"><h4>Entwicklungsstand</h4><p>${data.entwicklungsstand}</p></div>` : ''}
-                ${data.entwicklungsaufgaben && data.entwicklungsaufgaben.length > 0 ? `
+                ${data.entwicklungsphase ? `
+                    <div class="entw-header" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);padding:16px;border-radius:8px;margin-bottom:16px;">
+                        <h4 style="margin:0;">Alter: ${data.alter} Jahre - ${data.entwicklungsphase}</h4>
+                        ${data.einschätzung ? `<p style="margin:8px 0 0;font-size:.95rem;">${data.einschätzung}</p>` : ''}
+                    </div>
+                ` : ''}
+                ${aufgaben.length > 0 ? `
                     <div class="entw-section"><h4>Aktuelle Entwicklungsaufgaben</h4>
-                    <ul>${data.entwicklungsaufgaben.map(a => `<li>${a}</li>`).join('')}</ul></div>
+                    <ul>${aufgaben.map(a => `<li>${a}</li>`).join('')}</ul></div>
                 ` : ''}
-                ${data.auffälligkeiten && data.auffälligkeiten.length > 0 ? `
-                    <div class="entw-section warning"><h4>Entwicklungsauffälligkeiten</h4>
-                    <ul>${data.auffälligkeiten.map(a => `<li>${a}</li>`).join('')}</ul></div>
+                ${auffälligkeiten.length > 0 ? `
+                    <div class="entw-section warning"><h4>⚠️ Entwicklungsauffälligkeiten</h4>
+                    <ul>${auffälligkeiten.map(a => `<li>${a}</li>`).join('')}</ul></div>
                 ` : ''}
-                ${data.stärken && data.stärken.length > 0 ? `
-                    <div class="entw-section success"><h4>Entwicklungsstärken</h4>
-                    <ul>${data.stärken.map(s => `<li>${s}</li>`).join('')}</ul></div>
-                ` : ''}
+                ${data.empfehlung ? `<div class="entw-empfehlung" style="margin-top:12px;padding:10px;background:#f0f9ff;border-radius:6px;font-size:.9rem;"><strong>Empfehlung:</strong> ${data.empfehlung}</div>` : ''}
             </div>
         `;
     }
 
     if (key === 'oekologisch') {
+        // Engine: { mikrosystem:{faktoren, belastung, ressourcen}, mesosystem:{}, exosystem:{}, makrosystem:{} }
+        const systems = ['mikrosystem', 'mesosystem', 'exosystem', 'makrosystem'];
+        const labels = {mikrosystem: '🏠 Mikrosystem', mesosystem: '🔗 Mesosystem', exosystem: '🏢 Exosystem', makrosystem: '🌍 Makrosystem'};
+        const colors = {mikrosystem: '#e0e7ff', mesosystem: '#dbeafe', exosystem: '#fef3c7', makrosystem: '#d1fae5'};
+
         return `
             <div class="oeko-content">
                 <div class="oeko-model">
-                    ${data.mikrosystem ? `<div class="oeko-level mikro"><h4>Mikrosystem</h4><p>${data.mikrosystem}</p></div>` : ''}
-                    ${data.mesosystem ? `<div class="oeko-level meso"><h4>Mesosystem</h4><p>${data.mesosystem}</p></div>` : ''}
-                    ${data.exosystem ? `<div class="oeko-level exo"><h4>Exosystem</h4><p>${data.exosystem}</p></div>` : ''}
-                    ${data.makrosystem ? `<div class="oeko-level makro"><h4>Makrosystem</h4><p>${data.makrosystem}</p></div>` : ''}
+                    ${systems.map(sys => {
+                        const sysData = data[sys];
+                        if (!sysData) return '';
+                        const faktoren = sysData.faktoren || [];
+                        return `<div class="oeko-level" style="background:${colors[sys]};padding:16px;border-radius:8px;">
+                            <h4 style="margin:0 0 8px;">${labels[sys]}</h4>
+                            ${faktoren.length > 0 ? `<ul style="list-style:none;padding:0;margin:0;">${faktoren.map(f => `<li style="padding:4px 0;font-size:.9rem;">${f}</li>`).join('')}</ul>` : '<p style="font-size:.85rem;color:#64748b;">Keine Daten</p>'}
+                            ${sysData.belastung ? `<p style="margin:8px 0 0;font-size:.85rem;color:#dc2626;">⚠️ ${sysData.belastung}</p>` : ''}
+                            ${sysData.ressourcen ? `<p style="margin:4px 0 0;font-size:.85rem;color:#16a34a;">✓ ${sysData.ressourcen}</p>` : ''}
+                        </div>`;
+                    }).join('')}
                 </div>
             </div>
         `;
     }
 
     if (key === 'resilienz') {
+        // Engine: { individuell:[], familiär:[], sozial:[], gesamtbewertung }
+        const individuell = data.individuell || [];
+        const familiär = data.familiär || [];
+        const sozial = data.sozial || [];
+        const total = individuell.length + familiär.length + sozial.length;
+
         return `
             <div class="resilienz-content">
-                ${data.individuell && data.individuell.length > 0 ? `
+                <div class="res-header" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:16px;border-radius:8px;margin-bottom:16px;text-align:center;">
+                    <h4 style="margin:0;">Resilienz-Score: ${total} Schutzfaktoren</h4>
+                    ${data.gesamtbewertung ? `<p style="margin:8px 0 0;opacity:.9;">${data.gesamtbewertung}</p>` : ''}
+                </div>
+                ${individuell.length > 0 ? `
                     <div class="res-section"><h4>💪 Individuelle Ressourcen</h4>
-                    <ul>${data.individuell.map(r => `<li>${r}</li>`).join('')}</ul></div>
+                    <ul>${individuell.map(r => `<li>${r}</li>`).join('')}</ul></div>
                 ` : ''}
                 ${data.familiär && data.familiär.length > 0 ? `
                     <div class="res-section"><h4>👨‍👩‍👧 Familiäre Ressourcen</h4>
