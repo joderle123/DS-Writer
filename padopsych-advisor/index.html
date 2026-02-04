@@ -872,6 +872,15 @@
     .animate-fade-in{animation:fadeIn .4s ease forwards}
     .animate-slide-in{animation:slideIn .4s ease forwards}
 
+    /* Chat Interface */
+    .loading-dots{animation:loadingDots 1.5s infinite}
+    @keyframes loadingDots{0%,20%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+    .chat-container{box-shadow:var(--shadow-md)}
+    #chat-messages::-webkit-scrollbar{width:8px}
+    #chat-messages::-webkit-scrollbar-track{background:var(--bg-primary)}
+    #chat-messages::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:4px}
+    #chat-messages::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+
     /* Dark Mode */
     body.dark-mode{--primary-color:#818cf8;--primary-hover:#6366f1;--primary-light:#312e81;--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;--bg-primary:#0f172a;--bg-secondary:#1e293b;--border-color:#334155;--success-light:#064e3b;--warning-light:#78350f;--danger-light:#7f1d1d;--info-light:#1e3a5f}
     body.dark-mode .app-header{background:linear-gradient(135deg,#4338ca 0%,#3730a3 100%)}
@@ -930,13 +939,13 @@
                 <span>📋</span> Anamnese
             </button>
             <button type="button" class="tab-btn" data-tab="analyse">
-                <span>🔍</span> Analyse & Synthese
+                <span>🔍</span> Analyse
+            </button>
+            <button type="button" class="tab-btn" data-tab="ki-assistent">
+                <span>🤖</span> KI-Assistent
             </button>
             <button type="button" class="tab-btn" data-tab="tools">
-                <span>🧰</span> Klinische Tools
-            </button>
-            <button type="button" class="tab-btn" data-tab="bedienungsanleitung">
-                <span>📖</span> Bedienungsanleitung
+                <span>🧰</span> Tools
             </button>
         </nav>
 
@@ -1043,7 +1052,109 @@
                 </div>
             </section>
 
-            <!-- Tab 3: Clinical Tools -->
+            <!-- Tab 3: KI-Assistent -->
+            <section id="ki-assistent" class="tab-panel">
+                <div class="panel-header">
+                    <h2>🤖 KI-Assistent für Fallbesprechung</h2>
+                    <p>Stellen Sie Fragen zu diesem Fall - die KI kennt alle eingegebenen Informationen</p>
+                </div>
+
+                <!-- Anonymization Notice -->
+                <div id="anonymization-notice" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 16px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <span style="font-size: 1.5rem;">🔒</span>
+                        <div>
+                            <strong style="color: #1e40af;">Anonymisierter Modus</strong>
+                            <p style="margin: 4px 0 0; font-size: 0.9rem; color: #1e40af;">Alle personenbezogenen Daten werden vor der KI-Kommunikation entfernt.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-secondary" onclick="showAnonymizedData()" style="font-size: 0.85rem;">
+                            👁️ Anonymisierte Daten anzeigen
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="copyAnonymizedContext()" style="font-size: 0.85rem;">
+                            📋 Kontext kopieren
+                        </button>
+                    </div>
+                </div>
+
+                <!-- API Key Configuration -->
+                <div id="api-config" style="background: var(--bg-primary); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                    <details>
+                        <summary style="cursor: pointer; font-weight: 600; color: var(--text-primary);">⚙️ API-Konfiguration</summary>
+                        <div style="margin-top: 12px;">
+                            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">
+                                Für die KI-Kommunikation benötigen Sie einen API-Schlüssel (z.B. von OpenAI oder Anthropic).
+                            </p>
+                            <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 200px;">
+                                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 4px;">API-Schlüssel</label>
+                                    <input type="password" id="ai-api-key" placeholder="sk-..." style="width: 100%; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px;">
+                                </div>
+                                <div style="min-width: 150px;">
+                                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 4px;">Provider</label>
+                                    <select id="ai-provider" style="width: 100%; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px;">
+                                        <option value="openai">OpenAI (GPT-4)</option>
+                                        <option value="anthropic">Anthropic (Claude)</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="saveAPIConfig()" style="padding: 10px 20px;">
+                                    Speichern
+                                </button>
+                            </div>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">
+                                ⚠️ Der Schlüssel wird nur lokal im Browser gespeichert und nie an unsere Server gesendet.
+                            </p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- Case Context Summary -->
+                <div id="case-context-summary" style="background: var(--bg-primary); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); display: none;">
+                    <h4 style="margin: 0 0 12px; font-size: 0.95rem; color: var(--text-secondary);">📊 Fall-Kontext für die KI</h4>
+                    <div id="context-preview" style="font-size: 0.85rem; max-height: 150px; overflow-y: auto; background: var(--bg-secondary); padding: 12px; border-radius: 8px; font-family: monospace; white-space: pre-wrap;"></div>
+                </div>
+
+                <!-- Chat Interface -->
+                <div class="chat-container" style="background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden;">
+                    <!-- Chat Messages -->
+                    <div id="chat-messages" style="height: 400px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                        <!-- Welcome Message -->
+                        <div class="chat-message assistant" style="display: flex; gap: 12px; align-items: flex-start;">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; flex-shrink: 0;">🤖</div>
+                            <div style="background: var(--bg-primary); padding: 12px 16px; border-radius: 12px; border-top-left-radius: 4px; max-width: 80%;">
+                                <p style="margin: 0; line-height: 1.6;">Hallo! Ich bin Ihr klinischer Assistent für diesen Fall. Ich habe Zugriff auf alle anonymisierten Falldaten und kann Ihnen bei Fragen helfen:</p>
+                                <ul style="margin: 12px 0 0; padding-left: 20px; font-size: 0.9rem;">
+                                    <li>Diagnostische Überlegungen</li>
+                                    <li>Differentialdiagnosen</li>
+                                    <li>Behandlungsempfehlungen</li>
+                                    <li>Erklärungen zu Befunden</li>
+                                    <li>Literaturhinweise</li>
+                                </ul>
+                                <p style="margin: 12px 0 0; font-size: 0.85rem; color: var(--text-muted);">Geben Sie zuerst einen API-Schlüssel ein, um zu beginnen.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div style="border-top: 1px solid var(--border-color); padding: 16px; background: var(--bg-primary);">
+                        <div style="display: flex; gap: 12px;">
+                            <textarea id="chat-input" placeholder="Stellen Sie eine Frage zum Fall..." rows="2" style="flex: 1; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; resize: none; font-family: inherit; font-size: 0.95rem;" onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendChatMessage(); }"></textarea>
+                            <button type="button" class="btn btn-primary" onclick="sendChatMessage()" style="padding: 12px 24px; align-self: flex-end;">
+                                Senden ➤
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;" onclick="askQuickQuestion('Was sind die wichtigsten diagnostischen Überlegungen?')">💭 Diagnostik</button>
+                            <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;" onclick="askQuickQuestion('Welche Differentialdiagnosen sollten ausgeschlossen werden?')">🔄 Differentialdiagnosen</button>
+                            <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;" onclick="askQuickQuestion('Welche Behandlung empfiehlst du?')">💊 Behandlung</button>
+                            <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;" onclick="askQuickQuestion('Erkläre die Psychodynamik dieses Falls.')">🧠 Psychodynamik</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 4: Clinical Tools -->
             <section id="tools" class="tab-panel">
                 <div class="panel-header">
                     <h2>Klinische Tools</h2>
@@ -15928,6 +16039,385 @@ function initUIImprovements() {
 
     console.log('[UI] UI improvements initialized');
 }
+
+// ============================================================
+// KI-ASSISTENT - ANONYMISIERUNG & CHAT
+// ============================================================
+
+// Anonymisierung: Entfernt alle personenbezogenen Daten
+function anonymizeCaseData() {
+    if (!caseData) return null;
+
+    const anonymized = JSON.parse(JSON.stringify(caseData));
+
+    // Felder die anonymisiert werden sollen
+    const fieldsToRemove = ['name', 'vorname', 'nachname', 'geburtsdatum', 'adresse', 'telefon', 'email', 'schule', 'schulname'];
+
+    function removeFields(obj) {
+        if (!obj || typeof obj !== 'object') return;
+
+        for (const key in obj) {
+            if (fieldsToRemove.some(f => key.toLowerCase().includes(f))) {
+                delete obj[key];
+            } else if (typeof obj[key] === 'object') {
+                removeFields(obj[key]);
+            }
+        }
+    }
+
+    removeFields(anonymized);
+
+    // Alter beibehalten, aber als Bereich
+    if (anonymized.identifikation?.alter) {
+        const alter = parseInt(anonymized.identifikation.alter);
+        if (alter < 6) anonymized.identifikation.alter = '0-5 Jahre';
+        else if (alter < 10) anonymized.identifikation.alter = '6-9 Jahre';
+        else if (alter < 14) anonymized.identifikation.alter = '10-13 Jahre';
+        else anonymized.identifikation.alter = '14+ Jahre';
+    }
+
+    return anonymized;
+}
+
+// Erstellt den anonymisierten Fallkontext für die KI
+function createAnonymizedContext() {
+    const anonymized = anonymizeCaseData();
+    const result = window.currentAnalysisResult;
+
+    let context = `=== ANONYMISIERTER FALL-KONTEXT ===\n\n`;
+
+    // Basisdaten
+    context += `PATIENT/IN:\n`;
+    context += `- Altersgruppe: ${anonymized?.identifikation?.alter || 'Nicht angegeben'}\n`;
+    context += `- Geschlecht: ${anonymized?.identifikation?.geschlecht || 'Nicht angegeben'}\n`;
+    context += `- Schulform: ${anonymized?.identifikation?.schulform || 'Nicht angegeben'}\n\n`;
+
+    // Vorstellungsanlass
+    const anlass = anonymized?.identifikation?.vorstellungsanlassEltern ||
+                   anonymized?.identifikation?.vorstellungsanlassKind;
+    if (anlass) {
+        context += `VORSTELLUNGSANLASS:\n${anlass}\n\n`;
+    }
+
+    // Analyse-Ergebnisse
+    if (result) {
+        // Hypothesen
+        if (result.hypothesen && result.hypothesen.length > 0) {
+            context += `DIAGNOSTISCHE HYPOTHESEN:\n`;
+            result.hypothesen.slice(0, 5).forEach((h, i) => {
+                context += `${i+1}. ${h.label} (Verdachtsgrad: ${h.verdachtsgrad}%)\n`;
+                if (h.begründung) context += `   Begründung: ${h.begründung}\n`;
+            });
+            context += `\n`;
+        }
+
+        // ACE Score
+        if (result.aceScore) {
+            context += `ACE-SCORE: ${result.aceScore.score}/10\n`;
+            context += `Interpretation: ${result.aceScore.interpretation}\n\n`;
+        }
+
+        // CGAS
+        if (result.risikoprofil?.cgas) {
+            context += `CGAS (Funktionsniveau): ${result.risikoprofil.cgas.score}/100\n`;
+            context += `${result.risikoprofil.cgas.interpretation}\n\n`;
+        }
+
+        // Risikoprofil
+        if (result.risikoprofil) {
+            context += `RISIKOPROFIL:\n`;
+            context += `- Dringlichkeit: ${result.risikoprofil.dringlichkeit || 'normal'}\n`;
+            if (result.risikoprofil.akut?.length > 0) {
+                context += `- Akute Risiken: ${result.risikoprofil.akut.map(r => r.label).join(', ')}\n`;
+            }
+            if (result.risikoprofil.schutzfaktoren?.length > 0) {
+                context += `- Schutzfaktoren: ${result.risikoprofil.schutzfaktoren.join(', ')}\n`;
+            }
+            context += `\n`;
+        }
+
+        // Synthese (gekürzt)
+        if (result.synthese) {
+            const bps = result.synthese.biopsychosozial;
+            if (bps) {
+                context += `BIO-PSYCHO-SOZIALE FAKTOREN:\n`;
+                if (bps.biologisch?.length > 0) {
+                    context += `- Biologisch: ${bps.biologisch.slice(0, 5).map(f => typeof f === 'object' ? f.faktor : f).join(', ')}\n`;
+                }
+                if (bps.psychologisch?.length > 0) {
+                    context += `- Psychologisch: ${bps.psychologisch.slice(0, 5).map(f => typeof f === 'object' ? f.faktor : f).join(', ')}\n`;
+                }
+                if (bps.sozial?.length > 0) {
+                    context += `- Sozial: ${bps.sozial.slice(0, 5).map(f => typeof f === 'object' ? f.faktor : f).join(', ')}\n`;
+                }
+                context += `\n`;
+            }
+
+            // Bindung
+            if (result.synthese.bindung?.einschätzung) {
+                context += `BINDUNG: ${result.synthese.bindung.einschätzung.muster || 'Nicht eingeschätzt'}\n\n`;
+            }
+        }
+    }
+
+    // Aktuelle Symptome aus Checkboxen
+    const symptoms = [];
+    if (caseData.checkboxes) {
+        Object.keys(caseData.checkboxes).forEach(key => {
+            if (caseData.checkboxes[key]) {
+                symptoms.push(key);
+            }
+        });
+    }
+    if (symptoms.length > 0) {
+        context += `DOKUMENTIERTE SYMPTOME/MERKMALE:\n`;
+        context += symptoms.slice(0, 20).join(', ') + '\n\n';
+    }
+
+    context += `=== ENDE FALL-KONTEXT ===`;
+
+    return context;
+}
+
+function showAnonymizedData() {
+    const context = createAnonymizedContext();
+    const preview = document.getElementById('context-preview');
+    const container = document.getElementById('case-context-summary');
+
+    if (preview && container) {
+        preview.textContent = context;
+        container.style.display = 'block';
+    }
+}
+
+function copyAnonymizedContext() {
+    const context = createAnonymizedContext();
+    navigator.clipboard.writeText(context).then(() => {
+        showToast('Kontext in Zwischenablage kopiert!', 'success');
+    }).catch(() => {
+        showToast('Kopieren fehlgeschlagen', 'error');
+    });
+}
+
+// API Konfiguration speichern
+function saveAPIConfig() {
+    const apiKey = document.getElementById('ai-api-key')?.value;
+    const provider = document.getElementById('ai-provider')?.value;
+
+    if (apiKey) {
+        localStorage.setItem('padopsych_ai_api_key', apiKey);
+        localStorage.setItem('padopsych_ai_provider', provider);
+        showToast('API-Konfiguration gespeichert', 'success');
+    } else {
+        showToast('Bitte API-Schlüssel eingeben', 'error');
+    }
+}
+
+// API Konfiguration laden
+function loadAPIConfig() {
+    const savedKey = localStorage.getItem('padopsych_ai_api_key');
+    const savedProvider = localStorage.getItem('padopsych_ai_provider');
+
+    if (savedKey) {
+        const keyInput = document.getElementById('ai-api-key');
+        if (keyInput) keyInput.value = savedKey;
+    }
+    if (savedProvider) {
+        const providerSelect = document.getElementById('ai-provider');
+        if (providerSelect) providerSelect.value = savedProvider;
+    }
+}
+
+// Chat-Nachricht senden
+async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input?.value?.trim();
+
+    if (!message) return;
+
+    const apiKey = localStorage.getItem('padopsych_ai_api_key');
+    const provider = localStorage.getItem('padopsych_ai_provider') || 'openai';
+
+    if (!apiKey) {
+        showToast('Bitte zuerst API-Schlüssel konfigurieren', 'error');
+        return;
+    }
+
+    // Nachricht anzeigen
+    addChatMessage(message, 'user');
+    input.value = '';
+
+    // Kontext erstellen
+    const context = createAnonymizedContext();
+
+    // System-Prompt
+    const systemPrompt = `Du bist ein erfahrener Kinder- und Jugendpsychiater/Psychologe, der bei der klinischen Fallbesprechung hilft.
+
+Du hast Zugriff auf anonymisierte Falldaten eines Patienten/einer Patientin. Beantworte Fragen basierend auf diesen Daten.
+
+Wichtige Hinweise:
+- Gib fundierte klinische Einschätzungen, aber weise darauf hin, dass dies keine Diagnose ersetzt
+- Beziehe dich auf aktuelle Leitlinien (AWMF, NICE, etc.) wenn relevant
+- Sei empathisch und ressourcenorientiert
+- Nutze die bio-psycho-soziale Perspektive
+- Bei Unsicherheiten: sage es offen
+- Antworte auf Deutsch
+
+FALL-KONTEXT:
+${context}`;
+
+    // Lade-Anzeige
+    const loadingId = addChatMessage('Denke nach...', 'assistant', true);
+
+    try {
+        let response;
+
+        if (provider === 'openai') {
+            response = await callOpenAI(apiKey, systemPrompt, message);
+        } else if (provider === 'anthropic') {
+            response = await callAnthropic(apiKey, systemPrompt, message);
+        }
+
+        // Antwort anzeigen
+        removeChatMessage(loadingId);
+        addChatMessage(response, 'assistant');
+
+    } catch (error) {
+        removeChatMessage(loadingId);
+        addChatMessage(`Fehler: ${error.message}`, 'assistant');
+        console.error('AI API Error:', error);
+    }
+}
+
+// OpenAI API Call
+async function callOpenAI(apiKey, systemPrompt, userMessage) {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: 'gpt-4-turbo-preview',
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userMessage }
+            ],
+            max_tokens: 1500,
+            temperature: 0.7
+        })
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'API-Fehler');
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || 'Keine Antwort erhalten';
+}
+
+// Anthropic API Call
+async function callAnthropic(apiKey, systemPrompt, userMessage) {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+            model: 'claude-3-5-sonnet-20241022',
+            max_tokens: 1500,
+            system: systemPrompt,
+            messages: [
+                { role: 'user', content: userMessage }
+            ]
+        })
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'API-Fehler');
+    }
+
+    const data = await response.json();
+    return data.content[0]?.text || 'Keine Antwort erhalten';
+}
+
+// Chat-Nachricht zur UI hinzufügen
+function addChatMessage(content, role, isLoading = false) {
+    const container = document.getElementById('chat-messages');
+    if (!container) return;
+
+    const messageId = 'msg-' + Date.now();
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${role}`;
+    messageDiv.id = messageId;
+    messageDiv.style.cssText = 'display: flex; gap: 12px; align-items: flex-start;';
+
+    if (role === 'user') {
+        messageDiv.style.flexDirection = 'row-reverse';
+        messageDiv.innerHTML = `
+            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; flex-shrink: 0;">👤</div>
+            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 12px 16px; border-radius: 12px; border-top-right-radius: 4px; max-width: 80%;">
+                <p style="margin: 0; line-height: 1.6;">${escapeHtml(content)}</p>
+            </div>
+        `;
+    } else {
+        messageDiv.innerHTML = `
+            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; flex-shrink: 0;">🤖</div>
+            <div style="background: var(--bg-primary); padding: 12px 16px; border-radius: 12px; border-top-left-radius: 4px; max-width: 80%;">
+                ${isLoading ?
+                    '<p style="margin: 0; color: var(--text-muted);"><span class="loading-dots">●●●</span></p>' :
+                    `<div style="margin: 0; line-height: 1.7; white-space: pre-wrap;">${formatAIResponse(content)}</div>`
+                }
+            </div>
+        `;
+    }
+
+    container.appendChild(messageDiv);
+    container.scrollTop = container.scrollHeight;
+
+    return messageId;
+}
+
+function removeChatMessage(messageId) {
+    const message = document.getElementById(messageId);
+    if (message) message.remove();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatAIResponse(text) {
+    // Markdown-ähnliche Formatierung
+    return escapeHtml(text)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/^- (.*)/gm, '• $1')
+        .replace(/^(\d+)\. (.*)/gm, '$1. $2');
+}
+
+// Schnellfragen
+function askQuickQuestion(question) {
+    const input = document.getElementById('chat-input');
+    if (input) {
+        input.value = question;
+        sendChatMessage();
+    }
+}
+
+// API Config beim Laden initialisieren
+document.addEventListener('DOMContentLoaded', loadAPIConfig);
+
+// ============================================================
+// END KI-ASSISTENT
+// ============================================================
 
 // Run UI improvements after DOM is ready
 if (document.readyState === 'loading') {
