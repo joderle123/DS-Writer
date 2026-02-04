@@ -16090,17 +16090,75 @@ function createAnonymizedContext() {
     context += `PATIENT/IN:\n`;
     context += `- Altersgruppe: ${anonymized?.identifikation?.alter || 'Nicht angegeben'}\n`;
     context += `- Geschlecht: ${anonymized?.identifikation?.geschlecht || 'Nicht angegeben'}\n`;
-    context += `- Schulform: ${anonymized?.identifikation?.schulform || 'Nicht angegeben'}\n\n`;
+    context += `- Schulform: ${anonymized?.identifikation?.schulform || 'Nicht angegeben'}\n`;
+    context += `- Wohnsituation: ${anonymized?.identifikation?.wohnsituation || 'Nicht angegeben'}\n`;
+    context += `- Überweisung von: ${anonymized?.identifikation?.ueberweisungVon || 'Nicht angegeben'}\n\n`;
 
     // Vorstellungsanlass
-    const anlass = anonymized?.identifikation?.vorstellungsanlassEltern ||
-                   anonymized?.identifikation?.vorstellungsanlassKind;
-    if (anlass) {
-        context += `VORSTELLUNGSANLASS:\n${anlass}\n\n`;
+    const anlassEltern = anonymized?.identifikation?.vorstellungsanlassEltern;
+    const anlassKind = anonymized?.identifikation?.vorstellungsanlassKind;
+    if (anlassEltern || anlassKind) {
+        context += `VORSTELLUNGSANLASS:\n`;
+        if (anlassEltern) context += `- Elternperspektive: ${anlassEltern}\n`;
+        if (anlassKind) context += `- Kindperspektive: ${anlassKind}\n`;
+        context += `\n`;
     }
 
-    // Analyse-Ergebnisse
+    // Alle Formulardaten durchgehen und relevante Infos sammeln
+    context += `KLINISCHE BEFUNDE:\n\n`;
+
+    // Aktuelle Symptomatik
+    if (anonymized?.aktuelleSymptomatik) {
+        context += `Aktuelle Symptomatik:\n`;
+        context += collectSectionData(anonymized.aktuelleSymptomatik);
+    }
+
+    // Entwicklungsanamnese
+    if (anonymized?.entwicklungsanamnese) {
+        context += `Entwicklungsanamnese:\n`;
+        context += collectSectionData(anonymized.entwicklungsanamnese);
+    }
+
+    // Medizinische Anamnese
+    if (anonymized?.medizinischeAnamnese) {
+        context += `Medizinische Anamnese:\n`;
+        context += collectSectionData(anonymized.medizinischeAnamnese);
+    }
+
+    // Familienanamnese
+    if (anonymized?.familienanamnese) {
+        context += `Familienanamnese:\n`;
+        context += collectSectionData(anonymized.familienanamnese);
+    }
+
+    // Psychosoziales Umfeld
+    if (anonymized?.psychosozialesUmfeld) {
+        context += `Psychosoziales Umfeld:\n`;
+        context += collectSectionData(anonymized.psychosozialesUmfeld);
+    }
+
+    // Trauma/ACEs
+    if (anonymized?.traumaACEs) {
+        context += `Trauma/ACEs:\n`;
+        context += collectSectionData(anonymized.traumaACEs);
+    }
+
+    // Risiko & Schutzfaktoren
+    if (anonymized?.risikoSchutz) {
+        context += `Risiko- und Schutzfaktoren:\n`;
+        context += collectSectionData(anonymized.risikoSchutz);
+    }
+
+    // Psychopathologischer Befund
+    if (anonymized?.psychopathBefund) {
+        context += `Psychopathologischer Befund:\n`;
+        context += collectSectionData(anonymized.psychopathBefund);
+    }
+
+    // Analyse-Ergebnisse (wenn vorhanden)
     if (result) {
+        context += `\n=== ANALYSE-ERGEBNISSE ===\n\n`;
+
         // Hypothesen
         if (result.hypothesen && result.hypothesen.length > 0) {
             context += `DIAGNOSTISCHE HYPOTHESEN:\n`;
@@ -16114,13 +16172,27 @@ function createAnonymizedContext() {
         // ACE Score
         if (result.aceScore) {
             context += `ACE-SCORE: ${result.aceScore.score}/10\n`;
-            context += `Interpretation: ${result.aceScore.interpretation}\n\n`;
+            context += `Interpretation: ${result.aceScore.interpretation}\n`;
+            if (result.aceScore.identifiziert?.length > 0) {
+                context += `Identifizierte ACEs: ${result.aceScore.identifiziert.join(', ')}\n`;
+            }
+            context += `\n`;
         }
 
         // CGAS
         if (result.risikoprofil?.cgas) {
             context += `CGAS (Funktionsniveau): ${result.risikoprofil.cgas.score}/100\n`;
             context += `${result.risikoprofil.cgas.interpretation}\n\n`;
+        }
+
+        // Suizidalität
+        if (result.risikoprofil?.suizidalitaet && result.risikoprofil.suizidalitaet.stufe > 0) {
+            context += `SUIZIDALITÄTS-SCREENING:\n`;
+            context += `- Stufe: ${result.risikoprofil.suizidalitaet.stufenBezeichnung}\n`;
+            if (result.risikoprofil.suizidalitaet.identifiziert?.length > 0) {
+                context += `- Indikatoren: ${result.risikoprofil.suizidalitaet.identifiziert.join(', ')}\n`;
+            }
+            context += `\n`;
         }
 
         // Risikoprofil
@@ -16130,53 +16202,106 @@ function createAnonymizedContext() {
             if (result.risikoprofil.akut?.length > 0) {
                 context += `- Akute Risiken: ${result.risikoprofil.akut.map(r => r.label).join(', ')}\n`;
             }
+            if (result.risikoprofil.chronisch?.length > 0) {
+                context += `- Chronische Risiken: ${result.risikoprofil.chronisch.join(', ')}\n`;
+            }
             if (result.risikoprofil.schutzfaktoren?.length > 0) {
                 context += `- Schutzfaktoren: ${result.risikoprofil.schutzfaktoren.join(', ')}\n`;
             }
             context += `\n`;
         }
 
-        // Synthese (gekürzt)
-        if (result.synthese) {
+        // Bio-Psycho-Soziale Faktoren
+        if (result.synthese?.biopsychosozial) {
             const bps = result.synthese.biopsychosozial;
-            if (bps) {
-                context += `BIO-PSYCHO-SOZIALE FAKTOREN:\n`;
-                if (bps.biologisch?.length > 0) {
-                    context += `- Biologisch: ${bps.biologisch.slice(0, 5).map(f => typeof f === 'object' ? f.faktor : f).join(', ')}\n`;
-                }
-                if (bps.psychologisch?.length > 0) {
-                    context += `- Psychologisch: ${bps.psychologisch.slice(0, 5).map(f => typeof f === 'object' ? f.faktor : f).join(', ')}\n`;
-                }
-                if (bps.sozial?.length > 0) {
-                    context += `- Sozial: ${bps.sozial.slice(0, 5).map(f => typeof f === 'object' ? f.faktor : f).join(', ')}\n`;
-                }
-                context += `\n`;
+            context += `BIO-PSYCHO-SOZIALE FAKTOREN:\n`;
+            if (bps.biologisch?.length > 0) {
+                context += `- Biologisch: ${bps.biologisch.map(f => typeof f === 'object' ? f.faktor : f).join(', ')}\n`;
             }
-
-            // Bindung
-            if (result.synthese.bindung?.einschätzung) {
-                context += `BINDUNG: ${result.synthese.bindung.einschätzung.muster || 'Nicht eingeschätzt'}\n\n`;
+            if (bps.psychologisch?.length > 0) {
+                context += `- Psychologisch: ${bps.psychologisch.map(f => typeof f === 'object' ? f.faktor : f).join(', ')}\n`;
             }
+            if (bps.sozial?.length > 0) {
+                context += `- Sozial: ${bps.sozial.map(f => typeof f === 'object' ? f.faktor : f).join(', ')}\n`;
+            }
+            context += `\n`;
         }
-    }
 
-    // Aktuelle Symptome aus Checkboxen
-    const symptoms = [];
-    if (caseData.checkboxes) {
-        Object.keys(caseData.checkboxes).forEach(key => {
-            if (caseData.checkboxes[key]) {
-                symptoms.push(key);
+        // Bindung
+        if (result.synthese?.bindung?.einschätzung) {
+            context += `BINDUNGSMUSTER: ${result.synthese.bindung.einschätzung.muster || 'Nicht eingeschätzt'}\n`;
+            if (result.synthese.bindung.einschätzung.beschreibung) {
+                context += `${result.synthese.bindung.einschätzung.beschreibung}\n`;
             }
-        });
-    }
-    if (symptoms.length > 0) {
-        context += `DOKUMENTIERTE SYMPTOME/MERKMALE:\n`;
-        context += symptoms.slice(0, 20).join(', ') + '\n\n';
+            context += `\n`;
+        }
+
+        // Resilienz
+        if (result.synthese?.resilienz) {
+            const res = result.synthese.resilienz;
+            context += `RESILIENZ-FAKTOREN:\n`;
+            if (res.individuell?.length > 0) {
+                context += `- Individuell: ${res.individuell.join(', ')}\n`;
+            }
+            if (res.familiär?.length > 0) {
+                context += `- Familiär: ${res.familiär.join(', ')}\n`;
+            }
+            if (res.sozial?.length > 0) {
+                context += `- Sozial: ${res.sozial.join(', ')}\n`;
+            }
+            context += `\n`;
+        }
     }
 
     context += `=== ENDE FALL-KONTEXT ===`;
 
     return context;
+}
+
+// Hilfsfunktion: Sammelt alle Daten aus einer Sektion
+function collectSectionData(section) {
+    let text = '';
+
+    function traverse(obj, prefix = '') {
+        if (!obj || typeof obj !== 'object') return;
+
+        for (const key in obj) {
+            const value = obj[key];
+
+            // Skip meta fields
+            if (key.startsWith('_')) continue;
+
+            if (typeof value === 'boolean' && value === true) {
+                // Checkbox ist ausgewählt
+                text += `  - ${formatKey(key)}: Ja\n`;
+            } else if (typeof value === 'string' && value.trim() !== '') {
+                // Textfeld hat Inhalt
+                text += `  - ${formatKey(key)}: ${value}\n`;
+            } else if (typeof value === 'number') {
+                text += `  - ${formatKey(key)}: ${value}\n`;
+            } else if (typeof value === 'object' && value !== null) {
+                // Rekursiv durchgehen
+                traverse(value, key);
+            }
+        }
+    }
+
+    traverse(section);
+
+    if (text === '') {
+        text = '  (keine Angaben)\n';
+    }
+
+    return text + '\n';
+}
+
+// Formatiert Schlüsselnamen für bessere Lesbarkeit
+function formatKey(key) {
+    return key
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, str => str.toUpperCase())
+        .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+        .trim();
 }
 
 function showAnonymizedData() {
