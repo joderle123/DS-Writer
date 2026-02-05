@@ -6775,7 +6775,6 @@ function generateAktuelleSituationText(dsData, stammdaten) {
 }
 
 function generateSichtweiseSchuleText(dsData) {
-    // Hole alle relevanten Daten
     const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
     const verhalten = dsData.ds_schule_verhalten;
     const leistung = dsData.ds_schule_leistung;
@@ -6790,259 +6789,271 @@ function generateSichtweiseSchuleText(dsData) {
     const lehrer = dsData.ds_schule_lehrer;
     const erwartungen = dsData.checkboxes?.ds_schule_erwartung || [];
 
-    // Fachsprachliche Text-Mappings (deskriptiv, nicht wertend)
-    const M = {
-        positiv: {
-            'kooperativ': 'kooperatives Interaktionsverhalten',
-            'hilfsbereit': 'prosoziale Verhaltenstendenzen',
-            'motiviert': 'eine erkennbare Lernmotivation',
-            'respektvoll': 'ein angemessenes Sozialverhalten gegenüber Erwachsenen',
-            'kreativ': 'kreative Problemlösefähigkeiten',
-            'selbststaendig': 'Ansätze selbstständigen Arbeitens',
-            'frustrationstoleranz': 'eine altersangemessene Frustrationstoleranz',
-            'empathisch': 'empathische Fähigkeiten'
-        },
-        negativ: {
-            'unaufmerksam': 'eine verminderte Aufmerksamkeitssteuerung',
-            'impulsiv': 'Tendenzen zu impulsivem Handeln',
-            'motorisch_unruhig': 'eine erhöhte motorische Unruhe',
-            'verweigert': 'eine verminderte Anstrengungsbereitschaft',
-            'verbal_aggressiv': 'verbal-aggressive Verhaltensweisen',
-            'koerperlich_aggressiv': 'körperlich übergriffiges Verhalten',
-            'rueckzug': 'soziale Rückzugstendenzen',
-            'stoert': 'Schwierigkeiten bei der Impulskontrolle im Unterricht',
-            'regelverletzend': 'eine eingeschränkte Regelakzeptanz',
-            'luegt': 'situativ inadäquates Wahrheitsverhalten',
-            'aengstlich': 'ängstlich-vermeidendes Verhalten',
-            'weinerlich': 'eine erhöhte emotionale Reagibilität',
-            'niedrige_frustration': 'eine eingeschränkte Frustrationstoleranz'
-        },
-        aufmerksamkeit: {
-            'konzentriert_gut': 'eine altersadäquate Konzentrationsfähigkeit',
-            'kurze_spanne': 'eine verkürzte Aufmerksamkeitsspanne',
-            'leicht_ablenkbar': 'eine erhöhte Ablenkbarkeit durch Außenreize',
-            'strukturhilfe': 'einen Bedarf an externer Strukturierung',
-            'einzelbegleitung': 'einen Bedarf an individueller Begleitung',
-            'beginnt_nicht': 'Initiierungsschwierigkeiten bei Aufgaben',
-            'beendet_nicht': 'Schwierigkeiten bei der Aufgabenbeendigung',
-            'tagtraeumer': 'Tendenzen zum Abschweifen der Aufmerksamkeit'
-        },
-        arbeit: {
-            'sorgfaeltig': 'ein sorgfältiges Arbeitsverhalten',
-            'chaotisch': 'ein wenig strukturiertes Arbeitsverhalten',
-            'schnell_fertig': 'ein übereiltes, wenig sorgfältiges Arbeitstempo',
-            'sehr_langsam': 'ein verlangsamtes Arbeitstempo',
-            'perfektionistisch': 'perfektionistische Tendenzen mit Angst vor Fehlern',
-            'gibt_auf': 'eine verminderte Ausdauer bei Schwierigkeiten',
-            'material_vergessen': 'Schwierigkeiten bei der Selbstorganisation',
-            'hausaufgaben_fehlen': 'eine unregelmäßige Hausaufgabenerledigung'
-        },
-        emotion: {
-            'emotional_stabil': 'eine stabile emotionale Verfassung',
-            'stimmungsschwankungen': 'Schwankungen in der Affektlage',
-            'weint_leicht': 'eine erhöhte emotionale Sensibilität',
-            'wutausbrueche': 'wiederkehrende affektive Durchbrüche',
-            'angst_versagen': 'leistungsbezogene Versagensängste',
-            'trennungsangst': 'Symptome einer erhöhten Trennungsangst',
-            'somatische_beschwerden': 'somatoforme Beschwerden in Belastungssituationen',
-            'selbstwert_niedrig': 'Hinweise auf ein vermindertes Selbstwerterleben'
-        },
-        konflikt: {
-            'uebergaenge': 'Übergangssituationen',
-            'freies_spiel': 'unstrukturierten Spielsituationen',
-            'gruppenarbeit': 'kooperativen Arbeitsformen',
-            'einzelarbeit': 'selbstständiger Einzelarbeit',
-            'warten': 'Wartesituationen',
-            'kritik': 'korrigierendem Feedback',
-            'ungerechtigkeit': 'subjektiv erlebter Ungerechtigkeit',
-            'verlieren': 'Wettbewerbssituationen mit negativem Ausgang',
-            'unerwartetes': 'Veränderungen im Ablauf',
-            'leistungsdruck': 'leistungsbezogenen Anforderungssituationen'
-        },
-        hilft: {
-            'klare_ansagen': 'prägnante Handlungsanweisungen',
-            'wiederholungen': 'redundante Instruktionen',
-            'visualisierungen': 'visuelle Strukturierungshilfen',
-            'bewegungspausen': 'regelmäßige Bewegungsangebote',
-            'ruhige_ecke': 'Rückzugsmöglichkeiten zur Selbstregulation',
-            'einzelansprache': 'individualisierte Ansprache',
-            'lob': 'positive Verstärkung',
-            'vorwarnung': 'Vorankündigungen bei Übergängen',
-            'kleingruppe': 'Settings mit reduzierter Gruppengröße',
-            'naehe_lehrer': 'eine erhöhte Präsenz der Bezugsperson'
-        }
-    };
-
-    // Hilfsfunktion für fachsprachliche Aufzählungen
-    const liste = (arr, map, konjunktion = 'sowie') => {
-        const items = arr.map(i => map[i] || i);
-        if (items.length === 0) return '';
-        if (items.length === 1) return items[0];
-        return items.slice(0, -1).join(', ') + ' ' + konjunktion + ' ' + items[items.length - 1];
-    };
-
-    // ===== FACHSPRACHLICHER DIAGNOSTISCHER TEXT =====
     let text = '';
 
-    // EINLEITUNG mit Quellenangabe (Konjunktiv für indirekte Rede)
+    // === EINLEITUNG ===
     if (dsData.ds_schule_info_von) {
-        const datum = dsData.ds_schule_info_datum ? ` am ${new Date(dsData.ds_schule_info_datum).toLocaleDateString('de-DE')}` : '';
-        text += `Die nachfolgenden Angaben basieren auf Informationen, die${datum} im Austausch mit ${dsData.ds_schule_info_von} erhoben wurden. `;
-    } else {
-        text += 'Laut schulischer Rückmeldung ';
+        const datum = dsData.ds_schule_info_datum ? new Date(dsData.ds_schule_info_datum).toLocaleDateString('de-DE') : '';
+        text += `Die folgenden Angaben wurden ${datum ? `am ${datum} ` : ''}im Gespräch mit ${dsData.ds_schule_info_von} erhoben.\n\n`;
     }
 
-    // ABSATZ 1: Verhaltens- und Leistungsprofil (Konjunktiv für Berichte)
-    const hatVerhalten = verhalten && verhalten !== '';
-    const hatLeistung = leistung && leistung !== '';
-    const hatPositiv = positiv.length > 0;
-    const hatNegativ = negativ.length > 0;
-
-    if (hatVerhalten || hatLeistung || hatPositiv || hatNegativ) {
-        if (hatVerhalten) {
-            const vText = {
-                'unauffaellig': `wird das Verhalten von ${name} im schulischen Kontext als weitgehend unauffällig beschrieben`,
-                'teilweise': `werden bei ${name} situativ Verhaltensauffälligkeiten berichtet`,
-                'stark': `werden bei ${name} deutliche Verhaltensauffälligkeiten beschrieben, die den Schulalltag erheblich beeinträchtigen`
-            };
-            text += vText[verhalten] || '';
-        }
-
-        if (hatLeistung) {
-            const lText = {
-                'ueberdurchschnittlich': 'das Leistungsniveau wird als überdurchschnittlich eingeschätzt',
-                'durchschnittlich': 'die schulischen Leistungen bewegen sich im altersgemäßen Durchschnittsbereich',
-                'unterdurchschnittlich': 'das schulische Leistungsniveau wird als unterdurchschnittlich beschrieben',
-                'stark_unter': 'es werden erhebliche schulische Leistungsrückstände berichtet'
-            };
-            text += hatVerhalten ? `. Hinsichtlich der schulischen Leistungen ${lText[leistung]}` : (lText[leistung]?.charAt(0).toUpperCase() + lText[leistung]?.slice(1) || '');
-        }
-        text += '. ';
-
-        // Ressourcen und Belastungen synthetisch verbinden
-        if (hatPositiv && hatNegativ) {
-            text += `\n\nAls Ressourcen werden ${liste(positiv, M.positiv)} beschrieben. Gleichzeitig berichten die schulischen Bezugspersonen von ${liste(negativ, M.negativ)}. `;
-        } else if (hatPositiv) {
-            text += `\n\nAls Ressourcen im schulischen Kontext werden insbesondere ${liste(positiv, M.positiv)} benannt. `;
-        } else if (hatNegativ) {
-            text += `\n\nIm Vordergrund der schulischen Belastung stehen laut Bericht ${liste(negativ, M.negativ)}. `;
-        }
-    }
-
-    // ABSATZ 2: Aufmerksamkeit und Arbeitsverhalten - Synthese von Symptomen und Situationen
+    // === ICF-BASIERTER FLIESSTEXT ===
     const hatAufm = aufmerksamkeit.length > 0;
     const hatArbeit = arbeit.length > 0;
     const hatEmotion = emotion.length > 0;
+    const hatNegativ = negativ.length > 0;
+    const hatPositiv = positiv.length > 0;
+    const hatKonflikt = konflikt.length > 0;
+    const hatHilft = hilft.length > 0;
 
-    if (hatAufm || hatArbeit || hatEmotion) {
-        text += '\n\nHinsichtlich des Lern- und Arbeitsverhaltens ';
+    // --- KÖRPERFUNKTIONEN (b) ---
+    let koerperfunktionen = '';
 
-        if (hatAufm && hatArbeit) {
-            text += `zeige ${name} ${liste(aufmerksamkeit, M.aufmerksamkeit)}, was sich in Verbindung mit ${liste(arbeit, M.arbeit)} auf die Bewältigung schulischer Anforderungen auswirke. `;
-        } else if (hatAufm) {
-            text += `wird bei ${name} ${liste(aufmerksamkeit, M.aufmerksamkeit)} beschrieben. `;
-        } else if (hatArbeit) {
-            text += `berichten die Lehrkräfte von ${liste(arbeit, M.arbeit)}. `;
-        }
-
-        if (hatEmotion) {
-            if (emotion.includes('emotional_stabil')) {
-                text += `Bezüglich der emotionalen Verfassung wird ${name} als stabil beschrieben. `;
-            } else {
-                const emotListe = liste(emotion.filter(e => e !== 'emotional_stabil'), M.emotion);
-                if (hatAufm || hatArbeit) {
-                    text += `Auffällig ist hierbei, dass diese Schwierigkeiten häufig von ${emotListe} begleitet werden. `;
-                } else {
-                    text += `werden ${emotListe} berichtet. `;
-                }
+    // Aufmerksamkeitsfunktionen (b140) - als Fließtext
+    if (hatAufm) {
+        if (aufmerksamkeit.includes('konzentriert_gut')) {
+            koerperfunktionen += `Im Bereich der Aufmerksamkeitsfunktionen (b140) zeigt ${name} eine altersadäquate Funktionsfähigkeit. `;
+        } else {
+            koerperfunktionen += `Im Bereich der Aufmerksamkeitsfunktionen (b140) zeigt sich bei ${name} eine Beeinträchtigung`;
+            const aufmDetails = [];
+            if (aufmerksamkeit.includes('kurze_spanne')) aufmDetails.push('reduzierte Aufmerksamkeitsspanne');
+            if (aufmerksamkeit.includes('leicht_ablenkbar')) aufmDetails.push('erhöhte Ablenkbarkeit durch Außenreize');
+            if (aufmerksamkeit.includes('beginnt_nicht')) aufmDetails.push('Schwierigkeiten bei der Aufgabeninitiierung');
+            if (aufmerksamkeit.includes('beendet_nicht')) aufmDetails.push('mangelnde Aufgabenpersistenz');
+            if (aufmerksamkeit.includes('tagtraeumer')) aufmDetails.push('Tendenz zum Abschweifen');
+            if (aufmDetails.length > 0) {
+                koerperfunktionen += `, die sich in ${aufmDetails.join(' und ')} äußert`;
+            }
+            koerperfunktionen += `. `;
+            if (aufmerksamkeit.includes('strukturhilfe') || aufmerksamkeit.includes('einzelbegleitung')) {
+                koerperfunktionen += `Zur Kompensation dieser Funktionseinschränkung benötigt ${name} externe Strukturierungshilfen und eine engmaschige Begleitung. `;
             }
         }
     }
 
-    // ABSATZ 3: Konfliktsituationen und bewährte Strategien - Synthese
-    const hatKonflikt = konflikt.length > 0;
-    const hatHilft = hilft.length > 0;
-
-    if (hatKonflikt || hatHilft) {
-        text += '\n\n';
-        if (hatKonflikt && hatHilft) {
-            text += `Die beschriebenen Verhaltensweisen treten laut Schule insbesondere bei ${liste(konflikt, M.konflikt)} auf. Im Umgang mit diesen Situationen hätten sich ${liste(hilft, M.hilft)} als förderlich erwiesen. `;
-        } else if (hatKonflikt) {
-            text += `Als typische Auslösesituationen für problematisches Verhalten werden ${liste(konflikt, M.konflikt)} genannt. `;
-        } else if (hatHilft) {
-            text += `Als wirksame pädagogische Strategien werden ${liste(hilft, M.hilft)} beschrieben. `;
+    // Psychomotorische Funktionen (b147) und Impulskontrolle (b1304)
+    if (negativ.includes('motorisch_unruhig') || negativ.includes('impulsiv') || negativ.includes('stoert')) {
+        koerperfunktionen += `Hinsichtlich der psychomotorischen Funktionen (b147) und der Impulskontrolle (b1304) werden ebenfalls Beeinträchtigungen beschrieben`;
+        if (negativ.includes('motorisch_unruhig') && negativ.includes('impulsiv')) {
+            koerperfunktionen += `: ${name} zeigt eine erhöhte motorische Aktivität, die mit impulsiven Handlungstendenzen einhergeht und die Selbststeuerung im Unterrichtskontext erschwert. `;
+        } else if (negativ.includes('motorisch_unruhig')) {
+            koerperfunktionen += `: Die motorische Aktivität ist erhöht, was die Teilnahme am Unterricht beeinträchtigt. `;
+        } else if (negativ.includes('impulsiv')) {
+            koerperfunktionen += `: Es zeigen sich impulsive Handlungstendenzen, die die Verhaltenssteuerung erschweren. `;
+        } else {
+            koerperfunktionen += `, die sich in Schwierigkeiten bei der Impulskontrolle im Unterrichtskontext äußern. `;
         }
     }
 
-    // Ergänzende Beschreibungen
-    if (dsData.ds_schule_verhalten_details) {
-        text += dsData.ds_schule_verhalten_details + ' ';
+    // Emotionale Funktionen (b152)
+    if (hatEmotion) {
+        if (emotion.includes('emotional_stabil')) {
+            koerperfunktionen += `Die emotionalen Funktionen (b152) stellen sich hingegen als altersgerecht entwickelt dar und bilden damit eine wichtige Ressource. `;
+        } else {
+            koerperfunktionen += `Die emotionalen Funktionen (b152) zeigen Auffälligkeiten`;
+            if (emotion.includes('wutausbrueche') && emotion.includes('niedrige_frustration' in negativ || emotion.includes('stimmungsschwankungen'))) {
+                koerperfunktionen += `: Die Emotionsregulation (b1521) ist beeinträchtigt, was sich in wiederkehrenden affektiven Durchbrüchen bei geringer Frustrationstoleranz manifestiert. `;
+            } else if (emotion.includes('wutausbrueche')) {
+                koerperfunktionen += `: Es kommt zu wiederkehrenden affektiven Durchbrüchen, die auf eine Beeinträchtigung der Emotionsregulation (b1521) hinweisen. `;
+            } else if (emotion.includes('stimmungsschwankungen')) {
+                koerperfunktionen += `: Die Stimmungslage ist durch eine erhöhte Labilität gekennzeichnet. `;
+            } else if (emotion.includes('angst_versagen') || emotion.includes('selbstwert_niedrig')) {
+                koerperfunktionen += `: Es zeigen sich Hinweise auf leistungsbezogene Ängste und ein beeinträchtigtes Selbstwerterleben, die das emotionale Gleichgewicht belasten. `;
+            } else if (emotion.includes('trennungsangst')) {
+                koerperfunktionen += `: Eine erhöhte Trennungsangst beeinflusst die emotionale Verfügbarkeit für schulische Anforderungen. `;
+            } else if (emotion.includes('somatische_beschwerden')) {
+                koerperfunktionen += `: In Belastungssituationen treten somatoforme Beschwerden auf, die als körperlicher Ausdruck emotionaler Überforderung zu werten sind. `;
+            } else if (emotion.includes('weint_leicht')) {
+                koerperfunktionen += `: ${name} zeigt eine erhöhte emotionale Sensibilität. `;
+            } else {
+                koerperfunktionen += `. `;
+            }
+        }
     }
 
-    // ABSATZ 4: Soziale Einbindung und Beziehungsgestaltung
+    if (koerperfunktionen) {
+        text += koerperfunktionen;
+    }
+
+    // --- AKTIVITÄTEN UND PARTIZIPATION (d) ---
+    let aktivitaeten = '';
+
+    // Arbeitsverhalten und Aufgabenbewältigung (d210, d220)
+    if (hatArbeit) {
+        const probleme = arbeit.filter(a => a !== 'sorgfaeltig');
+        if (arbeit.includes('sorgfaeltig') && probleme.length === 0) {
+            aktivitaeten += `\n\nIm Bereich der Aktivitäten zeigt ${name} bei der Durchführung von Aufgaben (d210) ein sorgfältiges und strukturiertes Vorgehen. `;
+        } else if (probleme.length > 0) {
+            aktivitaeten += `\n\nDiese Funktionseinschränkungen wirken sich auf die Durchführung von Aufgaben (d210) aus: `;
+            if (arbeit.includes('chaotisch') && arbeit.includes('material_vergessen')) {
+                aktivitaeten += `${name} zeigt Schwierigkeiten bei der Handlungsplanung und Organisation, was sich in einem wenig strukturierten Arbeitsverhalten und häufigem Vergessen von Materialien äußert. `;
+            } else if (arbeit.includes('chaotisch')) {
+                aktivitaeten += `Das Arbeitsverhalten ist wenig strukturiert und die Handlungsplanung erschwert. `;
+            } else if (arbeit.includes('material_vergessen')) {
+                aktivitaeten += `Es zeigen sich Schwierigkeiten bei der Selbstorganisation. `;
+            }
+            if (arbeit.includes('sehr_langsam') || arbeit.includes('schnell_fertig')) {
+                aktivitaeten += `Das Arbeitstempo ist ${arbeit.includes('sehr_langsam') ? 'verlangsamt, was die Bewältigung des Unterrichtsstoffs erschwert' : 'überhastet mit resultierender Fehleranfälligkeit'}. `;
+            }
+            if (arbeit.includes('gibt_auf') || arbeit.includes('perfektionistisch')) {
+                aktivitaeten += arbeit.includes('perfektionistisch')
+                    ? `Perfektionistische Tendenzen führen zu Vermeidungsverhalten, sobald Fehler antizipiert werden. `
+                    : `Bei auftretenden Schwierigkeiten zeigt sich eine verminderte Durchhaltekraft. `;
+            }
+            if (arbeit.includes('hausaufgaben_fehlen')) {
+                aktivitaeten += `Die Hausaufgabenerledigung erfolgt unregelmäßig. `;
+            }
+        }
+    }
+
+    // Schulische Partizipation (d820) und Leistung
+    const hatVerhalten = verhalten && verhalten !== '';
+    const hatLeistung = leistung && leistung !== '';
+
+    if (hatVerhalten || hatLeistung) {
+        if (!aktivitaeten) aktivitaeten += '\n\n';
+        aktivitaeten += `Die Partizipation an der schulischen Bildung (d820) ist `;
+        if (verhalten === 'unauffaellig') {
+            aktivitaeten += `weitgehend unbeeinträchtigt, ${name} kann am Unterrichtsgeschehen angemessen teilnehmen`;
+        } else if (verhalten === 'teilweise') {
+            aktivitaeten += `situativ eingeschränkt, da die beschriebenen Funktionsbeeinträchtigungen in spezifischen Anforderungskontexten zu Schwierigkeiten führen`;
+        } else if (verhalten === 'stark') {
+            aktivitaeten += `erheblich beeinträchtigt, die kumulierten Funktionseinschränkungen führen zu einer deutlichen Einschränkung der schulischen Teilhabe`;
+        }
+        if (hatLeistung) {
+            aktivitaeten += `. `;
+            if (leistung === 'ueberdurchschnittlich') {
+                aktivitaeten += `Das schulische Leistungsniveau wird trotz der Verhaltensauffälligkeiten als überdurchschnittlich eingeschätzt, was auf erhaltene kognitive Ressourcen hinweist`;
+            } else if (leistung === 'durchschnittlich') {
+                aktivitaeten += `Das schulische Leistungsniveau bewegt sich im altersgemäßen Durchschnittsbereich`;
+            } else if (leistung === 'unterdurchschnittlich') {
+                aktivitaeten += `Das Leistungsniveau wird als unterdurchschnittlich beschrieben, wobei zu prüfen ist, inwieweit die Funktionsbeeinträchtigungen die Leistungsentfaltung behindern`;
+            } else if (leistung === 'stark_unter') {
+                aktivitaeten += `Es bestehen deutliche Leistungsrückstände, die auf eine erhebliche Beeinträchtigung der schulischen Lernprozesse hindeuten`;
+            }
+        }
+        aktivitaeten += `. `;
+    }
+
+    // Interpersonelle Interaktionen (d7)
     const hatMitschueler = mitschueler && mitschueler !== '';
     const hatLehrer = lehrer && lehrer !== '';
 
     if (hatMitschueler || hatLehrer) {
-        text += '\n\nIm Bereich der sozialen Beziehungen ';
+        aktivitaeten += `Im Bereich der interpersonellen Interaktionen (d7) `;
+        if (mitschueler === 'gut_integriert') {
+            aktivitaeten += `zeigt ${name} eine gelungene soziale Partizipation – die Integration in die Klassengemeinschaft ist gegeben und ${name} pflegt positive Peer-Kontakte`;
+        } else if (mitschueler === 'einige_freunde') {
+            aktivitaeten += `bestehen einzelne tragfähige Peer-Beziehungen, wenngleich die soziale Interaktion nicht durchgängig konfliktfrei verläuft`;
+        } else if (mitschueler === 'isoliert') {
+            aktivitaeten += `zeigt sich eine eingeschränkte soziale Partizipation: ${name} nimmt eine randständige Position in der Klassengemeinschaft ein, was als Entwicklungsrisiko zu werten ist`;
+        } else if (mitschueler === 'konflikthaft') {
+            aktivitaeten += `kommt es wiederholt zu Konflikten mit Gleichaltrigen, die die soziale Teilhabe beeinträchtigen und das Klassenklima belasten`;
+        } else if (mitschueler === 'gemobbt') {
+            aktivitaeten += `besteht der Verdacht auf Viktimisierungserfahrungen, die als erheblicher psychosozialer Risikofaktor einzuschätzen sind`;
+        } else if (mitschueler === 'mobbt') {
+            aktivitaeten += `werden Verhaltensweisen berichtet, die auf eine Beteiligung an Ausgrenzungsdynamiken hindeuten`;
+        }
+        if (hatLehrer) {
+            aktivitaeten += `. Die Beziehungsgestaltung zu den Lehrpersonen wird als `;
+            if (lehrer === 'positiv') aktivitaeten += `tragfähig beschrieben – diese Beziehungsqualität stellt einen bedeutsamen Förderfaktor dar`;
+            else if (lehrer === 'neutral') aktivitaeten += `sachlich-funktional charakterisiert`;
+            else if (lehrer === 'angespannt') aktivitaeten += `phasenweise belastet wahrgenommen, was die pädagogische Arbeit erschwert`;
+            else if (lehrer === 'konflikthaft') aktivitaeten += `konflikthaft beschrieben, was als Barriere für die pädagogische Einflussnahme wirkt`;
+        }
+        aktivitaeten += `. `;
+    }
 
-        const sozialTexte = {
-            'gut_integriert': `wird berichtet, dass ${name} gut in die Klassengemeinschaft integriert sei und positive Peer-Kontakte pflege`,
-            'einige_freunde': `habe ${name} vereinzelte Freundschaftsbeziehungen aufbauen können, wobei die Peer-Interaktion nicht durchgängig konfliktfrei verlaufe`,
-            'isoliert': `zeige ${name} Schwierigkeiten bei der sozialen Integration und nehme eine eher randständige Position in der Klassengemeinschaft ein`,
-            'konflikthaft': `sei ${name} wiederholt in Peer-Konflikte involviert, was die soziale Teilhabe beeinträchtige`,
-            'gemobbt': `bestehe der Verdacht auf Mobbing-Erfahrungen, was als erhebliche psychosoziale Belastung einzuschätzen sei`,
-            'mobbt': `zeige ${name} Verhaltensweisen, die auf Mobbing-Dynamiken hindeuten`
-        };
+    if (aktivitaeten) {
+        text += aktivitaeten;
+    }
 
-        if (hatMitschueler) {
-            text += sozialTexte[mitschueler] || '';
+    // --- KONTEXTFAKTOREN (e) ---
+    let kontext = '';
+
+    if (hatKonflikt || hatHilft || hatPositiv) {
+        kontext += `\n\nBezüglich der Kontextfaktoren lassen sich sowohl Barrieren als auch Förderfaktoren identifizieren: `;
+
+        // Barrieren (auslösende Situationen)
+        if (hatKonflikt) {
+            kontext += `Als umweltbezogene Barrieren, welche die beschriebenen Funktionsbeeinträchtigungen verstärken, erweisen sich `;
+            const barrieren = [];
+            if (konflikt.includes('uebergaenge') || konflikt.includes('unerwartetes')) barrieren.push('Situationen mit geringer Vorhersehbarkeit wie Übergänge und unerwartete Veränderungen');
+            if (konflikt.includes('warten')) barrieren.push('Wartesituationen, die erhöhte Selbstregulation erfordern');
+            if (konflikt.includes('leistungsdruck')) barrieren.push('Anforderungssituationen unter Zeitdruck');
+            if (konflikt.includes('gruppenarbeit') || konflikt.includes('freies_spiel')) barrieren.push('unstrukturierte Gruppen- und Spielsituationen');
+            if (konflikt.includes('kritik') || konflikt.includes('ungerechtigkeit') || konflikt.includes('verlieren')) barrieren.push('Situationen mit negativem Feedback oder erlebter Ungerechtigkeit');
+            if (konflikt.includes('einzelarbeit')) barrieren.push('längere Phasen selbstständiger Einzelarbeit');
+            kontext += barrieren.join(', sowie ') + `. `;
         }
 
-        if (hatLehrer) {
-            const lehrerTexte = {
-                'positiv': 'tragfähig und von gegenseitigem Vertrauen geprägt',
-                'neutral': 'sachlich und funktional',
-                'angespannt': 'phasenweise belastet',
-                'konflikthaft': 'von wiederkehrenden Konflikten gekennzeichnet'
-            };
-            if (hatMitschueler) {
-                text += `. Die Beziehung zu den Lehrkräften wird als ${lehrerTexte[lehrer] || lehrer} charakterisiert`;
-            } else {
-                text += `wird die Beziehung zu den Lehrkräften als ${lehrerTexte[lehrer] || lehrer} beschrieben`;
+        // Förderfaktoren (hilfreiche Strategien und Stärken)
+        if (hatHilft || hatPositiv) {
+            kontext += `Als Förderfaktoren, welche die Partizipation unterstützen, haben sich `;
+            const foerder = [];
+            if (hilft.includes('klare_ansagen') || hilft.includes('vorwarnung') || hilft.includes('visualisierungen')) {
+                foerder.push('strukturierende Maßnahmen wie eindeutige Handlungsanweisungen, Vorankündigungen und visuelle Hilfen');
+            }
+            if (hilft.includes('kleingruppe') || hilft.includes('naehe_lehrer') || hilft.includes('einzelansprache')) {
+                foerder.push('individualisierte Settings mit erhöhter Begleitung durch die Lehrperson');
+            }
+            if (hilft.includes('bewegungspausen') || hilft.includes('ruhige_ecke')) {
+                foerder.push('Möglichkeiten zur Selbstregulation durch Bewegung oder Rückzug');
+            }
+            if (hilft.includes('lob') || hilft.includes('wiederholungen')) {
+                foerder.push('positive Verstärkung und geduldige Wiederholung');
+            }
+            kontext += foerder.join(', ') + ` erwiesen. `;
+
+            if (hatPositiv) {
+                kontext += `Als personbezogene Förderfaktoren sind `;
+                const persoenlich = [];
+                if (positiv.includes('motiviert')) persoenlich.push('eine grundlegende Lernmotivation');
+                if (positiv.includes('kreativ')) persoenlich.push('kreative Problemlösefähigkeiten');
+                if (positiv.includes('kooperativ') || positiv.includes('hilfsbereit')) persoenlich.push('prosoziale Kompetenzen');
+                if (positiv.includes('empathisch')) persoenlich.push('empathische Fähigkeiten');
+                if (positiv.includes('respektvoll')) persoenlich.push('respektvolles Verhalten gegenüber Erwachsenen');
+                if (positiv.includes('selbststaendig')) persoenlich.push('Ansätze zur Selbstständigkeit');
+                if (positiv.includes('frustrationstoleranz')) persoenlich.push('eine altersangemessene Frustrationstoleranz');
+                kontext += persoenlich.join(', ') + ` zu nennen, auf die in der Förderung aufgebaut werden kann. `;
             }
         }
-        text += '. ';
     }
 
-    // ABSCHLUSS: Erwartungen der Schule
+    if (kontext) {
+        text += kontext;
+    }
+
+    // Ergänzende Beschreibungen
+    if (dsData.ds_schule_verhalten_details) {
+        text += `\n\n${dsData.ds_schule_verhalten_details}`;
+    }
+
+    // Erwartungen
     if (erwartungen.length > 0 || dsData.ds_schule_erwartungen) {
-        text += '\n\nVon der diagnostischen Abklärung und möglichen Fördermaßnahmen erhofft sich die Schule ';
-        const erwTexte = {
-            'verhalten_verbessern': 'eine Verbesserung der Verhaltenssteuerung',
-            'konzentration_verbessern': 'eine Steigerung der Konzentrationsfähigkeit',
-            'soziale_integration': 'eine verbesserte soziale Integration',
-            'emotionale_stabilitaet': 'eine emotionale Stabilisierung',
-            'leistung_verbessern': 'eine Verbesserung der schulischen Leistungen',
-            'strategien_schule': 'konkrete Handlungsempfehlungen für den Schulalltag',
-            'externe_unterstuetzung': 'die Einleitung externer therapeutischer Unterstützung',
-            'elternarbeit': 'eine intensivierte Elternkooperation',
-            'foerderort_pruefung': 'eine Überprüfung des geeigneten Förderortes',
-            'abklaerung': 'eine differenzierte diagnostische Einordnung'
-        };
-        const erwListe = erwartungen.map(e => erwTexte[e] || e);
-        text += erwListe.join(', ');
+        text += `\n\nVon schulischer Seite wird eine Unterstützung erwartet, die auf `;
+        const ziele = [];
+        if (erwartungen.includes('verhalten_verbessern')) ziele.push('eine Verbesserung der Verhaltenssteuerung');
+        if (erwartungen.includes('konzentration_verbessern')) ziele.push('eine Steigerung der Aufmerksamkeitsfunktionen');
+        if (erwartungen.includes('soziale_integration')) ziele.push('eine verbesserte soziale Partizipation');
+        if (erwartungen.includes('emotionale_stabilitaet')) ziele.push('eine Stabilisierung der emotionalen Funktionen');
+        if (erwartungen.includes('leistung_verbessern')) ziele.push('eine Verbesserung der schulischen Leistungen');
+        if (erwartungen.includes('strategien_schule')) ziele.push('konkrete Handlungsempfehlungen für den schulischen Alltag');
+        if (erwartungen.includes('externe_unterstuetzung')) ziele.push('die Einleitung externer therapeutischer Maßnahmen');
+        if (erwartungen.includes('elternarbeit')) ziele.push('eine intensivierte Zusammenarbeit mit den Eltern');
+        if (erwartungen.includes('foerderort_pruefung')) ziele.push('eine Überprüfung des geeigneten Förderortes');
+        if (erwartungen.includes('abklaerung')) ziele.push('eine differenzierte diagnostische Einordnung');
+        text += ziele.join(', ') + ` abzielt`;
         if (dsData.ds_schule_erwartungen) {
-            text += `. Ergänzend wird genannt: ${dsData.ds_schule_erwartungen}`;
+            text += `. ${dsData.ds_schule_erwartungen}`;
         }
-        text += '.';
+        text += `.`;
     }
 
-    return text.trim() || '(Sichtweise der Schule wird hier eingefügt)';
+    return text.trim() || '(Schulische Perspektive wird hier eingefügt)';
 }
 
 function generateSichtweiseSchuelerText(dsData, stammdaten) {
-    // Hole alle relevanten Daten
     const name = stammdaten?.schueler_name?.split(',')[0]?.trim() || document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
     const wohlbefinden = dsData.ds_schueler_wohlbefinden;
     const leidensdruck = dsData.ds_schueler_leidensdruck;
@@ -7053,262 +7064,267 @@ function generateSichtweiseSchuelerText(dsData, stammdaten) {
     const hobbys = dsData.checkboxes?.ds_schueler_hobbys || [];
     const wuensche = dsData.checkboxes?.ds_schueler_wunsch || [];
 
-    // Fachsprachliche Text-Mappings (Konjunktiv I für Kindaussagen)
-    const M = {
-        wohlbefinden: {
-            'sehr_wohl': 'fühle sich sehr wohl',
-            'meistens_wohl': 'fühle sich überwiegend wohl',
-            'mal_so': 'erlebe ein wechselhaftes Wohlbefinden',
-            'eher_unwohl': 'fühle sich eher unwohl',
-            'sehr_unwohl': 'erlebe ein deutliches Unwohlsein'
-        },
-        leidensdruck: {
-            'nein': '',
-            'leicht': 'ein leichter subjektiver Leidensdruck',
-            'mittel': 'ein deutlicher subjektiver Leidensdruck',
-            'stark': 'ein erheblicher subjektiver Leidensdruck'
-        },
-        belastung: {
-            'schulische_anforderungen': 'schulische Leistungsanforderungen',
-            'konflikte_mitschueler': 'Peer-Konflikte',
-            'konflikte_lehrer': 'Konflikte mit Lehrpersonen',
-            'situation_zuhause': 'die häusliche Situation',
-            'traurigkeit_aengste': 'Gefühle von Traurigkeit und Angst',
-            'wutausbrueche': 'die eigene Wutregulation',
-            'nichts': ''
-        },
-        wichtig: {
-            'freunde': 'soziale Zugehörigkeit',
-            'gute_noten': 'schulischer Erfolg',
-            'gerecht': 'Gerechtigkeit und Fairness',
-            'ruhe': 'Rückzugsmöglichkeiten',
-            'nicht_auffallen': 'unauffällig zu sein',
-            'spass': 'lustbetonte Aktivitäten',
-            'respektiert': 'Anerkennung und Respekt',
-            'pause': 'Erholungsphasen'
-        },
-        selbstPos: {
-            'bin_gut_schule': 'positive schulische Selbstwirksamkeitserwartungen',
-            'bin_lieb': 'eine positive Selbstzuschreibung',
-            'haben_mich_gern': 'das Erleben sozialer Akzeptanz',
-            'strafe_verdient': 'eine angemessene Konsequenzenakzeptanz',
-            'problembewusstsein': 'Ansätze von Problemeinsicht'
-        },
-        selbstNeg: {
-            'bin_schlecht_schule': 'negative schulbezogene Selbstkonzeptanteile',
-            'bin_boese': 'eine negative Selbstzuschreibung',
-            'keiner_mag_mich': 'das Erleben sozialer Ablehnung',
-            'ungerechtigkeit': 'ein ausgeprägtes Ungerechtigkeitserleben',
-            'kein_problembewusstsein': 'eine eingeschränkte Problemeinsicht'
-        },
-        reaktion: {
-            'hilfe_holen': 'adäquates Hilfesuchverhalten',
-            'zurueckziehen': 'sozialen Rückzug',
-            'weinen': 'emotionalen Ausdruck durch Weinen',
-            'schreien': 'externalisierende Verhaltensweisen',
-            'hauen': 'körperlich-aggressive Reaktionen',
-            'weglaufen': 'Fluchtverhalten',
-            'ignorieren': 'Vermeidungsstrategien',
-            'schuld_anderen': 'externalisierende Attributionen'
-        },
-        hobbys: {
-            'sport': 'sportliche Aktivitäten',
-            'gaming': 'digitale Medien',
-            'musik': 'Musik',
-            'lesen': 'Lesen',
-            'kreativ': 'kreative Beschäftigungen',
-            'freunde': 'Peer-Kontakte',
-            'tiere': 'Tiere',
-            'natur': 'Naturerfahrungen'
-        },
-        wunsch: {
-            'bessere_noten': 'eine Verbesserung der schulischen Leistungen',
-            'mehr_freunde': 'eine Erweiterung des sozialen Netzwerks',
-            'weniger_streit': 'weniger Konflikte',
-            'ruhe_zuhause': 'mehr häusliche Harmonie',
-            'eltern_zusammen': 'eine Wiedervereinigung der Eltern',
-            'weniger_druck': 'eine Reduktion des Leistungsdrucks',
-            'andere_klasse': 'einen Klassenwechsel',
-            'andere_schule': 'einen Schulwechsel',
-            'normal_sein': 'Normalitätserleben',
-            'in_ruhe_lassen': 'weniger externe Anforderungen',
-            'verstanden_werden': 'Verständnis und Empathie',
-            'hilfe_bekommen': 'Unterstützungsangebote'
-        },
-        beziehung: {
-            'sehr_gut': 'sehr positiv und tragfähig',
-            'gut': 'überwiegend positiv',
-            'okay': 'ambivalent',
-            'schwierig': 'belastet',
-            'ka': ''
-        },
-        freunde: {
-            'viele': 'ein gut ausgebautes soziales Netzwerk',
-            'einige': 'einige stabile Freundschaftsbeziehungen',
-            'bester_freund': 'mindestens eine enge Freundschaftsbeziehung',
-            'wenige': 'kaum stabile Peer-Beziehungen'
-        }
-    };
-
-    // Hilfsfunktion für fachsprachliche Aufzählungen
-    const liste = (arr, map) => {
-        const items = arr.filter(i => i && map[i]).map(i => map[i]);
-        if (items.length === 0) return '';
-        if (items.length === 1) return items[0];
-        return items.slice(0, -1).join(', ') + ' sowie ' + items[items.length - 1];
-    };
-
-    // ===== FACHSPRACHLICHER DIAGNOSTISCHER TEXT =====
     let text = '';
 
-    // EINLEITUNG: Explorationskontext
+    // === EINLEITUNG ===
     if (dsData.ds_schueler_gespraech_datum) {
         const datum = new Date(dsData.ds_schueler_gespraech_datum).toLocaleDateString('de-DE');
-        text += `Im Rahmen der Exploration wurde am ${datum} ein Gespräch mit ${name} geführt, um dessen subjektives Erleben zu erfassen. `;
-    } else {
-        text += `Im Rahmen der Kindexploration wurden folgende Angaben erhoben: `;
+        text += `Im Rahmen der Exploration wurde am ${datum} ein Gespräch mit ${name} geführt, um dessen subjektives Erleben und die Selbstwahrnehmung zu erfassen.\n\n`;
     }
 
-    // ABSATZ 1: Subjektives Erleben und Belastungswahrnehmung (Konjunktiv)
+    // === ICF-BASIERTER FLIESSTEXT ===
     const hatWohl = wohlbefinden && wohlbefinden !== '';
     const hatLeiden = leidensdruck && leidensdruck !== '' && leidensdruck !== 'nein';
     const hatBelast = belastungen.length > 0 && !belastungen.includes('nichts');
+    const hatSelbst = selbst.length > 0;
+    const hatReaktion = reaktion.length > 0;
 
+    // --- EMOTIONALE FUNKTIONEN (b152) UND SUBJEKTIVES WOHLBEFINDEN ---
     if (hatWohl || hatLeiden || hatBelast) {
-        text += `\n\nBezüglich des schulischen Wohlbefindens gibt ${name} an, `;
+        text += `Hinsichtlich der emotionalen Funktionen (b152) und des subjektiven Wohlbefindens `;
+
         if (hatWohl) {
-            text += `${M.wohlbefinden[wohlbefinden]}`;
-            if (hatLeiden) {
-                text += `. Exploratorisch zeigt sich ${M.leidensdruck[leidensdruck]}`;
+            if (wohlbefinden === 'sehr_wohl' || wohlbefinden === 'meistens_wohl') {
+                text += `berichtet ${name}, sich in der Schule ${wohlbefinden === 'sehr_wohl' ? 'sehr wohl' : 'überwiegend wohl'} zu fühlen`;
+                if (!hatBelast && !hatLeiden) {
+                    text += `. Dieses positive Erleben stellt einen wichtigen Förderfaktor für die weitere Entwicklung dar. `;
+                } else {
+                    text += `, wobei `;
+                }
+            } else if (wohlbefinden === 'mal_so') {
+                text += `beschreibt ${name} ein wechselhaftes Wohlbefinden, das stark von situativen Faktoren abhängt`;
+                text += hatBelast || hatLeiden ? `. ` : `. Diese Ambivalenz deutet auf spezifische Kontextfaktoren hin, die das emotionale Erleben beeinflussen. `;
+            } else if (wohlbefinden === 'eher_unwohl' || wohlbefinden === 'sehr_unwohl') {
+                text += `gibt ${name} an, sich in der Schule ${wohlbefinden === 'sehr_unwohl' ? 'deutlich unwohl' : 'eher unwohl'} zu fühlen`;
+                text += hatBelast || hatLeiden ? `. ` : `. Dieses negative Erleben wirkt sich als Barriere auf die schulische Partizipation aus. `;
             }
-            text += '. ';
         }
 
-        if (hatBelast) {
-            const belastListe = liste(belastungen, M.belastung);
-            text += `Als subjektiv belastend werden ${belastListe} benannt. `;
-
-            // Synthese: Verbindung zwischen Wohlbefinden und Belastungen
-            if (hatWohl && (wohlbefinden === 'eher_unwohl' || wohlbefinden === 'sehr_unwohl')) {
-                text += 'Auffällig ist hierbei der Zusammenhang zwischen dem berichteten Unwohlsein und den genannten Belastungsfaktoren. ';
+        // Leidensdruck und Belastungsfaktoren integriert darstellen
+        if (hatLeiden && hatBelast) {
+            if (leidensdruck === 'stark') {
+                text += `Exploratorisch zeigt sich ein erheblicher subjektiver Leidensdruck, der mit spezifischen Belastungsfaktoren in Zusammenhang steht: `;
+            } else if (leidensdruck === 'mittel') {
+                text += `Es besteht ein deutlicher subjektiver Leidensdruck, der sich auf folgende Bereiche bezieht: `;
+            } else {
+                text += `Bei leichtem subjektivem Leidensdruck werden als belastend benannt: `;
             }
+
+            // Belastungsfaktoren narrativ verknüpfen
+            const belastText = [];
+            if (belastungen.includes('schulische_anforderungen')) belastText.push('die schulischen Leistungsanforderungen');
+            if (belastungen.includes('konflikte_mitschueler')) belastText.push('Konflikte mit Gleichaltrigen');
+            if (belastungen.includes('konflikte_lehrer')) belastText.push('schwierige Interaktionen mit Lehrpersonen');
+            if (belastungen.includes('situation_zuhause')) belastText.push('die Situation zu Hause');
+            if (belastungen.includes('traurigkeit_aengste')) belastText.push('Gefühle von Traurigkeit und Angst');
+            if (belastungen.includes('wutausbrueche')) belastText.push('Schwierigkeiten bei der eigenen Wutregulation');
+            text += belastText.join(', ') + `. `;
+
+            // Synthese herstellen
+            if (belastungen.includes('schulische_anforderungen') && (wohlbefinden === 'eher_unwohl' || wohlbefinden === 'sehr_unwohl')) {
+                text += `Auffällig ist der Zusammenhang zwischen dem schulischen Anforderungsdruck und dem beeinträchtigten Wohlbefinden – dies deutet auf einen Teufelskreis hin, bei dem Leistungsängste das emotionale Gleichgewicht destabilisieren. `;
+            } else if (belastungen.includes('konflikte_mitschueler') || belastungen.includes('konflikte_lehrer')) {
+                text += `Die berichteten interpersonellen Konflikte wirken sich offenbar negativ auf das emotionale Wohlbefinden aus und beeinflussen damit die Partizipation am Schulleben. `;
+            }
+        } else if (hatLeiden) {
+            text += `Exploratorisch zeigt sich ein ${leidensdruck === 'stark' ? 'erheblicher' : leidensdruck === 'mittel' ? 'deutlicher' : 'leichter'} subjektiver Leidensdruck. `;
+        } else if (hatBelast) {
+            text += `Als belastend werden `;
+            const belastText = [];
+            if (belastungen.includes('schulische_anforderungen')) belastText.push('schulische Anforderungen');
+            if (belastungen.includes('konflikte_mitschueler')) belastText.push('Peer-Konflikte');
+            if (belastungen.includes('konflikte_lehrer')) belastText.push('Konflikte mit Lehrpersonen');
+            if (belastungen.includes('situation_zuhause')) belastText.push('die häusliche Situation');
+            if (belastungen.includes('traurigkeit_aengste')) belastText.push('emotionale Belastungen');
+            if (belastungen.includes('wutausbrueche')) belastText.push('die eigene Emotionsregulation');
+            text += belastText.join(' und ') + ` benannt. `;
         }
     }
 
-    // ABSATZ 2: Selbstkonzept und Wertorientierung
+    // --- SELBSTKONZEPT (b1266 Vertrauen, b1800 Selbstwahrnehmung) ---
+    const selbstPos = ['bin_gut_schule', 'bin_lieb', 'haben_mich_gern', 'strafe_verdient', 'problembewusstsein'];
+    const selbstNeg = ['bin_schlecht_schule', 'bin_boese', 'keiner_mag_mich', 'ungerechtigkeit', 'kein_problembewusstsein'];
+    const positivesSelbst = selbst.filter(s => selbstPos.includes(s));
+    const negativesSelbst = selbst.filter(s => selbstNeg.includes(s));
     const hatWichtig = wichtig.length > 0;
-    const hatSelbst = selbst.length > 0;
 
-    if (hatWichtig || hatSelbst) {
-        text += '\n\nHinsichtlich des Selbstkonzepts ';
+    if (hatSelbst || hatWichtig) {
+        text += `\n\nBezüglich des Selbstkonzepts (b1800) und der Selbstwirksamkeitserwartungen `;
 
-        if (hatSelbst) {
-            const positivesSelbst = selbst.filter(s => Object.keys(M.selbstPos).includes(s));
-            const negativesSelbst = selbst.filter(s => Object.keys(M.selbstNeg).includes(s));
-
-            if (positivesSelbst.length > 0 && negativesSelbst.length > 0) {
-                text += `zeigt sich ein differenziertes Bild: Es finden sich ${liste(positivesSelbst, M.selbstPos)}, während gleichzeitig ${liste(negativesSelbst, M.selbstNeg)} erkennbar werden. `;
-            } else if (positivesSelbst.length > 0) {
-                text += `zeigen sich ${liste(positivesSelbst, M.selbstPos)}. `;
-            } else if (negativesSelbst.length > 0) {
-                text += `fallen ${liste(negativesSelbst, M.selbstNeg)} auf. `;
+        if (positivesSelbst.length > 0 && negativesSelbst.length > 0) {
+            text += `zeigt sich ein ambivalentes Bild: Einerseits verfügt ${name} über `;
+            if (positivesSelbst.includes('bin_gut_schule')) text += `positive schulische Selbstwirksamkeitserwartungen`;
+            if (positivesSelbst.includes('haben_mich_gern')) text += `${positivesSelbst.includes('bin_gut_schule') ? ' und ' : ''}das Erleben sozialer Akzeptanz`;
+            if (positivesSelbst.includes('problembewusstsein')) text += `${positivesSelbst.length > 1 ? ' sowie ' : ''}Ansätze von Problemeinsicht`;
+            text += `. Andererseits finden sich `;
+            if (negativesSelbst.includes('bin_schlecht_schule')) text += `negative schulbezogene Selbstkonzeptanteile`;
+            if (negativesSelbst.includes('keiner_mag_mich')) text += `${negativesSelbst.includes('bin_schlecht_schule') ? ' und ' : ''}ein Erleben sozialer Ablehnung`;
+            if (negativesSelbst.includes('kein_problembewusstsein')) text += `${negativesSelbst.length > 1 ? ' sowie ' : ''}eine eingeschränkte Problemeinsicht`;
+            if (negativesSelbst.includes('bin_boese')) text += `${negativesSelbst.length > 1 ? ', wobei auch ' : ''}eine negative Selbstzuschreibung`;
+            text += `. Diese Ambivalenz ist bei der Förderplanung zu berücksichtigen. `;
+        } else if (positivesSelbst.length > 0) {
+            text += `zeigen sich überwiegend positive Anteile: ${name} verfügt über `;
+            if (positivesSelbst.includes('bin_gut_schule')) text += `positive schulische Selbstwirksamkeitserwartungen`;
+            if (positivesSelbst.includes('bin_lieb')) text += `${positivesSelbst.includes('bin_gut_schule') ? ', ' : ''}ein positives Selbstbild`;
+            if (positivesSelbst.includes('haben_mich_gern')) text += `${positivesSelbst.length > 1 ? ' und ' : ''}erlebt sich als sozial akzeptiert`;
+            if (positivesSelbst.includes('problembewusstsein')) text += `${positivesSelbst.length > 1 ? '; zudem zeigen sich ' : ''}Ansätze von Problemeinsicht`;
+            text += `. Diese positiven Selbstkonzeptanteile stellen einen wesentlichen Förderfaktor dar. `;
+        } else if (negativesSelbst.length > 0) {
+            text += `zeigen sich Beeinträchtigungen: `;
+            if (negativesSelbst.includes('bin_schlecht_schule') && negativesSelbst.includes('keiner_mag_mich')) {
+                text += `${name} weist sowohl negative schulbezogene als auch soziale Selbstkonzeptanteile auf – das Kind erlebt sich als schulisch inkompetent und sozial abgelehnt. `;
+            } else if (negativesSelbst.includes('bin_schlecht_schule')) {
+                text += `${name} zeigt negative schulbezogene Selbstkonzeptanteile, die sich als Barriere für die Lernmotivation auswirken können. `;
+            } else if (negativesSelbst.includes('keiner_mag_mich')) {
+                text += `${name} erlebt sich als sozial abgelehnt, was die Partizipation in der Peergroup erschwert. `;
+            }
+            if (negativesSelbst.includes('kein_problembewusstsein')) {
+                text += `Eine eingeschränkte Problemeinsicht könnte die Veränderungsmotivation beeinflussen. `;
             }
         }
 
         if (hatWichtig) {
-            text += `Als bedeutsam benennt ${name} ${liste(wichtig, M.wichtig)}. `;
+            text += `Als persönlich bedeutsam benennt ${name} `;
+            const werte = [];
+            if (wichtig.includes('freunde')) werte.push('soziale Zugehörigkeit');
+            if (wichtig.includes('gute_noten')) werte.push('schulischen Erfolg');
+            if (wichtig.includes('gerecht')) werte.push('Gerechtigkeit und Fairness');
+            if (wichtig.includes('respektiert')) werte.push('Anerkennung durch andere');
+            if (wichtig.includes('ruhe') || wichtig.includes('pause')) werte.push('Erholungs- und Rückzugsmöglichkeiten');
+            if (wichtig.includes('spass')) werte.push('lustbetonte Aktivitäten');
+            if (wichtig.includes('nicht_auffallen')) werte.push('unauffällig zu sein');
+            text += werte.join(', ') + ` – diese Wertorientierungen geben Hinweise auf motivationale Ansatzpunkte für die Förderung. `;
         }
     }
 
-    // ABSATZ 3: Coping und Beziehungsgestaltung - Synthese
-    const hatReaktion = reaktion.length > 0;
+    // --- STRESSBEWÄLTIGUNG (d240) UND INTERPERSONELLE INTERAKTIONEN (d7) ---
     const hatBezMutter = dsData.ds_schueler_beziehung_mutter && dsData.ds_schueler_beziehung_mutter !== 'ka';
     const hatBezVater = dsData.ds_schueler_beziehung_vater && dsData.ds_schueler_beziehung_vater !== 'ka';
     const hatFreunde = dsData.ds_schueler_freunde && dsData.ds_schueler_freunde !== '';
 
     if (hatReaktion || hatBezMutter || hatBezVater || hatFreunde) {
-        text += '\n\n';
+        text += `\n\n`;
 
         if (hatReaktion) {
-            // Gruppiere in adaptive und maladaptive Copingstrategien
             const adaptiv = reaktion.filter(r => ['hilfe_holen'].includes(r));
-            const maladaptiv = reaktion.filter(r => !['hilfe_holen'].includes(r));
+            const externalisierend = reaktion.filter(r => ['schreien', 'hauen', 'schuld_anderen'].includes(r));
+            const internalisierend = reaktion.filter(r => ['zurueckziehen', 'weinen'].includes(r));
+            const vermeidend = reaktion.filter(r => ['weglaufen', 'ignorieren'].includes(r));
 
-            if (adaptiv.length > 0 && maladaptiv.length > 0) {
-                text += `Hinsichtlich der Stressregulation berichtet ${name} sowohl von ${liste(adaptiv, M.reaktion)} als auch von ${liste(maladaptiv, M.reaktion)}. `;
+            text += `Im Bereich der Stressbewältigung (d240) `;
+
+            if (adaptiv.length > 0 && (externalisierend.length > 0 || internalisierend.length > 0 || vermeidend.length > 0)) {
+                text += `zeigt ${name} sowohl adaptive als auch maladaptive Strategien: Das Kind berichtet zwar von adäquatem Hilfesuchverhalten, reagiert in Konfliktsituationen jedoch auch mit `;
+                if (externalisierend.length > 0) text += `externalisierenden Verhaltensweisen wie ${externalisierend.includes('hauen') ? 'körperlicher Aggression' : 'verbalen Äußerungen'}`;
+                if (internalisierend.length > 0) text += `${externalisierend.length > 0 ? ' sowie ' : ''}internalisierenden Reaktionen wie Rückzug oder Weinen`;
+                if (vermeidend.length > 0) text += `${(externalisierend.length > 0 || internalisierend.length > 0) ? ' und ' : ''}Vermeidungsverhalten`;
+                text += `. `;
             } else if (adaptiv.length > 0) {
-                text += `Als Copingstrategie bei Konflikten beschreibt ${name} ${liste(adaptiv, M.reaktion)}. `;
-            } else if (maladaptiv.length > 0) {
-                text += `Bei der Konflikbewältigung zeige sich laut eigener Angabe eine Tendenz zu ${liste(maladaptiv, M.reaktion)}. `;
+                text += `berichtet ${name} von adäquatem Hilfesuchverhalten – dies stellt einen wesentlichen Förderfaktor dar, auf den in der Intervention aufgebaut werden kann. `;
+            } else if (externalisierend.length > 0 && internalisierend.length > 0) {
+                text += `zeigt ${name} sowohl externalisierende Reaktionen (${externalisierend.includes('hauen') ? 'körperliche Aggression' : 'verbale Äußerungen'}) als auch internalisierende Bewältigungsmuster (Rückzug, Weinen). Diese ambivalente Stressverarbeitung deutet auf eine Beeinträchtigung der Emotionsregulation hin. `;
+            } else if (externalisierend.length > 0) {
+                text += `berichtet ${name} von externalisierenden Bewältigungsmustern: Bei Konflikten zeige sich eine Tendenz zu ${externalisierend.includes('hauen') ? 'körperlich-aggressiven Reaktionen' : ''}${externalisierend.includes('schreien') ? 'verbalen Ausbrüchen' : ''}${externalisierend.includes('schuld_anderen') ? 'externalisierenden Attributionen' : ''}. `;
+            } else if (internalisierend.length > 0) {
+                text += `beschreibt ${name} eher internalisierende Bewältigungsmuster: Bei Konflikten erfolge typischerweise ein Rückzug oder emotionaler Ausdruck durch Weinen. `;
+            } else if (vermeidend.length > 0) {
+                text += `zeigt ${name} eine Tendenz zu Vermeidungsstrategien: Bei Belastungen erfolge typischerweise ein Ausweichen der Situation. `;
             }
         }
 
-        // Beziehungskonstellation
+        // Beziehungsgestaltung als Teil der sozialen Partizipation (d7)
         if (hatBezMutter || hatBezVater || hatFreunde) {
-            text += 'Im Bereich der Beziehungsgestaltung ';
+            text += `Die interpersonellen Interaktionen (d7) werden wie folgt charakterisiert: `;
 
             if (hatBezMutter || hatBezVater) {
-                text += 'charakterisiert das Kind die Beziehung ';
+                text += `Die Beziehung zur `;
                 if (hatBezMutter) {
-                    text += `zur Mutter als ${M.beziehung[dsData.ds_schueler_beziehung_mutter]}`;
+                    const bezM = dsData.ds_schueler_beziehung_mutter;
+                    text += `Mutter wird als ${bezM === 'sehr_gut' ? 'sehr positiv und tragfähig' : bezM === 'gut' ? 'überwiegend positiv' : bezM === 'okay' ? 'ambivalent' : 'belastet'} beschrieben`;
                 }
                 if (hatBezMutter && hatBezVater) {
-                    text += `, zum Vater als ${M.beziehung[dsData.ds_schueler_beziehung_vater]}`;
+                    const bezV = dsData.ds_schueler_beziehung_vater;
+                    text += `, die zum Vater als ${bezV === 'sehr_gut' ? 'sehr positiv' : bezV === 'gut' ? 'überwiegend positiv' : bezV === 'okay' ? 'ambivalent' : 'belastet'}`;
                 } else if (hatBezVater) {
-                    text += `zum Vater als ${M.beziehung[dsData.ds_schueler_beziehung_vater]}`;
+                    const bezV = dsData.ds_schueler_beziehung_vater;
+                    text += `Vater wird als ${bezV === 'sehr_gut' ? 'sehr positiv und tragfähig' : bezV === 'gut' ? 'überwiegend positiv' : bezV === 'okay' ? 'ambivalent' : 'belastet'} beschrieben`;
                 }
-                text += '. ';
+                text += `. `;
             }
 
             if (hatFreunde) {
-                text += `Bezüglich der Peer-Beziehungen berichtet das Kind von ${M.freunde[dsData.ds_schueler_freunde]}. `;
+                const freunde = dsData.ds_schueler_freunde;
+                if (freunde === 'viele') {
+                    text += `${name} berichtet von einem gut ausgebauten sozialen Netzwerk, was die Partizipation in der Peergroup unterstützt. `;
+                } else if (freunde === 'einige' || freunde === 'bester_freund') {
+                    text += `${name} verfügt über ${freunde === 'einige' ? 'einige stabile' : 'mindestens eine enge'} Freundschaftsbeziehung${freunde === 'einige' ? 'en' : ''}, die als Ressource zu werten ist. `;
+                } else if (freunde === 'wenige') {
+                    text += `${name} berichtet von kaum stabilen Peer-Beziehungen, was als Risikofaktor für die soziale Entwicklung zu berücksichtigen ist. `;
+                }
             }
 
             if (dsData.ds_schueler_vertrauensperson) {
-                text += `Als schulische Vertrauensperson wird ${dsData.ds_schueler_vertrauensperson} genannt, was auf vorhandene Bindungsressourcen hinweist. `;
+                text += `Als schulische Vertrauensperson wird ${dsData.ds_schueler_vertrauensperson} genannt – diese Bindungsressource kann für die Förderung genutzt werden. `;
             }
         }
     }
 
     // Ergänzende Beschreibung
     if (dsData.ds_schueler_beschreibung) {
-        text += '\n\n' + dsData.ds_schueler_beschreibung + ' ';
+        text += `\n\n${dsData.ds_schueler_beschreibung} `;
     }
 
-    // ABSATZ 4: Ressourcen und Zukunftsperspektive
+    // --- PERSONBEZOGENE FÖRDERFAKTOREN UND ZUKUNFTSPERSPEKTIVE ---
     const hatHobbys = hobbys.length > 0;
     const hatWuensche = wuensche.length > 0 || dsData.ds_schueler_wuensche;
 
     if (hatHobbys || hatWuensche) {
-        text += '\n\n';
+        text += `\n\nAls personbezogene Förderfaktoren `;
 
         if (hatHobbys) {
-            text += `Als Interessens- und Ressourcenbereiche werden ${liste(hobbys, M.hobbys)} exploriert`;
+            text += `lassen sich folgende Interessen und Ressourcenbereiche identifizieren: ${name} benennt `;
+            const hobbyText = [];
+            if (hobbys.includes('sport')) hobbyText.push('sportliche Aktivitäten');
+            if (hobbys.includes('kreativ')) hobbyText.push('kreative Beschäftigungen');
+            if (hobbys.includes('musik')) hobbyText.push('Musik');
+            if (hobbys.includes('lesen')) hobbyText.push('Lesen');
+            if (hobbys.includes('gaming')) hobbyText.push('digitale Medien');
+            if (hobbys.includes('freunde')) hobbyText.push('soziale Aktivitäten mit Gleichaltrigen');
+            if (hobbys.includes('tiere')) hobbyText.push('den Umgang mit Tieren');
+            if (hobbys.includes('natur')) hobbyText.push('Naturerfahrungen');
+            text += hobbyText.join(', ');
             if (dsData.ds_schueler_hobbys_details) {
-                text += ` – konkret: ${dsData.ds_schueler_hobbys_details}`;
+                text += ` (konkret: ${dsData.ds_schueler_hobbys_details})`;
             }
-            text += '. ';
+            text += `. Diese Interessensbereiche können als Motivationsanker in der Förderung eingesetzt werden. `;
         }
 
         if (hatWuensche) {
-            const wunschListe = liste(wuensche, M.wunsch);
-            if (wunschListe) {
-                text += `Für die Zukunft äußert ${name} den Wunsch nach ${wunschListe}`;
-                if (dsData.ds_schueler_wuensche) {
-                    text += `. Ergänzend: ${dsData.ds_schueler_wuensche}`;
-                }
-                text += '.';
-            } else if (dsData.ds_schueler_wuensche) {
-                text += `Bezüglich der Zukunft artikuliert das Kind: ${dsData.ds_schueler_wuensche}.`;
+            text += `Bezüglich der Zukunftsperspektive äußert ${name} `;
+            const wunschText = [];
+            if (wuensche.includes('bessere_noten')) wunschText.push('den Wunsch nach besseren schulischen Leistungen');
+            if (wuensche.includes('mehr_freunde')) wunschText.push('den Wunsch nach mehr sozialen Kontakten');
+            if (wuensche.includes('weniger_streit')) wunschText.push('den Wunsch nach weniger Konflikten');
+            if (wuensche.includes('ruhe_zuhause')) wunschText.push('den Wunsch nach mehr häuslicher Harmonie');
+            if (wuensche.includes('weniger_druck')) wunschText.push('den Wunsch nach weniger Leistungsdruck');
+            if (wuensche.includes('verstanden_werden')) wunschText.push('das Bedürfnis, verstanden zu werden');
+            if (wuensche.includes('hilfe_bekommen')) wunschText.push('den Wunsch nach Unterstützung');
+            if (wuensche.includes('normal_sein')) wunschText.push('das Bedürfnis nach Normalitätserleben');
+            if (wuensche.includes('andere_klasse') || wuensche.includes('andere_schule')) wunschText.push('Veränderungswünsche bezüglich des schulischen Umfelds');
+            if (wunschText.length > 0) {
+                text += wunschText.join(', ');
             }
+            if (dsData.ds_schueler_wuensche) {
+                text += `${wunschText.length > 0 ? '. Zudem: ' : ''}${dsData.ds_schueler_wuensche}`;
+            }
+            text += `. Diese Wünsche geben Aufschluss über die subjektive Veränderungsmotivation und können in der Förderplanung berücksichtigt werden.`;
         }
     }
 
-    return text.trim() || '(Sichtweise des Kindes wird hier eingefügt)';
+    return text.trim() || '(Kindperspektive wird hier eingefügt)';
 }
 
 function generateSichtweiseElternText(dsData) {
-    // Hole alle relevanten Daten
     const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
     const verhalten = dsData.ds_eltern_verhalten;
     const beziehung = dsData.ds_eltern_beziehung;
@@ -7321,239 +7337,244 @@ function generateSichtweiseElternText(dsData) {
     const erwartung = dsData.checkboxes?.ds_eltern_erwartung || [];
     const mitWem = dsData.checkboxes?.ds_eltern_gespraech_mit || [];
 
-    // Fachsprachliche Text-Mappings (deskriptiv, Konjunktiv I für Berichte)
-    const M = {
-        // Verhalten im häuslichen Kontext (Konjunktiv für Elternberichte)
-        verhalten: {
-            'unauffaellig': 'zeige sich das Verhalten im häuslichen Umfeld überwiegend altersentsprechend und unauffällig',
-            'teilweise': 'träten situativ Verhaltensauffälligkeiten auf',
-            'stark': 'bestünden ausgeprägte Verhaltensschwierigkeiten, die das Familienleben erheblich beeinträchtigten'
-        },
-        // Eltern-Kind-Beziehung (Konjunktiv)
-        beziehung: {
-            'sehr_gut': 'als tragfähig und von emotionaler Nähe geprägt',
-            'gut': 'als überwiegend positiv und belastbar',
-            'ambivalent': 'als ambivalent, gekennzeichnet durch einen Wechsel von Nähe und Konflikt',
-            'angespannt': 'als derzeit angespannt',
-            'schwierig': 'als aktuell belastet und von wiederkehrenden Konflikten geprägt'
-        },
-        // Positive Verhaltensaspekte (Konjunktiv für Berichte)
-        positiv: {
-            'hilfsbereit': 'prosoziale Verhaltensweisen im häuslichen Kontext',
-            'liebevoll': 'Bindungsverhalten gegenüber Familienmitgliedern',
-            'selbststaendig': 'Ansätze zur Selbstständigkeit',
-            'regeln': 'grundsätzliche Regelakzeptanz',
-            'tagesstruktur': 'eine angemessene Orientierung an der Tagesstruktur'
-        },
-        // Problemverhalten (Konjunktiv für Berichte, deskriptiv)
-        negativ: {
-            'wutausbrueche': 'affektiven Durchbrüchen',
-            'geschwisterkonflikte': 'wiederkehrenden Geschwisterkonflikten',
-            'verweigert_regeln': 'oppositionellem Verhalten gegenüber Regeln',
-            'schlafprobleme': 'Schlafstörungen',
-            'essprobleme': 'auffälligem Essverhalten',
-            'aengste': 'Angstsymptomatik',
-            'rueckzug': 'sozialem Rückzugsverhalten',
-            'medienkonsum': 'dysreguliertem Mediennutzungsverhalten',
-            'einnaessen': 'Enuresis bzw. Enkopresis',
-            'selbstverletzung': 'selbstverletzendem Verhalten',
-            'hausaufgaben': 'Konflikten in der Hausaufgabensituation'
-        },
-        // Konfliktsituationen (Konjunktiv)
-        konflikt: {
-            'morgens': 'in der morgendlichen Aufstehsituation',
-            'hausaufgaben': 'in der Hausaufgabensituation',
-            'essen': 'bei den Mahlzeiten',
-            'schlafengehen': 'beim Zubettgehen',
-            'bildschirmzeit': 'bei der Begrenzung der Medienzeit',
-            'pflichten': 'bei häuslichen Pflichten',
-            'geschwister': 'in Geschwisterinteraktionen',
-            'nein_akzeptieren': 'bei der Grenzsetzung'
-        },
-        // Elterlicher Erziehungsstil (Konjunktiv für Selbsteinschätzung)
-        stil: {
-            'konsequent': 'eine konsequente Haltung',
-            'inkonsequent': 'zeitweise Schwierigkeiten in der Konsequenz',
-            'streng': 'eine ausgeprägte Grenzsetzung',
-            'nachgiebig': 'eine eher permissive Haltung',
-            'uneinig': 'differierende Erziehungsvorstellungen zwischen den Bezugspersonen',
-            'ueberfordert': 'Überforderungserleben',
-            'strukturiert': 'eine gut strukturierte Alltagsgestaltung',
-            'wenig_struktur': 'wenig feste Strukturen im Tagesablauf'
-        },
-        // Elterliche Belastungen (Konjunktiv)
-        belastung: {
-            'staendige_konflikte': 'die wiederkehrenden Auseinandersetzungen',
-            'sorge_zukunft': 'antizipatorische Sorgen bezüglich der Entwicklungsprognose',
-            'schule_beschwerden': 'die häufigen negativen Rückmeldungen aus dem schulischen Kontext',
-            'hilflosigkeit': 'Gefühle der Hilflosigkeit und Ohnmacht',
-            'aggressives_verhalten': 'die aggressiven Verhaltensweisen',
-            'keine_besserung': 'das Ausbleiben von Verbesserungen trotz Bemühungen',
-            'erschoepfung': 'anhaltende Erschöpfung',
-            'partnerkonflikt': 'kindbezogene Partnerschaftskonflikte',
-            'schuldgefuehle': 'Schuldattributionen',
-            'soziale_isolation': 'sozialen Rückzug der Familie'
-        },
-        // Erwartungen an die Maßnahme (Konjunktiv)
-        erwartung: {
-            'verhalten_verbessern': 'eine Verbesserung des Sozialverhaltens',
-            'entspannung_zuhause': 'eine Entlastung des häuslichen Zusammenlebens',
-            'strategien_eltern': 'konkrete Handlungsstrategien für Erziehungssituationen',
-            'schule_verbessern': 'eine Stabilisierung der schulischen Situation',
-            'abklaerung': 'eine diagnostische Einordnung',
-            'therapie': 'therapeutische Unterstützung',
-            'elternberatung': 'Beratung für sich selbst als Erziehende',
-            'anderer_foerderort': 'die Prüfung alternativer Beschulungsformen',
-            'verstehen': 'ein vertieftes Verständnis für das kindliche Verhalten',
-            'bestätigung': 'eine Bestätigung der eigenen Erziehungsbemühungen'
-        },
-        // Kooperationsbereitschaft
-        zusammenarbeit: {
-            'sehr_hoch': 'ausgeprägte Kooperationsbereitschaft und hohe Motivation',
-            'hoch': 'grundsätzliche Kooperationsbereitschaft',
-            'mittel': 'ambivalente Kooperationsbereitschaft',
-            'zurueckhaltend': 'zurückhaltendes Kooperationsverhalten',
-            'ablehnend': 'eingeschränkte Kooperationsbereitschaft'
-        }
-    };
-
-    // Hilfsfunktion für natürliche Aufzählungen
-    const liste = (arr, map) => {
-        const items = arr.filter(i => i && map[i]).map(i => map[i]);
-        if (items.length === 0) return '';
-        if (items.length === 1) return items[0];
-        return items.slice(0, -1).join(', ') + ' und ' + items[items.length - 1];
-    };
-
-    // ===== KOHÄRENTER FLIESSTEXT MIT KONJUNKTIV FÜR ELTERNBERICHTE =====
     let text = '';
 
-    // EINLEITUNG: Anamnestischer Gesprächskontext
+    // === EINLEITUNG ===
     if (dsData.ds_eltern_gespraech_datum) {
         const datum = new Date(dsData.ds_eltern_gespraech_datum).toLocaleDateString('de-DE');
-        let mitText = '';
-        if (mitWem.includes('beide')) mitText = 'mit beiden Elternteilen';
-        else if (mitWem.includes('mutter') && mitWem.includes('vater')) mitText = 'mit beiden Elternteilen';
-        else if (mitWem.includes('mutter')) mitText = 'mit der Mutter';
-        else if (mitWem.includes('vater')) mitText = 'mit dem Vater';
-        else if (mitWem.includes('andere')) mitText = 'mit dem/der Erziehungsberechtigten';
-
-        text += `Im Rahmen der anamnestischen Erhebung fand am ${datum} ein Gespräch ${mitText || 'mit den Bezugspersonen'} statt, um die familiäre Perspektive auf die Entwicklung von ${name} zu erfassen. `;
+        let mitText = 'den Bezugspersonen';
+        if (mitWem.includes('beide') || (mitWem.includes('mutter') && mitWem.includes('vater'))) mitText = 'beiden Elternteilen';
+        else if (mitWem.includes('mutter')) mitText = 'der Mutter';
+        else if (mitWem.includes('vater')) mitText = 'dem Vater';
+        else if (mitWem.includes('andere')) mitText = 'dem/der Erziehungsberechtigten';
+        text += `Im Rahmen der anamnestischen Erhebung fand am ${datum} ein Gespräch mit ${mitText} statt, um die familiäre Perspektive auf die Entwicklung und das häusliche Umfeld von ${name} zu erfassen.\n\n`;
     }
 
-    // ABSATZ 1: Verhalten im häuslichen Kontext und Beziehungsqualität (Konjunktiv I)
+    // === ICF-BASIERTER FLIESSTEXT ===
     const hatVerhalten = verhalten && verhalten !== '';
     const hatBeziehung = beziehung && beziehung !== '';
     const hatPositiv = positiv.length > 0;
     const hatNegativ = negativ.length > 0;
-
-    if (hatVerhalten || hatBeziehung || hatPositiv || hatNegativ) {
-        text += 'Laut Angaben der Eltern ';
-
-        if (hatVerhalten) {
-            text += M.verhalten[verhalten];
-            if (hatBeziehung) {
-                text += `. Die Eltern-Kind-Beziehung werde ${M.beziehung[beziehung]} wahrgenommen`;
-            }
-            text += '. ';
-        } else if (hatBeziehung) {
-            text += `werde die Beziehung zu ${name} ${M.beziehung[beziehung]} wahrgenommen. `;
-        }
-
-        // Ressourcen und Problemverhalten synthetisiert darstellen (Konjunktiv)
-        if (hatPositiv && hatNegativ) {
-            text += `Im häuslichen Umfeld werden einerseits ${liste(positiv, M.positiv)} berichtet. Im Kontrast dazu stehe jedoch die Belastung durch ${liste(negativ, M.negativ)}, was das Familienleben deutlich beeinträchtige. `;
-        } else if (hatPositiv) {
-            text += `Ressourcenorientiert wird hervorgehoben, dass ${name} ${liste(positiv, M.positiv)} zeige. `;
-        } else if (hatNegativ) {
-            text += `Als belastend erleben die Eltern insbesondere ${liste(negativ, M.negativ)}. `;
-        }
-    }
-
-    // ABSATZ 2: Konfliktsituationen und Erziehungsstil als Kontext (Konjunktiv)
     const hatKonflikt = konflikt.length > 0;
     const hatStil = stil.length > 0;
 
-    if (hatKonflikt || hatStil) {
-        text += '\n\n';
+    // --- FUNKTIONSFÄHIGKEIT IM HÄUSLICHEN KONTEXT ---
+    if (hatVerhalten || hatNegativ || hatPositiv) {
+        text += `Hinsichtlich der Funktionsfähigkeit im häuslichen Umfeld `;
 
-        if (hatKonflikt && hatStil) {
-            // Synthese: Konflikte mit Erziehungsstil verbinden
-            text += `Hinsichtlich der alltäglichen Anforderungssituationen wird berichtet, dass Konflikte vornehmlich ${liste(konflikt, M.konflikt)} aufträten. `;
-            text += `Bezüglich des eigenen Erziehungsverhaltens reflektieren die Eltern ${liste(stil, M.stil)}. `;
+        if (verhalten === 'unauffaellig') {
+            text += `berichten die Eltern, dass sich ${name} überwiegend altersentsprechend verhalte und die alltäglichen Anforderungen bewältigen könne. `;
+        } else if (verhalten === 'teilweise') {
+            text += `berichten die Eltern von situativen Schwierigkeiten: Die Funktionsfähigkeit von ${name} variiere je nach Anforderungskontext, wobei spezifische Situationen als Auslöser für Verhaltensauffälligkeiten identifiziert werden. `;
+        } else if (verhalten === 'stark') {
+            text += `berichten die Eltern von ausgeprägten Schwierigkeiten, die das Familienleben erheblich belasten und die Partizipation an alltäglichen Routinen (d230) beeinträchtigen. `;
+        }
 
-            // Mögliche Zusammenhänge aufzeigen
-            if (stil.includes('inkonsequent') || stil.includes('uneinig')) {
-                text += `Auffällig ist hierbei der mögliche Zusammenhang zwischen den beschriebenen Konfliktsituationen und der reflektierten Erziehungsdynamik. `;
+        // Funktionsbeeinträchtigungen narrativ verknüpfen
+        if (hatNegativ) {
+            // Emotionale Funktionen (b152)
+            const emotional = negativ.filter(n => ['wutausbrueche', 'aengste', 'rueckzug'].includes(n));
+            // Schlaf- und Essfunktionen (b134, b130)
+            const koerperlich = negativ.filter(n => ['schlafprobleme', 'essprobleme', 'einnaessen'].includes(n));
+            // Verhaltensregulation
+            const verhaltensreg = negativ.filter(n => ['verweigert_regeln', 'medienkonsum'].includes(n));
+            // Interpersonell
+            const interpersonell = negativ.filter(n => ['geschwisterkonflikte', 'hausaufgaben'].includes(n));
+            // Schwerwiegend
+            const schwerwiegend = negativ.filter(n => ['selbstverletzung'].includes(n));
+
+            if (emotional.length > 0) {
+                text += `Im Bereich der emotionalen Funktionen (b152) werden Beeinträchtigungen beschrieben: `;
+                if (emotional.includes('wutausbrueche')) {
+                    text += `Es komme zu wiederkehrenden affektiven Durchbrüchen, die auf eine Beeinträchtigung der Emotionsregulation hinweisen`;
+                }
+                if (emotional.includes('aengste')) {
+                    text += `${emotional.includes('wutausbrueche') ? '; zudem zeige sich ' : ''}eine Angstsymptomatik`;
+                }
+                if (emotional.includes('rueckzug')) {
+                    text += `${emotional.length > 1 ? '; darüber hinaus wird ' : ''}ein soziales Rückzugsverhalten im häuslichen Kontext berichtet`;
+                }
+                text += `. `;
             }
-        } else if (hatKonflikt) {
-            text += `Typische Konfliktauslöser im Alltag seien ${liste(konflikt, M.konflikt)}. `;
-        } else if (hatStil) {
-            text += `In der Selbstreflexion bezüglich des Erziehungsverhaltens berichten die Eltern ${liste(stil, M.stil)}. `;
+
+            if (koerperlich.length > 0) {
+                text += `Hinsichtlich der körperbezogenen Funktionen `;
+                if (koerperlich.includes('schlafprobleme')) {
+                    text += `werden Beeinträchtigungen der Schlaffunktionen (b134) beschrieben`;
+                }
+                if (koerperlich.includes('essprobleme')) {
+                    text += `${koerperlich.includes('schlafprobleme') ? ', zudem ' : ''}zeige sich ein auffälliges Essverhalten`;
+                }
+                if (koerperlich.includes('einnaessen')) {
+                    text += `${koerperlich.length > 1 ? '; zusätzlich bestehe ' : 'wird '}eine Enuresis bzw. Enkopresis`;
+                }
+                text += `. `;
+            }
+
+            if (verhaltensreg.length > 0 || interpersonell.length > 0) {
+                text += `Im Bereich der Aktivitäten `;
+                if (verhaltensreg.includes('verweigert_regeln')) {
+                    text += `zeige sich oppositionelles Verhalten gegenüber Regeln und Anforderungen`;
+                }
+                if (verhaltensreg.includes('medienkonsum')) {
+                    text += `${verhaltensreg.includes('verweigert_regeln') ? ', zudem ' : ''}werde ein dysreguliertes Mediennutzungsverhalten berichtet`;
+                }
+                if (interpersonell.includes('geschwisterkonflikte')) {
+                    text += `${verhaltensreg.length > 0 ? '; im interpersonellen Bereich ' : ''}komme es zu wiederkehrenden Geschwisterkonflikten`;
+                }
+                if (interpersonell.includes('hausaufgaben')) {
+                    text += `${(verhaltensreg.length > 0 || interpersonell.includes('geschwisterkonflikte')) ? ', ' : ''}die Hausaufgabensituation sei regelmäßig konfliktbeladen`;
+                }
+                text += `. `;
+            }
+
+            if (schwerwiegend.length > 0) {
+                text += `Besonders beachtenswert ist das berichtete selbstverletzende Verhalten, das auf eine erhebliche Beeinträchtigung der emotionalen Funktionen hinweist und weiterer diagnostischer Abklärung bedarf. `;
+            }
+        }
+
+        // Personbezogene Förderfaktoren
+        if (hatPositiv) {
+            text += `Als personbezogene Förderfaktoren werden `;
+            const foerder = [];
+            if (positiv.includes('hilfsbereit')) foerder.push('prosoziale Verhaltenstendenzen');
+            if (positiv.includes('liebevoll')) foerder.push('ein bindungsorientiertes Verhalten gegenüber Familienmitgliedern');
+            if (positiv.includes('selbststaendig')) foerder.push('Ansätze zur Selbstständigkeit');
+            if (positiv.includes('regeln')) foerder.push('eine grundsätzliche Regelakzeptanz');
+            if (positiv.includes('tagesstruktur')) foerder.push('eine Orientierung an der Tagesstruktur');
+            text += foerder.join(', ') + ` beschrieben, auf die in der Förderung aufgebaut werden kann. `;
+        }
+    }
+
+    // --- KONTEXTFAKTOREN: HÄUSLICHES UMFELD (e310) ---
+    if (hatBeziehung || hatKonflikt || hatStil) {
+        text += `\n\nBezüglich der Umweltfaktoren im familiären Kontext (e310) `;
+
+        // Eltern-Kind-Beziehung als zentraler Kontextfaktor
+        if (hatBeziehung) {
+            text += `wird die Eltern-Kind-Beziehung `;
+            if (beziehung === 'sehr_gut' || beziehung === 'gut') {
+                text += `als ${beziehung === 'sehr_gut' ? 'tragfähig und von emotionaler Nähe geprägt' : 'überwiegend positiv und belastbar'} beschrieben – dies stellt einen wesentlichen Förderfaktor dar, der die Wirksamkeit von Interventionen unterstützen kann. `;
+            } else if (beziehung === 'ambivalent') {
+                text += `als ambivalent beschrieben, gekennzeichnet durch einen Wechsel von Nähe und Konflikt. Diese Beziehungsdynamik kann sowohl als Ressource als auch als Barriere wirken. `;
+            } else if (beziehung === 'angespannt' || beziehung === 'schwierig') {
+                text += `als ${beziehung === 'angespannt' ? 'derzeit angespannt' : 'aktuell belastet und von wiederkehrenden Konflikten geprägt'} wahrgenommen. Diese Beziehungsqualität stellt eine Barriere für die kindliche Entwicklung dar und sollte in der Förderplanung berücksichtigt werden. `;
+            }
+        }
+
+        // Konfliktsituationen als spezifische Kontextbarrieren
+        if (hatKonflikt) {
+            text += `Als situationsspezifische Barrieren, in denen die Verhaltensauffälligkeiten besonders hervortreten, werden `;
+            const barrieren = [];
+            if (konflikt.includes('morgens')) barrieren.push('die morgendliche Aufstehroutine');
+            if (konflikt.includes('hausaufgaben')) barrieren.push('die Hausaufgabensituation');
+            if (konflikt.includes('essen')) barrieren.push('die Mahlzeiten');
+            if (konflikt.includes('schlafengehen')) barrieren.push('das Zubettgehen');
+            if (konflikt.includes('bildschirmzeit')) barrieren.push('die Begrenzung der Medienzeit');
+            if (konflikt.includes('pflichten')) barrieren.push('häusliche Pflichten');
+            if (konflikt.includes('geschwister')) barrieren.push('Geschwisterinteraktionen');
+            if (konflikt.includes('nein_akzeptieren')) barrieren.push('Grenzsetzungssituationen');
+            text += barrieren.join(', ') + ` benannt. Diese Kontextinformationen sind für die Ableitung spezifischer Förderstrategien relevant. `;
+        }
+
+        // Erziehungsstil als Kontextfaktor
+        if (hatStil) {
+            text += `Das elterliche Erziehungsverhalten wird selbstreflektiert beschrieben: `;
+            if (stil.includes('konsequent') && stil.includes('strukturiert')) {
+                text += `Die Eltern berichten von einer konsequenten Haltung und gut strukturierten Alltagsgestaltung, was als Förderfaktor zu werten ist. `;
+            } else if (stil.includes('inkonsequent') || stil.includes('uneinig') || stil.includes('wenig_struktur')) {
+                text += `Es werden `;
+                if (stil.includes('inkonsequent')) text += `Schwierigkeiten in der Konsequenz`;
+                if (stil.includes('uneinig')) text += `${stil.includes('inkonsequent') ? ' und ' : ''}differierende Erziehungsvorstellungen zwischen den Bezugspersonen`;
+                if (stil.includes('wenig_struktur')) text += `${(stil.includes('inkonsequent') || stil.includes('uneinig')) ? ' sowie ' : ''}wenig feste Alltagsstrukturen`;
+                text += ` reflektiert – diese Faktoren können als aufrechterhaltende Bedingungen für die Verhaltensauffälligkeiten wirken. `;
+            }
+            if (stil.includes('ueberfordert')) {
+                text += `Die Eltern berichten von Überforderungserleben, was die Erziehungskapazität einschränkt und als Barriere zu berücksichtigen ist. `;
+            }
         }
     }
 
     // Ergänzende qualitative Angaben
     if (dsData.ds_eltern_verhalten_details) {
-        text += '\n\nErgänzend wird berichtet: ' + dsData.ds_eltern_verhalten_details + ' ';
+        text += `\n\n${dsData.ds_eltern_verhalten_details} `;
     }
 
-    // ABSATZ 3: Elterliches Belastungserleben (Konjunktiv)
+    // --- ELTERLICHES BELASTUNGSERLEBEN ---
     const hatBelastung = belastung.length > 0 || dsData.ds_eltern_belastung;
 
     if (hatBelastung) {
-        text += '\n\nHinsichtlich des elterlichen Belastungserlebens ';
-        const belastListe = liste(belastung, M.belastung);
-        if (belastListe) {
-            text += `werden als zentrale Stressoren ${belastListe} benannt`;
-            if (dsData.ds_eltern_belastung) {
-                text += `. Darüber hinaus berichten die Eltern: ${dsData.ds_eltern_belastung}`;
-            }
-            text += '. ';
+        text += `\n\nHinsichtlich des elterlichen Belastungserlebens werden als zentrale Stressoren `;
+        const stressoren = [];
+        if (belastung.includes('staendige_konflikte')) stressoren.push('die wiederkehrenden Auseinandersetzungen');
+        if (belastung.includes('sorge_zukunft')) stressoren.push('Sorgen bezüglich der Entwicklungsprognose');
+        if (belastung.includes('schule_beschwerden')) stressoren.push('die häufigen negativen schulischen Rückmeldungen');
+        if (belastung.includes('hilflosigkeit')) stressoren.push('Gefühle der Hilflosigkeit');
+        if (belastung.includes('aggressives_verhalten')) stressoren.push('die aggressiven Verhaltensweisen');
+        if (belastung.includes('keine_besserung')) stressoren.push('das Ausbleiben von Verbesserungen trotz Bemühungen');
+        if (belastung.includes('erschoepfung')) stressoren.push('anhaltende Erschöpfung');
+        if (belastung.includes('partnerkonflikt')) stressoren.push('kindbezogene Partnerschaftskonflikte');
+        if (belastung.includes('schuldgefuehle')) stressoren.push('Schuldgefühle');
+        if (belastung.includes('soziale_isolation')) stressoren.push('sozialer Rückzug der Familie');
 
-            // Mögliche Auswirkungen auf das Erziehungsverhalten thematisieren
-            if (belastung.includes('erschoepfung') || belastung.includes('hilflosigkeit')) {
-                text += 'Diese Belastungsfaktoren können potentiell die Verfügbarkeit und Responsivität der Bezugspersonen beeinflussen. ';
-            }
-        } else if (dsData.ds_eltern_belastung) {
-            text += `berichten die Eltern: ${dsData.ds_eltern_belastung}. `;
+        if (stressoren.length > 0) {
+            text += stressoren.join(', ') + ` benannt`;
+        }
+        if (dsData.ds_eltern_belastung) {
+            text += `${stressoren.length > 0 ? '. Ergänzend: ' : ''}${dsData.ds_eltern_belastung}`;
+        }
+        text += `. `;
+
+        // Auswirkungen thematisieren
+        if (belastung.includes('erschoepfung') || belastung.includes('hilflosigkeit') || belastung.includes('ueberfordert')) {
+            text += `Diese Belastungsfaktoren können die elterliche Responsivität und Erziehungskapazität beeinträchtigen und sollten bei der Planung von Unterstützungsangeboten berücksichtigt werden. `;
         }
     }
 
-    // ABSATZ 4: Erwartungen an die Maßnahme und Kooperationsbereitschaft
+    // --- ERWARTUNGEN UND KOOPERATIONSBEREITSCHAFT ---
     const hatErwartung = erwartung.length > 0 || dsData.ds_eltern_erwartungen;
     const hatZusammenarbeit = zusammenarbeit && zusammenarbeit !== '';
 
     if (hatErwartung || hatZusammenarbeit) {
-        text += '\n\n';
+        text += `\n\n`;
 
         if (hatErwartung) {
-            const erwartungListe = liste(erwartung, M.erwartung);
-            text += 'Bezüglich der Erwartungen an die Maßnahme äußern die Eltern den Wunsch nach ';
-            if (erwartungListe) {
-                text += erwartungListe;
-                if (dsData.ds_eltern_erwartungen) {
-                    text += `. Zudem werde ${dsData.ds_eltern_erwartungen} erhofft`;
-                }
-            } else if (dsData.ds_eltern_erwartungen) {
-                text += dsData.ds_eltern_erwartungen;
+            text += `Bezüglich der Erwartungen an die Maßnahme artikulieren die Eltern den Wunsch nach `;
+            const wuensche = [];
+            if (erwartung.includes('verhalten_verbessern')) wuensche.push('einer Verbesserung des Sozialverhaltens');
+            if (erwartung.includes('entspannung_zuhause')) wuensche.push('einer Entlastung des häuslichen Zusammenlebens');
+            if (erwartung.includes('strategien_eltern')) wuensche.push('konkreten Handlungsstrategien für Erziehungssituationen');
+            if (erwartung.includes('schule_verbessern')) wuensche.push('einer Stabilisierung der schulischen Situation');
+            if (erwartung.includes('abklaerung')) wuensche.push('einer diagnostischen Einordnung');
+            if (erwartung.includes('therapie')) wuensche.push('therapeutischer Unterstützung');
+            if (erwartung.includes('elternberatung')) wuensche.push('Beratung für sich selbst');
+            if (erwartung.includes('verstehen')) wuensche.push('einem vertieften Verständnis für das kindliche Verhalten');
+            if (erwartung.includes('anderer_foerderort')) wuensche.push('der Prüfung alternativer Beschulungsformen');
+            text += wuensche.join(', ');
+            if (dsData.ds_eltern_erwartungen) {
+                text += `. ${dsData.ds_eltern_erwartungen}`;
             }
-            text += '. ';
+            text += `. `;
         }
 
         if (hatZusammenarbeit) {
-            text += `Die Kooperationsbereitschaft der Familie ist als ${M.zusammenarbeit[zusammenarbeit]} einzuschätzen`;
-            // Prognostische Einordnung
-            if (zusammenarbeit === 'sehr_hoch' || zusammenarbeit === 'hoch') {
-                text += ', was als günstiger prognostischer Faktor zu werten ist';
-            } else if (zusammenarbeit === 'zurueckhaltend' || zusammenarbeit === 'ablehnend') {
-                text += ', was im weiteren Verlauf der Maßnahme Berücksichtigung finden sollte';
+            text += `Die Kooperationsbereitschaft der Familie wird als `;
+            if (zusammenarbeit === 'sehr_hoch') {
+                text += `ausgeprägt eingeschätzt – die Eltern zeigen eine hohe Motivation zur Zusammenarbeit, was einen bedeutsamen Förderfaktor darstellt und günstige prognostische Implikationen hat`;
+            } else if (zusammenarbeit === 'hoch') {
+                text += `gut eingeschätzt – eine grundsätzliche Kooperationsbereitschaft ist gegeben`;
+            } else if (zusammenarbeit === 'mittel') {
+                text += `ambivalent eingeschätzt – die Zusammenarbeit wird sich im Verlauf der Maßnahme entwickeln müssen`;
+            } else if (zusammenarbeit === 'zurueckhaltend') {
+                text += `zurückhaltend eingeschätzt, was bei der Förderplanung berücksichtigt werden sollte`;
+            } else if (zusammenarbeit === 'ablehnend') {
+                text += `eingeschränkt eingeschätzt – die zurückhaltende Haltung der Familie stellt eine Barriere für die Maßnahme dar, die im weiteren Verlauf adressiert werden sollte`;
             }
-            text += '.';
+            text += `.`;
         }
     }
 
-    return text.trim() || '(Anamnestische Angaben der Bezugspersonen werden hier eingefügt)';
+    return text.trim() || '(Familiäre Perspektive wird hier eingefügt)';
 }
 
 function generateVerhaltensbeobachtungenText(dsData) {
@@ -7563,192 +7584,202 @@ function generateVerhaltensbeobachtungenText(dsData) {
 
     const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
 
-    // Fachsprachliche Text-Mappings (Indikativ, Präsens für EIGENE Beobachtungen)
-    const M = {
-        // Beobachtungssetting
-        setting: {
-            'einzelsituation': 'in einer strukturierten Einzelsituation',
-            'kleingruppe': 'im Kleingruppensetting',
-            'klassenverband': 'im Klassenkontext',
-            'pausenhof': 'in der unstrukturierten Pausensituation',
-            'maison_relais': 'im außerschulischen Betreuungskontext',
-            'andere': 'in einem alternativen Setting'
-        },
-        // Adaptives Verhalten (Indikativ, deskriptiv)
-        positiv: {
-            'aufgabe_begonnen': 'zeigt Aufgabeninitiierung',
-            'aufgabe_beendet': 'zeigt Aufgabenpersistenz',
-            'konzentriert': 'ist konzentriertes Arbeiten zu beobachten',
-            'hilfe_geholt': 'ist adäquates Hilfesuchverhalten erkennbar',
-            'regeln_eingehalten': 'ist Regelakzeptanz festzustellen',
-            'freundlich': 'zeigt sich freundlich-zugewandtes Sozialverhalten',
-            'kooperativ': 'sind kooperative Verhaltenstendenzen zu beobachten',
-            'beteiligt': 'zeigt sich aktive Beteiligung',
-            'anweisungen': 'erfolgt Instruktionsbefolgung',
-            'geduldig': 'ist Warteverhalten und Impulskontrolle zu beobachten',
-            'konflikt_geloest': 'zeigen sich konstruktive Konfliktlösungsstrategien',
-            'emotionen_reguliert': 'ist eine adäquate Emotionsregulation erkennbar'
-        },
-        // Auffälliges Verhalten (Indikativ, deskriptiv-neutral)
-        negativ: {
-            'abgelenkt': 'fällt eine erhöhte Ablenkbarkeit auf',
-            'motorisch_unruhig': 'zeigt sich motorische Unruhe',
-            'verweigert': 'ist Aufgabenverweigerung zu beobachten',
-            'wutausbruch': 'kommt es zu einem affektiven Durchbruch',
-            'weinen': 'zeigt sich emotionale Überflutung (Weinen)',
-            'aggressiv_verbal': 'sind verbale Aggressionen zu beobachten',
-            'aggressiv_koerperlich': 'tritt körperlich-aggressives Verhalten auf',
-            'regelverletzung': 'erfolgen Regelverletzungen',
-            'stoeren': 'zeigt sich störendes Verhalten',
-            'rueckzug': 'ist soziales Rückzugsverhalten zu beobachten',
-            'kontaktvermeidung': 'fällt Kontaktvermeidung auf',
-            'frustration': 'zeigt sich eine niedrige Frustrationstoleranz'
-        },
-        // Interaktionsverhalten (Indikativ)
-        interaktion: {
-            'blickkontakt_gut': 'angemessener Blickkontakt',
-            'blickkontakt_vermeidet': 'Blickkontaktvermeidung',
-            'kontakt_sucht': 'aktives Kontaktsuchen zu Erwachsenen',
-            'kontakt_peers': 'Kontaktaufnahme zu Gleichaltrigen',
-            'isoliert': 'Selbstisolation von der Peergroup',
-            'dominiert': 'dominante Interaktionsmuster',
-            'fuegt_sich': 'gruppenkonformes Verhalten',
-            'provoziert': 'provokative Verhaltenstendenzen'
-        }
-    };
-
-    // Hilfsfunktion für natürliche Aufzählungen
-    const liste = (arr, map) => {
-        const items = arr.filter(i => i && map[i]).map(i => map[i]);
-        if (items.length === 0) return '';
-        if (items.length === 1) return items[0];
-        return items.slice(0, -1).join(', ') + ' sowie ' + items[items.length - 1];
-    };
-
-    // Generiere Text für jede Beobachtung (INDIKATIV für eigene Beobachtungen)
+    // Generiere ICF-basierten Text für jede Beobachtung (INDIKATIV für eigene Beobachtungen)
     const beobachtungsTexte = dsData.beobachtungen.map((b, idx) => {
         let text = '';
-        const hatPositiv = (b.positivChecks && b.positivChecks.length > 0) || b.positiv;
-        const hatNegativ = (b.negativChecks && b.negativChecks.length > 0) || b.negativ;
-        const hatInteraktion = b.interaktionChecks && b.interaktionChecks.length > 0;
+        const posChecks = b.positivChecks || [];
+        const negChecks = b.negativChecks || [];
+        const interChecks = b.interaktionChecks || [];
+        const hatPositiv = posChecks.length > 0 || b.positiv;
+        const hatNegativ = negChecks.length > 0 || b.negativ;
+        const hatInteraktion = interChecks.length > 0;
 
-        // EINLEITUNG: Strukturierte Beobachtungssituation (Indikativ Perfekt)
+        // === EINLEITUNG: Beobachtungskontext ===
         if (b.datum) {
             const datum = new Date(b.datum).toLocaleDateString('de-DE');
-            text += `Am ${datum} wurde eine systematische Verhaltensbeobachtung `;
+            text += `Am ${datum} wurde eine systematische Verhaltensbeobachtung durchgeführt`;
             if (b.setting) {
-                text += `${M.setting[b.setting] || b.setting} `;
+                const settings = {
+                    'einzelsituation': 'in einer strukturierten Einzelsituation',
+                    'kleingruppe': 'im Kleingruppensetting',
+                    'klassenverband': 'im Klassenkontext',
+                    'pausenhof': 'in der unstrukturierten Pausensituation',
+                    'maison_relais': 'im außerschulischen Betreuungskontext',
+                    'andere': 'in einem alternativen Setting'
+                };
+                text += ` ${settings[b.setting] || b.setting}`;
             }
             if (b.dauer) {
-                text += `über ${b.dauer} Minuten `;
-            }
-            text += 'durchgeführt';
-            if (b.beobachter) {
+                text += ` (Beobachtungsdauer: ${b.dauer} Minuten`;
+                if (b.beobachter) text += `, Beobachter: ${b.beobachter}`;
+                text += `)`;
+            } else if (b.beobachter) {
                 text += ` (Beobachter: ${b.beobachter})`;
             }
-            text += '. ';
+            text += `.\n\n`;
         }
 
-        // HAUPTTEIL: Verhaltensanalyse in Indikativ
-        if (hatPositiv && hatNegativ) {
-            // Synthese: Differenziertes Verhaltensprofil
-            text += `Die Beobachtung ergibt ein differenziertes Verhaltensprofil. `;
+        // === ICF-BASIERTE VERHALTENSANALYSE ===
 
-            // Adaptives Verhalten zuerst
-            const posChecks = b.positivChecks || [];
-            if (posChecks.length > 0) {
-                text += `Hinsichtlich adaptiver Verhaltensweisen `;
-                // Kategorisiere nach Verhaltensdomänen
-                const aufgaben = posChecks.filter(p => ['aufgabe_begonnen', 'aufgabe_beendet', 'konzentriert', 'anweisungen'].includes(p));
-                const sozial = posChecks.filter(p => ['freundlich', 'kooperativ', 'beteiligt', 'konflikt_geloest'].includes(p));
-                const regulation = posChecks.filter(p => ['geduldig', 'emotionen_reguliert', 'regeln_eingehalten', 'hilfe_geholt'].includes(p));
+        // --- Aufmerksamkeitsfunktionen (b140) ---
+        const aufmerksamkeitPos = posChecks.filter(p => ['konzentriert'].includes(p));
+        const aufmerksamkeitNeg = negChecks.filter(n => ['abgelenkt', 'motorisch_unruhig'].includes(n));
 
-                if (aufgaben.length > 0) {
-                    text += `ist im Bereich der Aufgabenbewältigung festzustellen, dass ${name} ${liste(aufgaben, M.positiv)}. `;
+        if (aufmerksamkeitPos.length > 0 || aufmerksamkeitNeg.length > 0) {
+            text += `Im Bereich der Aufmerksamkeitsfunktionen (b140) `;
+            if (aufmerksamkeitPos.length > 0 && aufmerksamkeitNeg.length === 0) {
+                text += `zeigt ${name} eine altersadäquate Konzentrationsfähigkeit – das Kind kann die Aufmerksamkeit über den Beobachtungszeitraum auf die Aufgabe ausrichten. `;
+            } else if (aufmerksamkeitNeg.length > 0) {
+                text += `zeigen sich Beeinträchtigungen: `;
+                if (negChecks.includes('abgelenkt') && negChecks.includes('motorisch_unruhig')) {
+                    text += `${name} ist erhöht ablenkbar und zeigt motorische Unruhe, die das fokussierte Arbeiten beeinträchtigt. `;
+                } else if (negChecks.includes('abgelenkt')) {
+                    text += `Die Aufmerksamkeit von ${name} ist leicht durch Außenreize ablenkbar. `;
+                } else if (negChecks.includes('motorisch_unruhig')) {
+                    text += `Es zeigt sich eine motorische Unruhe, die auf Beeinträchtigungen der psychomotorischen Funktionen (b147) hinweist. `;
                 }
-                if (sozial.length > 0) {
-                    text += `Im sozialen Bereich ${liste(sozial, M.positiv)}. `;
-                }
-                if (regulation.length > 0) {
-                    text += `Bezüglich der Selbstregulation ${liste(regulation, M.positiv)}. `;
-                }
-                if (b.positiv) {
-                    text += `Ergänzend ist zu notieren: ${b.positiv}. `;
-                }
-            }
-
-            // Auffälliges Verhalten mit Situationsbezug
-            const negChecks = b.negativChecks || [];
-            if (negChecks.length > 0) {
-                text += `Im Kontrast dazu `;
-                // Kategorisiere nach Problemdomänen
-                const aufmerksamkeit = negChecks.filter(n => ['abgelenkt', 'motorisch_unruhig'].includes(n));
-                const externalisierend = negChecks.filter(n => ['wutausbruch', 'aggressiv_verbal', 'aggressiv_koerperlich', 'stoeren', 'regelverletzung'].includes(n));
-                const internalisierend = negChecks.filter(n => ['weinen', 'rueckzug', 'kontaktvermeidung'].includes(n));
-                const regulation = negChecks.filter(n => ['verweigert', 'frustration'].includes(n));
-
-                if (aufmerksamkeit.length > 0 && (externalisierend.length > 0 || internalisierend.length > 0)) {
-                    text += `${liste(aufmerksamkeit, M.negativ)}, was in Verbindung mit `;
-                    if (externalisierend.length > 0) {
-                        text += `externalisierenden Verhaltensweisen steht: ${liste(externalisierend, M.negativ)}. `;
-                    } else if (internalisierend.length > 0) {
-                        text += `internalisierenden Auffälligkeiten steht: ${liste(internalisierend, M.negativ)}. `;
-                    }
-                } else {
-                    text += `${liste(negChecks, M.negativ)}. `;
-                }
-                if (regulation.length > 0 && !negChecks.every(n => regulation.includes(n))) {
-                    text += `Auffällig ist hierbei die Verbindung zur eingeschränkten Selbstregulation. `;
-                }
-                if (b.negativ) {
-                    text += `Weiterhin ist zu beobachten: ${b.negativ}. `;
-                }
-            }
-        } else if (hatPositiv) {
-            const posListe = liste(b.positivChecks || [], M.positiv);
-            text += `Im Beobachtungszeitraum zeigt ${name} überwiegend adaptives Verhalten: `;
-            if (posListe) text += `Es ${posListe}`;
-            if (b.positiv) text += `. Darüber hinaus ist festzuhalten: ${b.positiv}`;
-            text += '. ';
-        } else if (hatNegativ) {
-            const negListe = liste(b.negativChecks || [], M.negativ);
-            text += `In der Beobachtungssituation zeigen sich Verhaltensauffälligkeiten: `;
-            if (negListe) text += `Es ${negListe}`;
-            if (b.negativ) text += `. Zudem ist zu beobachten: ${b.negativ}`;
-            text += '. ';
-        }
-
-        // INTERAKTIONSVERHALTEN als eigene diagnostisch relevante Dimension
-        if (hatInteraktion) {
-            const interChecks = b.interaktionChecks || [];
-            // Differenzierte Darstellung des Interaktionsverhaltens
-            const adaptivInter = interChecks.filter(i => ['blickkontakt_gut', 'kontakt_peers', 'fuegt_sich'].includes(i));
-            const auffaelligInter = interChecks.filter(i => ['blickkontakt_vermeidet', 'isoliert', 'dominiert', 'provoziert'].includes(i));
-            const kontaktverhalten = interChecks.filter(i => ['kontakt_sucht'].includes(i));
-
-            if (adaptivInter.length > 0 && auffaelligInter.length > 0) {
-                text += `Im Bereich des Interaktionsverhaltens zeigt sich ein ambivalentes Bild: Einerseits ist ${liste(adaptivInter, M.interaktion)} zu beobachten, andererseits fällt ${liste(auffaelligInter, M.interaktion)} auf. `;
-            } else if (adaptivInter.length > 0) {
-                text += `Das Interaktionsverhalten ist gekennzeichnet durch ${liste(adaptivInter, M.interaktion)}. `;
-            } else if (auffaelligInter.length > 0) {
-                text += `Im Interaktionsverhalten fällt ${liste(auffaelligInter, M.interaktion)} auf. `;
-            }
-            if (kontaktverhalten.length > 0) {
-                text += `Zu Erwachsenen ist ${liste(kontaktverhalten, M.interaktion)} erkennbar. `;
             }
         }
 
-        // ZUSAMMENFASSUNG: Klinische Einordnung
+        // --- Durchführung von Aufgaben (d210) ---
+        const aufgabenPos = posChecks.filter(p => ['aufgabe_begonnen', 'aufgabe_beendet', 'anweisungen'].includes(p));
+        const aufgabenNeg = negChecks.filter(n => ['verweigert'].includes(n));
+
+        if (aufgabenPos.length > 0 || aufgabenNeg.length > 0) {
+            text += `Hinsichtlich der Durchführung von Aufgaben (d210) `;
+            if (aufgabenPos.length > 0 && aufgabenNeg.length === 0) {
+                text += `zeigt ${name} eine angemessene Funktionsfähigkeit: `;
+                if (posChecks.includes('aufgabe_begonnen') && posChecks.includes('aufgabe_beendet')) {
+                    text += `Das Kind kann Aufgaben selbstständig initiieren und bis zum Ende durchführen. `;
+                } else if (posChecks.includes('aufgabe_begonnen')) {
+                    text += `Die Aufgabeninitiierung gelingt selbstständig. `;
+                } else if (posChecks.includes('aufgabe_beendet')) {
+                    text += `Begonnene Aufgaben werden ausdauernd zu Ende geführt. `;
+                }
+                if (posChecks.includes('anweisungen')) {
+                    text += `Instruktionen werden aufgenommen und umgesetzt. `;
+                }
+            } else if (aufgabenNeg.length > 0) {
+                text += `zeigen sich Einschränkungen: ${name} verweigert gestellte Aufgaben, was auf Schwierigkeiten bei der Handlungsinitiierung oder motivationale Faktoren hinweisen kann. `;
+            }
+        }
+
+        // --- Emotionale Funktionen (b152) und Stressregulation (d240) ---
+        const emotionPos = posChecks.filter(p => ['emotionen_reguliert', 'geduldig'].includes(p));
+        const emotionNeg = negChecks.filter(n => ['wutausbruch', 'weinen', 'frustration'].includes(n));
+
+        if (emotionPos.length > 0 || emotionNeg.length > 0) {
+            text += `Im Bereich der emotionalen Funktionen (b152) und der Stressbewältigung (d240) `;
+            if (emotionPos.length > 0 && emotionNeg.length === 0) {
+                text += `ist eine altersadäquate Funktionsfähigkeit festzustellen: `;
+                if (posChecks.includes('emotionen_reguliert')) {
+                    text += `${name} kann emotionale Zustände angemessen regulieren. `;
+                }
+                if (posChecks.includes('geduldig')) {
+                    text += `Warteverhalten und Impulskontrolle sind beobachtbar. `;
+                }
+            } else if (emotionNeg.length > 0) {
+                text += `zeigen sich Beeinträchtigungen der Emotionsregulation (b1521): `;
+                if (negChecks.includes('wutausbruch') && negChecks.includes('frustration')) {
+                    text += `Bei ${name} kommt es zu affektiven Durchbrüchen, die mit einer niedrigen Frustrationstoleranz zusammenhängen – Anforderungssituationen führen rasch zu einer emotionalen Überflutung. `;
+                } else if (negChecks.includes('wutausbruch')) {
+                    text += `Es kommt zu einem affektiven Durchbruch mit deutlichem Kontrollverlust. `;
+                } else if (negChecks.includes('weinen')) {
+                    text += `Es zeigt sich eine emotionale Überflutung mit Weinen. `;
+                } else if (negChecks.includes('frustration')) {
+                    text += `Die Frustrationstoleranz ist niedrig, was die Bewältigung von Anforderungen erschwert. `;
+                }
+            }
+        }
+
+        // --- Interpersonelle Interaktionen (d7) ---
+        const sozialPos = posChecks.filter(p => ['freundlich', 'kooperativ', 'beteiligt', 'konflikt_geloest', 'hilfe_geholt', 'regeln_eingehalten'].includes(p));
+        const sozialNeg = negChecks.filter(n => ['aggressiv_verbal', 'aggressiv_koerperlich', 'stoeren', 'regelverletzung', 'rueckzug', 'kontaktvermeidung'].includes(n));
+
+        if (sozialPos.length > 0 || sozialNeg.length > 0 || hatInteraktion) {
+            text += `Im Bereich der interpersonellen Interaktionen (d7) `;
+
+            if (sozialPos.length > 0 && sozialNeg.length === 0 && !interChecks.some(i => ['blickkontakt_vermeidet', 'isoliert', 'dominiert', 'provoziert'].includes(i))) {
+                text += `zeigt ${name} eine angemessene soziale Funktionsfähigkeit: `;
+                if (posChecks.includes('freundlich') || posChecks.includes('kooperativ')) {
+                    text += `Das Sozialverhalten ist freundlich-zugewandt und kooperativ. `;
+                }
+                if (posChecks.includes('regeln_eingehalten')) {
+                    text += `Soziale Regeln werden eingehalten. `;
+                }
+                if (posChecks.includes('hilfe_geholt')) {
+                    text += `Bei Schwierigkeiten wird adäquat Hilfe gesucht. `;
+                }
+                if (posChecks.includes('konflikt_geloest')) {
+                    text += `Konflikte werden konstruktiv gelöst. `;
+                }
+            } else if (sozialNeg.length > 0) {
+                text += `zeigen sich Einschränkungen: `;
+                if (negChecks.includes('aggressiv_koerperlich')) {
+                    text += `${name} zeigt körperlich-aggressives Verhalten gegenüber anderen. `;
+                }
+                if (negChecks.includes('aggressiv_verbal')) {
+                    text += `Es sind verbale Aggressionen zu beobachten. `;
+                }
+                if (negChecks.includes('stoeren')) {
+                    text += `Störendes Verhalten beeinträchtigt die Interaktion mit anderen. `;
+                }
+                if (negChecks.includes('regelverletzung')) {
+                    text += `Soziale Regeln werden nicht eingehalten. `;
+                }
+                if (negChecks.includes('rueckzug') || negChecks.includes('kontaktvermeidung')) {
+                    text += `Es zeigt sich soziales Rückzugsverhalten und Kontaktvermeidung. `;
+                }
+            }
+
+            // Interaktionsverhalten differenziert
+            if (hatInteraktion) {
+                const adaptivInter = interChecks.filter(i => ['blickkontakt_gut', 'kontakt_peers', 'fuegt_sich'].includes(i));
+                const auffaelligInter = interChecks.filter(i => ['blickkontakt_vermeidet', 'isoliert', 'dominiert', 'provoziert'].includes(i));
+
+                if (adaptivInter.length > 0 && auffaelligInter.length > 0) {
+                    text += `Das Interaktionsverhalten zeigt ein differenziertes Bild: `;
+                    if (interChecks.includes('blickkontakt_gut')) text += `Der Blickkontakt ist angemessen, `;
+                    if (interChecks.includes('blickkontakt_vermeidet')) text += `jedoch wird Blickkontakt auch vermieden, `;
+                    if (interChecks.includes('kontakt_peers') || interChecks.includes('fuegt_sich')) text += `${name} zeigt Kontaktverhalten zu Gleichaltrigen, `;
+                    if (interChecks.includes('isoliert')) text += `tendiert aber auch zur Selbstisolation, `;
+                    if (interChecks.includes('dominiert')) text += `wobei dominante Interaktionsmuster auffallen, `;
+                    if (interChecks.includes('provoziert')) text += `und provokatives Verhalten beobachtbar ist. `;
+                } else if (auffaelligInter.length > 0) {
+                    if (interChecks.includes('blickkontakt_vermeidet')) text += `Blickkontakt wird vermieden. `;
+                    if (interChecks.includes('isoliert')) text += `${name} isoliert sich von der Peergroup. `;
+                    if (interChecks.includes('dominiert')) text += `Es zeigen sich dominante Interaktionsmuster. `;
+                    if (interChecks.includes('provoziert')) text += `Provokatives Verhalten gegenüber anderen ist beobachtbar. `;
+                } else if (adaptivInter.length > 0) {
+                    if (interChecks.includes('blickkontakt_gut')) text += `Der Blickkontakt ist angemessen. `;
+                    if (interChecks.includes('kontakt_peers')) text += `${name} nimmt Kontakt zu Gleichaltrigen auf. `;
+                    if (interChecks.includes('fuegt_sich')) text += `Das Kind fügt sich in die Gruppe ein. `;
+                }
+                if (interChecks.includes('kontakt_sucht')) {
+                    text += `Zu Erwachsenen wird aktiv Kontakt gesucht. `;
+                }
+            }
+        }
+
+        // Ergänzende Freitextbeobachtungen
+        if (b.positiv) {
+            text += `\n\nErgänzend ist als Ressource festzuhalten: ${b.positiv}. `;
+        }
+        if (b.negativ) {
+            text += `${b.positiv ? '' : '\n\n'}Als weitere Auffälligkeit ist zu dokumentieren: ${b.negativ}. `;
+        }
+
+        // Zusammenfassung
         if (b.zusammenfassung) {
-            text += `Zusammenfassend: ${b.zusammenfassung}`;
+            text += `\n\nZusammenfassende Einordnung: ${b.zusammenfassung}`;
         }
 
         return text.trim();
     }).filter(t => t !== '');
 
-    // Übergreifende Einleitung und Integration der Beobachtungen
+    // Übergreifende Einleitung
     if (beobachtungsTexte.length > 1) {
-        return `Im Rahmen der diagnostischen Abklärung wurden systematische Verhaltensbeobachtungen in verschiedenen Kontexten durchgeführt:\n\n${beobachtungsTexte.join('\n\n')}`;
+        return `Im Rahmen der diagnostischen Abklärung wurden systematische Verhaltensbeobachtungen in verschiedenen Kontexten durchgeführt, um die Funktionsfähigkeit von ${name} direkt zu erfassen:\n\n${beobachtungsTexte.join('\n\n---\n\n')}`;
     } else if (beobachtungsTexte.length === 1) {
         return beobachtungsTexte[0];
     }
@@ -7759,72 +7790,6 @@ function generateVerhaltensbeobachtungenText(dsData) {
 function generateInterpretationText(dsData) {
     const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
 
-    // Fachsprachliche Text-Mappings für integrative Befundinterpretation
-    const M = {
-        // Übereinstimmung zwischen Informationsquellen
-        uebereinstimmung: {
-            'alle_verhalten': 'konvergieren die Angaben aller befragten Bezugspersonen hinsichtlich der beschriebenen Verhaltensweisen',
-            'alle_staerken': 'werden die vorhandenen Ressourcen und Kompetenzen übereinstimmend benannt',
-            'alle_schwaechen': 'besteht Konsens bezüglich der identifizierten Entwicklungsbereiche mit Förderbedarf',
-            'beobachtung_bestaetigt': 'korrespondieren die direkten Verhaltensbeobachtungen mit den anamnestischen Angaben',
-            'eldib_bestaetigt': 'stimmt die entwicklungsdiagnostische Einordnung mittels ELDiB mit dem klinischen Gesamteindruck überein',
-            'kind_einsicht': 'zeigt das Kind selbst Ansätze von Problemeinsicht'
-        },
-        // Diskrepanzen zwischen Perspektiven
-        differenz: {
-            'schule_zuhause': 'die Verhaltensdarstellung kontextabhängig variiert, wobei schulisches und häusliches Verhalten unterschiedlich beschrieben werden',
-            'eltern_schule': 'die Perspektiven von Familie und Schule voneinander abweichen, was auf unterschiedliche Anforderungskontexte oder Wahrnehmungsunterschiede hinweisen kann',
-            'kind_andere': 'eine Diskrepanz zwischen Selbst- und Fremdwahrnehmung besteht',
-            'kein_problembewusstsein': 'beim Kind (noch) kein Problembewusstsein erkennbar ist, was die Veränderungsmotivation beeinflussen kann',
-            'beobachtung_abweichend': 'die standardisierten Verhaltensbeobachtungen von den anamnestischen Berichten divergieren',
-            'eltern_bagatellisieren': 'die elterliche Darstellung möglicherweise die Symptomausprägung unterschätzt',
-            'schule_dramatisiert': 'die schulische Darstellung möglicherweise durch Belastungserleben gefärbt ist',
-            'kontextabhaengig': 'das gezeigte Verhalten ausgeprägt situationsspezifisch variiert'
-        },
-        // Ätiologische Erklärungsansätze
-        erklaerung: {
-            'entwicklungsverzoegerung': 'eine Entwicklungsverzögerung im sozio-emotionalen Bereich',
-            'belastungsreaktion': 'eine Anpassungsstörung als Reaktion auf Belastungserfahrungen',
-            'bindungsunsicherheit': 'eine Bindungsunsicherheit mit entsprechenden Auswirkungen auf das Beziehungsverhalten',
-            'reizueberflutung': 'eine veränderte sensorische Verarbeitung mit Neigung zur Reizüberflutung',
-            'aufmerksamkeitsproblematik': 'eine zugrundeliegende Aufmerksamkeitsstörung',
-            'emotionale_dysregulation': 'eine Beeinträchtigung der Emotionsregulation',
-            'soziale_unsicherheit': 'eine grundlegende soziale Unsicherheit mit Vermeidungstendenzen',
-            'trauma_folgen': 'mögliche Traumafolgestörungen',
-            'familiendynamik': 'die aktuelle Familiendynamik als aufrechterhaltender Faktor',
-            'schulische_ueberforderung': 'eine schulische Überforderungssituation',
-            'schulische_unterforderung': 'eine schulische Unterforderung mit sekundären Verhaltensauffälligkeiten',
-            'fehlende_strategien': 'ein Defizit an adaptiven Bewältigungsstrategien'
-        },
-        // Entwicklungstherapeutische Einordnung nach ELDiB
-        entwicklungsangst: {
-            'stufe1': 'die Angst vor Verlassenwerden und Alleinsein (Entwicklungsstufe I)',
-            'stufe2': 'die Angst vor Unzulänglichkeit und Versagen (Entwicklungsstufe II)',
-            'stufe3': 'die Angst vor Ablehnung durch die Gruppe (Entwicklungsstufe III)',
-            'stufe4': 'die Angst vor Konflikten mit Gleichaltrigen (Entwicklungsstufe IV)',
-            'stufe5': 'die Angst vor Identitätsverlust (Entwicklungsstufe V)'
-        },
-        // Abwehr- und Bewältigungsmechanismen
-        abwehr: {
-            'rueckzug': 'sozialem Rückzug',
-            'aggression': 'externalisierender Aggression',
-            'verweigerung': 'passiver Verweigerung',
-            'regression': 'regressiven Verhaltensmustern',
-            'vermeidung': 'Vermeidungsverhalten',
-            'clown': 'kompensatorischem Clownsverhalten',
-            'ueberkontrolle': 'Überkontrolle und Rigidität',
-            'projektion': 'Projektion auf die Umwelt'
-        }
-    };
-
-    // Hilfsfunktion für natürliche Aufzählungen
-    const liste = (arr, map) => {
-        const items = arr.filter(i => i && map[i]).map(i => map[i]);
-        if (items.length === 0) return '';
-        if (items.length === 1) return items[0];
-        return items.slice(0, -1).join(', ') + ' sowie ' + items[items.length - 1];
-    };
-
     // Daten extrahieren
     const uebereinstimmung = dsData.checkboxes?.ds_uebereinstimmung || [];
     const differenz = dsData.checkboxes?.ds_differenz || [];
@@ -7832,124 +7797,254 @@ function generateInterpretationText(dsData) {
     const aengste = dsData.checkboxes?.ds_entwicklungsangst || [];
     const abwehr = dsData.checkboxes?.ds_abwehr || [];
 
-    // ===== INTEGRATIVE BEFUNDINTERPRETATION MIT PROFESSIONELLEN ÜBERLEITUNGEN =====
-    let text = '';
+    // ===== ICF-BASIERTE INTEGRATIVE BEFUNDSYNTHESE =====
+    let paragraphs = [];
 
-    // EINLEITUNG: Rahmen für die Synthese
-    text += `Bei der integrativen Zusammenschau aller diagnostischen Informationen über ${name} ergibt sich folgendes differenziertes Bild:\n\n`;
+    // EINLEITUNG: ICF-Rahmen für die multiperspektivische Synthese
+    paragraphs.push(`Die integrative Befundsynthese nach ICF-Kriterien erfolgt unter systematischer Berücksichtigung aller erhobenen diagnostischen Informationen über ${name}. Dabei werden die Befunde zu Körperfunktionen und -strukturen, Aktivitäten und Partizipation sowie Kontextfaktoren in ihrer wechselseitigen Interaktion analysiert.`);
 
-    // ABSATZ 1: Multiperspektivische Befundkonvergenz und -divergenz
+    // ABSCHNITT 1: Multiperspektivische Befundkonvergenz (ICF: Kontextfaktoren und Aktivitätsebene)
     const hatUeber = uebereinstimmung.length > 0 || dsData.ds_interpretation_uebereinstimmung;
     const hatDiff = differenz.length > 0 || dsData.ds_interpretation_differenzen;
 
     if (hatUeber || hatDiff) {
-        if (hatUeber && hatDiff) {
-            // Synthese beider Aspekte mit professioneller Überleitung
-            const ueberListe = liste(uebereinstimmung, M.uebereinstimmung);
-            const diffListe = liste(differenz, M.differenz);
+        let konvergenzText = 'Hinsichtlich der Befundkonvergenz zwischen den verschiedenen Informationsquellen zeigt die ICF-orientierte Analyse ';
 
-            text += 'Hinsichtlich der Befundkonvergenz ist zunächst festzuhalten, dass ';
-            if (ueberListe) {
-                text += ueberListe;
-                if (dsData.ds_interpretation_uebereinstimmung) text += `. ${dsData.ds_interpretation_uebereinstimmung}`;
-                text += '. ';
+        if (hatUeber) {
+            // Übereinstimmungen als narrative Synthese
+            let konvergenzPunkte = [];
+            if (uebereinstimmung.includes('alle_verhalten')) {
+                konvergenzPunkte.push('eine hohe Übereinstimmung der Bezugspersonen bei der Beschreibung der beobachteten Verhaltensweisen auf der Aktivitätsebene');
+            }
+            if (uebereinstimmung.includes('alle_staerken')) {
+                konvergenzPunkte.push('konsistente Einschätzungen bezüglich vorhandener personbezogener Schutzfaktoren und Ressourcen');
+            }
+            if (uebereinstimmung.includes('alle_schwaechen')) {
+                konvergenzPunkte.push('übereinstimmende Identifikation von Entwicklungsbereichen mit Förderbedarf');
+            }
+            if (uebereinstimmung.includes('beobachtung_bestaetigt')) {
+                konvergenzPunkte.push('eine Korrespondenz zwischen den standardisierten Verhaltensbeobachtungen und den anamnestischen Angaben');
+            }
+            if (uebereinstimmung.includes('eldib_bestaetigt')) {
+                konvergenzPunkte.push('eine Kongruenz der entwicklungsdiagnostischen Einordnung mittels ELDiB mit dem klinischen Gesamteindruck');
+            }
+            if (uebereinstimmung.includes('kind_einsicht')) {
+                konvergenzPunkte.push('Ansätze von Problemwahrnehmung auf Seiten des Kindes selbst');
             }
 
-            // Professionelle Überleitung zu Diskrepanzen
-            text += `Im Kontrast dazu fällt auf, dass ${diffListe}`;
-            if (dsData.ds_interpretation_differenzen) text += `. ${dsData.ds_interpretation_differenzen}`;
-            text += '. ';
+            if (konvergenzPunkte.length > 0) {
+                konvergenzText += konvergenzPunkte[0];
+                for (let i = 1; i < konvergenzPunkte.length; i++) {
+                    konvergenzText += `. Darüber hinaus besteht ${konvergenzPunkte[i]}`;
+                }
+            }
 
-            // Synthese: Bedeutung der Diskrepanzen interpretieren
+            if (dsData.ds_interpretation_uebereinstimmung) {
+                konvergenzText += `. ${dsData.ds_interpretation_uebereinstimmung}`;
+            }
+            konvergenzText += '. Diese multiperspektivische Befundkonvergenz erhöht die diagnostische Reliabilität der Funktionseinschätzungen.';
+        }
+
+        // Divergenzen als kontextbezogene Differentialanalyse
+        if (hatDiff) {
+            let divergenzText = hatUeber ? ' Gleichwohl zeigt die differenzierte Analyse ' : 'Die differenzierte Analyse zeigt ';
+            divergenzText += 'kontextabhängige Variationen im Funktionsprofil. ';
+
+            // Narrative Integration der Diskrepanzen nach ICF-Umweltfaktoren
             if (differenz.includes('schule_zuhause') || differenz.includes('kontextabhaengig')) {
-                text += 'Diese Kontextabhängigkeit des Verhaltens liefert wichtige diagnostische Hinweise auf situationsspezifische Trigger und protektive Faktoren. ';
+                divergenzText += `Die Funktionsfähigkeit von ${name} variiert deutlich in Abhängigkeit von den Umweltfaktoren: Im schulischen Kontext (d820 Schulbildung) zeigen sich andere Aktivitätsmuster als im häuslichen Umfeld (e310 Familie als proximaler Umweltfaktor). Diese Kontextspezifität der Funktionsbeeinträchtigungen weist auf die Bedeutung von Umweltbarrieren und -förderfaktoren hin. `;
+            }
+            if (differenz.includes('eltern_schule')) {
+                divergenzText += 'Die divergierenden Perspektiven zwischen familiärem und schulischem Bezugssystem reflektieren unterschiedliche Anforderungskontexte und deren spezifische Auswirkungen auf die Aktivitäts- und Partizipationsebene. ';
             }
             if (differenz.includes('kind_andere') || differenz.includes('kein_problembewusstsein')) {
-                text += 'Die eingeschränkte Selbstwahrnehmung ist bei der Planung interventiver Maßnahmen zu berücksichtigen. ';
+                divergenzText += `Auf der Ebene der mentalen Funktionen (b1644 Einsicht) zeigt sich bei ${name} eine Diskrepanz zwischen Selbst- und Fremdwahrnehmung, was die Entwicklung von Veränderungsmotivation als personbezogenen Förderfaktor beeinflusst. `;
             }
-        } else if (hatUeber) {
-            const ueberListe = liste(uebereinstimmung, M.uebereinstimmung);
-            text += 'Die verschiedenen diagnostischen Informationsquellen zeichnen ein konsistentes Bild. Übereinstimmend ';
-            if (ueberListe) text += ueberListe;
-            if (dsData.ds_interpretation_uebereinstimmung) text += `. ${dsData.ds_interpretation_uebereinstimmung}`;
-            text += '. Diese Befundkonvergenz erhöht die diagnostische Validität der Einschätzungen. ';
-        } else if (hatDiff) {
-            const diffListe = liste(differenz, M.differenz);
-            text += 'Auffällig ist bei der Analyse, dass ';
-            text += diffListe;
-            if (dsData.ds_interpretation_differenzen) text += `. ${dsData.ds_interpretation_differenzen}`;
-            text += '. Diese Diskrepanzen sind diagnostisch bedeutsam und erfordern eine differenzierte Betrachtung. ';
+            if (differenz.includes('beobachtung_abweichend')) {
+                divergenzText += 'Die standardisierte Verhaltensbeobachtung divergiert teilweise von den anamnestischen Berichten, was die Bedeutung einer multimodalen Befunderhebung unterstreicht. ';
+            }
+            if (differenz.includes('eltern_bagatellisieren')) {
+                divergenzText += 'Die elterliche Einschätzung unterschätzt möglicherweise das Ausmaß der funktionellen Beeinträchtigungen, was bei der Förderplanung zu berücksichtigen ist. ';
+            }
+            if (differenz.includes('schule_dramatisiert')) {
+                divergenzText += 'Die schulische Darstellung erscheint durch das professionelle Belastungserleben beeinflusst, was eine differenzierte Gewichtung der Befunde erfordert. ';
+            }
+
+            if (dsData.ds_interpretation_differenzen) {
+                divergenzText += dsData.ds_interpretation_differenzen + ' ';
+            }
+
+            konvergenzText += divergenzText;
         }
+
+        paragraphs.push(konvergenzText);
     }
 
-    // ABSATZ 2: Ätiologische Hypothesen mit Verknüpfung zur Symptomatik
+    // ABSCHNITT 2: Ätiologische Hypothesen nach ICF-Struktur (Körperfunktionen und Kontextfaktoren)
     const hatErkl = erklaerung.length > 0 || dsData.ds_interpretation_deutung;
 
     if (hatErkl) {
-        text += '\n\nHinsichtlich der ätiologischen Einordnung ';
-        const erklListe = liste(erklaerung, M.erklaerung);
-        if (erklListe) {
-            text += `kommen als mögliche Erklärungsansätze für die beobachteten Verhaltensauffälligkeiten ${erklListe} in Betracht`;
+        let aetiologieText = 'Die ätiologische Einordnung erfolgt unter Berücksichtigung des biopsychosozialen Modells der ICF. ';
 
-            // Verknüpfung verschiedener Erklärungsansätze
-            if (erklaerung.length > 1) {
-                text += '. Dabei sind diese Faktoren nicht isoliert zu betrachten, sondern können in wechselseitiger Interaktion stehen';
-            }
+        // Körperfunktionen (b) als ätiologische Faktoren
+        let koerperfunktionen = [];
+        if (erklaerung.includes('aufmerksamkeitsproblematik')) {
+            koerperfunktionen.push('Beeinträchtigungen der Aufmerksamkeitsfunktionen (b140)');
+        }
+        if (erklaerung.includes('emotionale_dysregulation')) {
+            koerperfunktionen.push('Einschränkungen in der Emotionsregulation (b1521)');
+        }
+        if (erklaerung.includes('reizueberflutung')) {
+            koerperfunktionen.push('Besonderheiten der sensorischen Verarbeitung mit Neigung zur Reizüberflutung');
+        }
 
-            if (dsData.ds_interpretation_deutung) text += `. ${dsData.ds_interpretation_deutung}`;
-            text += '. ';
+        if (koerperfunktionen.length > 0) {
+            aetiologieText += `Auf der Ebene der Körperfunktionen sind ${koerperfunktionen.join(' sowie ')} als ätiologisch relevante Faktoren zu diskutieren. `;
+        }
 
-            // Spezifische Verbindungen zwischen Symptomen und Erklärungen
+        // Personbezogene Faktoren und psychologische Erklärungsmodelle
+        let personFaktoren = [];
+        if (erklaerung.includes('entwicklungsverzoegerung')) {
+            personFaktoren.push('eine Entwicklungsverzögerung im sozio-emotionalen Bereich');
+        }
+        if (erklaerung.includes('bindungsunsicherheit')) {
+            personFaktoren.push('bindungstheoretisch fundierte Beziehungsunsicherheit mit Auswirkungen auf die interpersonellen Interaktionen (d7)');
+        }
+        if (erklaerung.includes('soziale_unsicherheit')) {
+            personFaktoren.push('grundlegende soziale Ängstlichkeit mit konsekutivem Vermeidungsverhalten');
+        }
+        if (erklaerung.includes('fehlende_strategien')) {
+            personFaktoren.push('ein Defizit an adaptiven Copingstrategien (d240 Stressbewältigung)');
+        }
+
+        if (personFaktoren.length > 0) {
+            aetiologieText += `Als personbezogene Faktoren sind ${personFaktoren.join(', ')} hypothetisch anzunehmen. `;
+        }
+
+        // Umweltfaktoren als ätiologische Einflüsse
+        let umweltFaktoren = [];
+        if (erklaerung.includes('belastungsreaktion')) {
+            umweltFaktoren.push('kritische Lebensereignisse mit nachfolgender Anpassungsreaktion');
+        }
+        if (erklaerung.includes('trauma_folgen')) {
+            umweltFaktoren.push('mögliche Traumafolgen als Auswirkung adverser Erfahrungen');
+        }
+        if (erklaerung.includes('familiendynamik')) {
+            umweltFaktoren.push('die aktuelle Familiendynamik (e310) als aufrechterhaltender Kontextfaktor');
+        }
+        if (erklaerung.includes('schulische_ueberforderung')) {
+            umweltFaktoren.push('eine schulische Überforderungssituation (Barriere im Bereich d820)');
+        }
+        if (erklaerung.includes('schulische_unterforderung')) {
+            umweltFaktoren.push('eine schulische Unterforderung mit sekundären Verhaltensauffälligkeiten');
+        }
+
+        if (umweltFaktoren.length > 0) {
+            aetiologieText += `Im Bereich der Umweltfaktoren sind ${umweltFaktoren.join(' sowie ')} diagnostisch bedeutsam. `;
+        }
+
+        // Interaktionen zwischen Faktoren
+        if (erklaerung.length > 1) {
+            aetiologieText += 'Diese verschiedenen Einflussfaktoren stehen im Sinne des ICF-Wechselwirkungsmodells in dynamischer Interaktion zueinander. ';
+
             if (erklaerung.includes('emotionale_dysregulation') && erklaerung.includes('fehlende_strategien')) {
-                text += 'Auffällig ist hierbei der Zusammenhang zwischen der eingeschränkten Emotionsregulation und dem Mangel an adaptiven Bewältigungsstrategien. ';
+                aetiologieText += 'Insbesondere die Wechselwirkung zwischen eingeschränkter Emotionsregulation (b1521) und dem Mangel an adaptiven Bewältigungsstrategien (d240) erscheint als zentraler Mechanismus der Symptomaufrechterhaltung. ';
             }
             if (erklaerung.includes('bindungsunsicherheit') && (erklaerung.includes('familiendynamik') || erklaerung.includes('belastungsreaktion'))) {
-                text += 'Die Bindungsdynamik erscheint im Kontext der familiären Situation als bedeutsamer entwicklungspsychologischer Faktor. ';
+                aetiologieText += 'Die Bindungsunsicherheit im Kontext der familiären Umweltfaktoren (e310) stellt einen bedeutsamen entwicklungspsychologischen Erklärungsansatz dar. ';
             }
-        } else if (dsData.ds_interpretation_deutung) {
-            text += dsData.ds_interpretation_deutung + ' ';
         }
+
+        if (dsData.ds_interpretation_deutung) {
+            aetiologieText += dsData.ds_interpretation_deutung + ' ';
+        }
+
+        paragraphs.push(aetiologieText);
     }
 
-    // ABSATZ 3: Entwicklungstherapeutische Einordnung mit Angst-Abwehr-Dynamik
+    // ABSCHNITT 3: Entwicklungstherapeutische Einordnung nach ELDiB (Angst-Abwehr-Dynamik)
     const hatAngst = aengste.length > 0;
     const hatAbwehr = abwehr.length > 0;
 
     if (hatAngst || hatAbwehr) {
-        text += '\n\nAus entwicklungstherapeutischer Perspektive nach dem ELDiB-Modell ';
+        let entwicklungsText = 'Aus entwicklungstherapeutischer Perspektive nach dem ELDiB-Modell lässt sich das Funktionsprofil im Rahmen eines stufenspezifischen Angst-Abwehr-Paradigmas verstehen. ';
+
+        if (hatAngst) {
+            // Entwicklungsängste als narrative Einordnung
+            let angstNarrativ = `Bei ${name} `;
+
+            if (aengste.includes('stufe1')) {
+                angstNarrativ += 'dominiert die entwicklungstypische Angst vor Verlassenwerden und Alleinsein (Entwicklungsstufe I nach ELDiB), welche grundlegende Bindungsbedürfnisse reflektiert';
+            } else if (aengste.includes('stufe2')) {
+                angstNarrativ += 'steht die Angst vor Unzulänglichkeit und Versagen (Entwicklungsstufe II) im Vordergrund, was auf Autonomie- und Kompetenzbedürfnisse verweist';
+            } else if (aengste.includes('stufe3')) {
+                angstNarrativ += 'zeigt sich die Angst vor Ablehnung durch die Gruppe (Entwicklungsstufe III), welche die Bedeutung sozialer Zugehörigkeit und Anerkennung unterstreicht';
+            } else if (aengste.includes('stufe4')) {
+                angstNarrativ += 'manifestiert sich die Angst vor Konflikten mit Gleichaltrigen (Entwicklungsstufe IV), was auf entwicklungsspezifische Herausforderungen im Bereich der Peer-Interaktionen hindeutet';
+            } else if (aengste.includes('stufe5')) {
+                angstNarrativ += 'ist die Angst vor Identitätsverlust (Entwicklungsstufe V) als zentrale entwicklungstherapeutische Thematik erkennbar';
+            }
+
+            // Bei mehreren Ängsten
+            if (aengste.length > 1) {
+                angstNarrativ += '. Darüber hinaus zeigen sich Überlagerungen mit weiteren entwicklungsspezifischen Ängsten, was auf eine komplexe emotionale Bedürfnislage hinweist';
+            }
+
+            angstNarrativ += '. ';
+            entwicklungsText += angstNarrativ;
+        }
+
+        if (hatAbwehr) {
+            let abwehrNarrativ = 'Die beobachteten Verhaltensauffälligkeiten lassen sich als Bewältigungsversuche im Sinne von Abwehrmechanismen konzeptualisieren. ';
+
+            // Abwehrmechanismen als kohärente Narrative
+            if (abwehr.includes('rueckzug')) {
+                abwehrNarrativ += `${name} zeigt einen sozialen Rückzug als protektive Strategie zur Vermeidung antizipierter negativer Interaktionserfahrungen. `;
+            }
+            if (abwehr.includes('aggression')) {
+                abwehrNarrativ += 'Externalisierende Verhaltensweisen mit aggressiven Durchbrüchen stellen einen Versuch dar, innere Spannungszustände nach außen abzuleiten. ';
+            }
+            if (abwehr.includes('verweigerung')) {
+                abwehrNarrativ += 'Passive Verweigerung fungiert als Schutz vor befürchtetem Versagen und ermöglicht eine Kontrolle über die Situation. ';
+            }
+            if (abwehr.includes('regression')) {
+                abwehrNarrativ += 'Regressive Verhaltensmuster mit Rückgriff auf frühere Entwicklungsstufen bieten emotionale Entlastung und aktivieren Fürsorgebeziehungen. ';
+            }
+            if (abwehr.includes('vermeidung')) {
+                abwehrNarrativ += 'Vermeidungsverhalten reduziert kurzfristig Angst, verstärkt jedoch langfristig die funktionellen Einschränkungen auf der Aktivitätsebene. ';
+            }
+            if (abwehr.includes('clown')) {
+                abwehrNarrativ += 'Kompensatorisches Clownsverhalten dient der Spannungsregulation und der Vermeidung ernsthafter Auseinandersetzung mit Anforderungen. ';
+            }
+            if (abwehr.includes('ueberkontrolle')) {
+                abwehrNarrativ += 'Überkontrolle und Rigidität stellen Versuche dar, durch Strukturierung Sicherheit zu gewinnen. ';
+            }
+            if (abwehr.includes('projektion')) {
+                abwehrNarrativ += 'Projektive Mechanismen mit Attribution eigener Anteile auf die Umwelt reduzieren intrapsychische Konflikte. ';
+            }
+
+            if (dsData.ds_abwehr_konkret) {
+                abwehrNarrativ += `Im Alltag manifestiert sich dies konkret darin, dass ${dsData.ds_abwehr_konkret}. `;
+            }
+
+            entwicklungsText += abwehrNarrativ;
+        }
 
         if (hatAngst && hatAbwehr) {
-            const angstListe = liste(aengste, M.entwicklungsangst);
-            const abwehrListe = liste(abwehr, M.abwehr);
-
-            text += `lässt sich bei ${name} ${angstListe} als zentrale, das Verhalten organisierende Entwicklungsangst identifizieren. `;
-            text += `Die beobachteten Verhaltensauffälligkeiten sind in diesem Rahmen als Bewältigungsversuche zu verstehen, die sich in Form von ${abwehrListe} manifestieren`;
-
-            if (dsData.ds_abwehr_konkret) text += `. Im Alltag äußert sich dies konkret darin, dass ${dsData.ds_abwehr_konkret}`;
-            text += '. ';
-
-            // Synthese: Zusammenhang Angst und Abwehr erläutern
-            text += 'Diese Angst-Abwehr-Dynamik bietet einen verstehenden Zugang zum Verhalten und gibt Hinweise auf die entwicklungstherapeutischen Ansatzpunkte. ';
-        } else if (hatAngst) {
-            const angstListe = liste(aengste, M.entwicklungsangst);
-            text += `zeigt sich bei ${name} ${angstListe} als zentrale Entwicklungsangst, die das Verhalten maßgeblich mitbestimmt. `;
-        } else if (hatAbwehr) {
-            const abwehrListe = liste(abwehr, M.abwehr);
-            text += `zeigen sich bei ${name} primär ${abwehrListe} als vorherrschende Bewältigungsmechanismen`;
-            if (dsData.ds_abwehr_konkret) text += `, was sich konkret darin äußert, dass ${dsData.ds_abwehr_konkret}`;
-            text += '. ';
+            entwicklungsText += 'Diese Angst-Abwehr-Dynamik bietet einen verstehenden Zugang zur Funktionsfähigkeit und liefert Ansatzpunkte für entwicklungsförderliche Interventionen auf der Aktivitäts- und Partizipationsebene.';
         }
+
+        paragraphs.push(entwicklungsText);
     }
 
-    // ABSCHLUSS: Integrative Gesamteinschätzung
+    // ABSCHLUSS: ICF-basierte Gesamtsynthese
     if (dsData.ds_gesamtinterpretation) {
-        text += `\n\nZusammenfassend ist festzuhalten: ${dsData.ds_gesamtinterpretation}`;
-    } else if (hatUeber || hatDiff || hatErkl || hatAngst || hatAbwehr) {
-        // Automatischer Abschlusssatz wenn Inhalte vorhanden aber keine manuelle Zusammenfassung
-        text += `\n\nDie diagnostische Gesamtschau verdeutlicht den Förderbedarf von ${name} und liefert die Grundlage für eine gezielte Maßnahmenplanung.`;
+        paragraphs.push(`Im Rahmen der ICF-basierten Gesamtbewertung ist zusammenfassend festzuhalten: ${dsData.ds_gesamtinterpretation}`);
+    } else if (paragraphs.length > 1) {
+        paragraphs.push(`Die integrative Befundsynthese nach ICF verdeutlicht das komplexe Wechselspiel zwischen Körperfunktionen, Aktivitäts- und Partizipationsebene sowie Kontextfaktoren bei ${name}. Diese systematische Analyse bildet die Grundlage für eine zielgerichtete, an den individuellen Funktionsprofilen und Umweltfaktoren orientierte Förderplanung.`);
     }
 
-    return text.trim() || '(Integrative Interpretation der diagnostischen Befunde wird hier eingefügt)';
+    return paragraphs.join('\n\n') || '(Integrative Befundsynthese nach ICF wird hier eingefügt)';
 }
 
 function generateSpezifischeBeduerfnisseText(dsData) {
