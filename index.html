@@ -6774,8 +6774,28 @@ function generateAktuelleSituationText(dsData, stammdaten) {
     return text;
 }
 
+// Hilfsfunktion für grammatikalisch korrekte Namensformen
+// Wenn kein Name angegeben ist, wird "das Kind" mit korrekter Kasusform verwendet
+function getNameWithCase(rawName, casus = 'nom') {
+    const isDefaultName = !rawName || rawName === 'Das Kind' || rawName === 'das Kind';
+    if (!isDefaultName) return rawName;
+
+    // Kasusformen für "das Kind"
+    switch(casus) {
+        case 'nom': return 'das Kind';      // Nominativ: das Kind zeigt...
+        case 'gen': return 'des Kindes';    // Genitiv: die Entwicklung des Kindes
+        case 'dat': return 'dem Kind';      // Dativ: bei dem Kind, von dem Kind
+        case 'akk': return 'das Kind';      // Akkusativ: über das Kind
+        default: return 'das Kind';
+    }
+}
+
 function generateSichtweiseSchuleText(dsData) {
-    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
+    const rawName = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim();
+    const name = rawName || 'das Kind';
+    const nameGen = getNameWithCase(rawName, 'gen');
+    const nameDat = getNameWithCase(rawName, 'dat');
+    const nameAkk = getNameWithCase(rawName, 'akk');
     const verhalten = dsData.ds_schule_verhalten;
     const leistung = dsData.ds_schule_leistung;
     const positiv = dsData.checkboxes?.ds_schule_positiv || [];
@@ -7054,7 +7074,10 @@ function generateSichtweiseSchuleText(dsData) {
 }
 
 function generateSichtweiseSchuelerText(dsData, stammdaten) {
-    const name = stammdaten?.schueler_name?.split(',')[0]?.trim() || document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
+    const rawName = stammdaten?.schueler_name?.split(',')[0]?.trim() || document.getElementById('schueler_name')?.value?.split(',')[0]?.trim();
+    const name = rawName || 'das Kind';
+    const nameDat = getNameWithCase(rawName, 'dat');
+    const nameAkk = getNameWithCase(rawName, 'akk');
     const wohlbefinden = dsData.ds_schueler_wohlbefinden;
     const leidensdruck = dsData.ds_schueler_leidensdruck;
     const belastungen = dsData.checkboxes?.ds_schueler_belastung || [];
@@ -7153,21 +7176,31 @@ function generateSichtweiseSchuelerText(dsData, stammdaten) {
 
         if (positivesSelbst.length > 0 && negativesSelbst.length > 0) {
             text += `zeigt sich ein ambivalentes Bild: Einerseits verfügt ${name} über `;
-            if (positivesSelbst.includes('bin_gut_schule')) text += `positive schulische Selbstwirksamkeitserwartungen`;
-            if (positivesSelbst.includes('haben_mich_gern')) text += `${positivesSelbst.includes('bin_gut_schule') ? ' und ' : ''}das Erleben sozialer Akzeptanz`;
-            if (positivesSelbst.includes('problembewusstsein')) text += `${positivesSelbst.length > 1 ? ' sowie ' : ''}Ansätze von Problemeinsicht`;
+            const posParts = [];
+            if (positivesSelbst.includes('bin_gut_schule')) posParts.push('positive schulische Selbstwirksamkeitserwartungen');
+            if (positivesSelbst.includes('bin_lieb')) posParts.push('ein positives Selbstbild');
+            if (positivesSelbst.includes('haben_mich_gern')) posParts.push('das Erleben sozialer Akzeptanz');
+            if (positivesSelbst.includes('strafe_verdient')) posParts.push('Einsicht in eigene Verantwortungsanteile');
+            if (positivesSelbst.includes('problembewusstsein')) posParts.push('Ansätze von Problemeinsicht');
+            text += posParts.length > 0 ? posParts.join(', ') : 'positive Selbstkonzeptanteile';
             text += `. Andererseits finden sich `;
-            if (negativesSelbst.includes('bin_schlecht_schule')) text += `negative schulbezogene Selbstkonzeptanteile`;
-            if (negativesSelbst.includes('keiner_mag_mich')) text += `${negativesSelbst.includes('bin_schlecht_schule') ? ' und ' : ''}ein Erleben sozialer Ablehnung`;
-            if (negativesSelbst.includes('kein_problembewusstsein')) text += `${negativesSelbst.length > 1 ? ' sowie ' : ''}eine eingeschränkte Problemeinsicht`;
-            if (negativesSelbst.includes('bin_boese')) text += `${negativesSelbst.length > 1 ? ', wobei auch ' : ''}eine negative Selbstzuschreibung`;
+            const negParts = [];
+            if (negativesSelbst.includes('bin_schlecht_schule')) negParts.push('negative schulbezogene Selbstkonzeptanteile');
+            if (negativesSelbst.includes('bin_boese')) negParts.push('eine negative Selbstzuschreibung');
+            if (negativesSelbst.includes('keiner_mag_mich')) negParts.push('ein Erleben sozialer Ablehnung');
+            if (negativesSelbst.includes('ungerechtigkeit')) negParts.push('ein Erleben von Ungerechtigkeit');
+            if (negativesSelbst.includes('kein_problembewusstsein')) negParts.push('eine eingeschränkte Problemeinsicht');
+            text += negParts.length > 0 ? negParts.join(', ') : 'negative Selbstkonzeptanteile';
             text += `. Diese Ambivalenz ist bei der Förderplanung zu berücksichtigen. `;
         } else if (positivesSelbst.length > 0) {
             text += `zeigen sich überwiegend positive Anteile: ${name} verfügt über `;
-            if (positivesSelbst.includes('bin_gut_schule')) text += `positive schulische Selbstwirksamkeitserwartungen`;
-            if (positivesSelbst.includes('bin_lieb')) text += `${positivesSelbst.includes('bin_gut_schule') ? ', ' : ''}ein positives Selbstbild`;
-            if (positivesSelbst.includes('haben_mich_gern')) text += `${positivesSelbst.length > 1 ? ' und ' : ''}erlebt sich als sozial akzeptiert`;
-            if (positivesSelbst.includes('problembewusstsein')) text += `${positivesSelbst.length > 1 ? '; zudem zeigen sich ' : ''}Ansätze von Problemeinsicht`;
+            const posParts = [];
+            if (positivesSelbst.includes('bin_gut_schule')) posParts.push('positive schulische Selbstwirksamkeitserwartungen');
+            if (positivesSelbst.includes('bin_lieb')) posParts.push('ein positives Selbstbild');
+            if (positivesSelbst.includes('haben_mich_gern')) posParts.push('das Erleben sozialer Akzeptanz');
+            if (positivesSelbst.includes('strafe_verdient')) posParts.push('Einsicht in eigene Verantwortungsanteile');
+            if (positivesSelbst.includes('problembewusstsein')) posParts.push('Ansätze von Problemeinsicht');
+            text += posParts.length > 0 ? posParts.join(', ') : 'positive Selbstkonzeptanteile';
             text += `. Diese positiven Selbstkonzeptanteile stellen einen wesentlichen Förderfaktor dar. `;
         } else if (negativesSelbst.length > 0) {
             text += `zeigen sich Beeinträchtigungen: `;
@@ -7224,7 +7257,11 @@ function generateSichtweiseSchuelerText(dsData, stammdaten) {
             } else if (externalisierend.length > 0 && internalisierend.length > 0) {
                 text += `zeigt ${name} sowohl externalisierende Reaktionen (${externalisierend.includes('hauen') ? 'körperliche Aggression' : 'verbale Äußerungen'}) als auch internalisierende Bewältigungsmuster (Rückzug, Weinen). Diese ambivalente Stressverarbeitung deutet auf eine Beeinträchtigung der Emotionsregulation hin. `;
             } else if (externalisierend.length > 0) {
-                text += `berichtet ${name} von externalisierenden Bewältigungsmustern: Bei Konflikten zeige sich eine Tendenz zu ${externalisierend.includes('hauen') ? 'körperlich-aggressiven Reaktionen' : ''}${externalisierend.includes('schreien') ? 'verbalen Ausbrüchen' : ''}${externalisierend.includes('schuld_anderen') ? 'externalisierenden Attributionen' : ''}. `;
+                const extParts = [];
+                if (externalisierend.includes('hauen')) extParts.push('körperlich-aggressiven Reaktionen');
+                if (externalisierend.includes('schreien')) extParts.push('verbalen Ausbrüchen');
+                if (externalisierend.includes('schuld_anderen')) extParts.push('externalisierenden Attributionen');
+                text += `berichtet ${name} von externalisierenden Bewältigungsmustern: Bei Konflikten zeige sich eine Tendenz zu ${extParts.join(', ')}. `;
             } else if (internalisierend.length > 0) {
                 text += `beschreibt ${name} eher internalisierende Bewältigungsmuster: Bei Konflikten erfolge typischerweise ein Rückzug oder emotionaler Ausdruck durch Weinen. `;
             } else if (vermeidend.length > 0) {
@@ -7325,7 +7362,10 @@ function generateSichtweiseSchuelerText(dsData, stammdaten) {
 }
 
 function generateSichtweiseElternText(dsData) {
-    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
+    const rawName = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim();
+    const name = rawName || 'das Kind';
+    const nameGen = getNameWithCase(rawName, 'gen');
+    const nameDat = getNameWithCase(rawName, 'dat');
     const verhalten = dsData.ds_eltern_verhalten;
     const beziehung = dsData.ds_eltern_beziehung;
     const zusammenarbeit = dsData.ds_eltern_zusammenarbeit;
@@ -7347,7 +7387,7 @@ function generateSichtweiseElternText(dsData) {
         else if (mitWem.includes('mutter')) mitText = 'der Mutter';
         else if (mitWem.includes('vater')) mitText = 'dem Vater';
         else if (mitWem.includes('andere')) mitText = 'dem/der Erziehungsberechtigten';
-        text += `Im Rahmen der anamnestischen Erhebung fand am ${datum} ein Gespräch mit ${mitText} statt, um die familiäre Perspektive auf die Entwicklung und das häusliche Umfeld von ${name} zu erfassen.\n\n`;
+        text += `Im Rahmen der anamnestischen Erhebung fand am ${datum} ein Gespräch mit ${mitText} statt, um die familiäre Perspektive auf die Entwicklung und das häusliche Umfeld von ${nameDat} zu erfassen.\n\n`;
     }
 
     // === ICF-BASIERTER FLIESSTEXT ===
@@ -7360,14 +7400,17 @@ function generateSichtweiseElternText(dsData) {
 
     // --- FUNKTIONSFÄHIGKEIT IM HÄUSLICHEN KONTEXT ---
     if (hatVerhalten || hatNegativ || hatPositiv) {
-        text += `Hinsichtlich der Funktionsfähigkeit im häuslichen Umfeld `;
+        let hatEinleitung = false;
 
         if (verhalten === 'unauffaellig') {
-            text += `berichten die Eltern, dass sich ${name} überwiegend altersentsprechend verhalte und die alltäglichen Anforderungen bewältigen könne. `;
+            text += `Hinsichtlich der Funktionsfähigkeit im häuslichen Umfeld berichten die Eltern, dass sich ${name} überwiegend altersentsprechend verhalte und die alltäglichen Anforderungen bewältigen könne. `;
+            hatEinleitung = true;
         } else if (verhalten === 'teilweise') {
-            text += `berichten die Eltern von situativen Schwierigkeiten: Die Funktionsfähigkeit von ${name} variiere je nach Anforderungskontext, wobei spezifische Situationen als Auslöser für Verhaltensauffälligkeiten identifiziert werden. `;
+            text += `Hinsichtlich der Funktionsfähigkeit im häuslichen Umfeld berichten die Eltern von situativen Schwierigkeiten: Die Funktionsfähigkeit von ${nameDat} variiere je nach Anforderungskontext, wobei spezifische Situationen als Auslöser für Verhaltensauffälligkeiten identifiziert werden. `;
+            hatEinleitung = true;
         } else if (verhalten === 'stark') {
-            text += `berichten die Eltern von ausgeprägten Schwierigkeiten, die das Familienleben erheblich belasten und die Partizipation an alltäglichen Routinen (d230) beeinträchtigen. `;
+            text += `Hinsichtlich der Funktionsfähigkeit im häuslichen Umfeld berichten die Eltern von ausgeprägten Schwierigkeiten, die das Familienleben erheblich belasten und die Partizipation an alltäglichen Routinen (d230) beeinträchtigen. `;
+            hatEinleitung = true;
         }
 
         // Funktionsbeeinträchtigungen narrativ verknüpfen
@@ -7384,7 +7427,12 @@ function generateSichtweiseElternText(dsData) {
             const schwerwiegend = negativ.filter(n => ['selbstverletzung'].includes(n));
 
             if (emotional.length > 0) {
-                text += `Im Bereich der emotionalen Funktionen (b152) werden Beeinträchtigungen beschrieben: `;
+                if (!hatEinleitung) {
+                    text += `Hinsichtlich der Funktionsfähigkeit im häuslichen Umfeld werden im Bereich der emotionalen Funktionen (b152) Beeinträchtigungen beschrieben: `;
+                    hatEinleitung = true;
+                } else {
+                    text += `Im Bereich der emotionalen Funktionen (b152) werden Beeinträchtigungen beschrieben: `;
+                }
                 if (emotional.includes('wutausbrueche')) {
                     text += `Es komme zu wiederkehrenden affektiven Durchbrüchen, die auf eine Beeinträchtigung der Emotionsregulation hinweisen`;
                 }
@@ -7398,7 +7446,12 @@ function generateSichtweiseElternText(dsData) {
             }
 
             if (koerperlich.length > 0) {
-                text += `Hinsichtlich der körperbezogenen Funktionen `;
+                if (!hatEinleitung) {
+                    text += `Hinsichtlich der körperbezogenen Funktionen im häuslichen Kontext `;
+                    hatEinleitung = true;
+                } else {
+                    text += `Bezüglich der körperbezogenen Funktionen `;
+                }
                 if (koerperlich.includes('schlafprobleme')) {
                     text += `werden Beeinträchtigungen der Schlaffunktionen (b134) beschrieben`;
                 }
@@ -7582,7 +7635,9 @@ function generateVerhaltensbeobachtungenText(dsData) {
         return '(Verhaltensbeobachtungen werden hier eingefügt)';
     }
 
-    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
+    const rawName = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim();
+    const name = rawName || 'das Kind';
+    const nameDat = getNameWithCase(rawName, 'dat');
 
     // Generiere ICF-basierten Text für jede Beobachtung (INDIKATIV für eigene Beobachtungen)
     const beobachtungsTexte = dsData.beobachtungen.map((b, idx) => {
@@ -7634,7 +7689,7 @@ function generateVerhaltensbeobachtungenText(dsData) {
                 if (negChecks.includes('abgelenkt') && negChecks.includes('motorisch_unruhig')) {
                     text += `${name} ist erhöht ablenkbar und zeigt motorische Unruhe, die das fokussierte Arbeiten beeinträchtigt. `;
                 } else if (negChecks.includes('abgelenkt')) {
-                    text += `Die Aufmerksamkeit von ${name} ist leicht durch Außenreize ablenkbar. `;
+                    text += `Die Aufmerksamkeit von ${nameDat} ist leicht durch Außenreize ablenkbar. `;
                 } else if (negChecks.includes('motorisch_unruhig')) {
                     text += `Es zeigt sich eine motorische Unruhe, die auf Beeinträchtigungen der psychomotorischen Funktionen (b147) hinweist. `;
                 }
@@ -7681,7 +7736,7 @@ function generateVerhaltensbeobachtungenText(dsData) {
             } else if (emotionNeg.length > 0) {
                 text += `zeigen sich Beeinträchtigungen der Emotionsregulation (b1521): `;
                 if (negChecks.includes('wutausbruch') && negChecks.includes('frustration')) {
-                    text += `Bei ${name} kommt es zu affektiven Durchbrüchen, die mit einer niedrigen Frustrationstoleranz zusammenhängen – Anforderungssituationen führen rasch zu einer emotionalen Überflutung. `;
+                    text += `Bei ${nameDat} kommt es zu affektiven Durchbrüchen, die mit einer niedrigen Frustrationstoleranz zusammenhängen – Anforderungssituationen führen rasch zu einer emotionalen Überflutung. `;
                 } else if (negChecks.includes('wutausbruch')) {
                     text += `Es kommt zu einem affektiven Durchbruch mit deutlichem Kontrollverlust. `;
                 } else if (negChecks.includes('weinen')) {
@@ -7779,7 +7834,7 @@ function generateVerhaltensbeobachtungenText(dsData) {
 
     // Übergreifende Einleitung
     if (beobachtungsTexte.length > 1) {
-        return `Im Rahmen der diagnostischen Abklärung wurden systematische Verhaltensbeobachtungen in verschiedenen Kontexten durchgeführt, um die Funktionsfähigkeit von ${name} direkt zu erfassen:\n\n${beobachtungsTexte.join('\n\n---\n\n')}`;
+        return `Im Rahmen der diagnostischen Abklärung wurden systematische Verhaltensbeobachtungen in verschiedenen Kontexten durchgeführt, um die Funktionsfähigkeit von ${nameDat} direkt zu erfassen:\n\n${beobachtungsTexte.join('\n\n---\n\n')}`;
     } else if (beobachtungsTexte.length === 1) {
         return beobachtungsTexte[0];
     }
@@ -7788,7 +7843,11 @@ function generateVerhaltensbeobachtungenText(dsData) {
 }
 
 function generateInterpretationText(dsData) {
-    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
+    const rawName = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim();
+    const name = rawName || 'das Kind';
+    const nameGen = getNameWithCase(rawName, 'gen');
+    const nameDat = getNameWithCase(rawName, 'dat');
+    const nameAkk = getNameWithCase(rawName, 'akk');
 
     // Daten extrahieren
     const uebereinstimmung = dsData.checkboxes?.ds_uebereinstimmung || [];
@@ -7852,7 +7911,7 @@ function generateInterpretationText(dsData) {
 
             // Narrative Integration der Diskrepanzen nach ICF-Umweltfaktoren
             if (differenz.includes('schule_zuhause') || differenz.includes('kontextabhaengig')) {
-                divergenzText += `Die Funktionsfähigkeit von ${name} variiert deutlich in Abhängigkeit von den Umweltfaktoren: Im schulischen Kontext (d820 Schulbildung) zeigen sich andere Aktivitätsmuster als im häuslichen Umfeld (e310 Familie als proximaler Umweltfaktor). Diese Kontextspezifität der Funktionsbeeinträchtigungen weist auf die Bedeutung von Umweltbarrieren und -förderfaktoren hin. `;
+                divergenzText += `Die Funktionsfähigkeit von ${nameDat} variiert deutlich in Abhängigkeit von den Umweltfaktoren: Im schulischen Kontext (d820 Schulbildung) zeigen sich andere Aktivitätsmuster als im häuslichen Umfeld (e310 Familie als proximaler Umweltfaktor). Diese Kontextspezifität der Funktionsbeeinträchtigungen weist auf die Bedeutung von Umweltbarrieren und -förderfaktoren hin. `;
             }
             if (differenz.includes('eltern_schule')) {
                 divergenzText += 'Die divergierenden Perspektiven zwischen familiärem und schulischem Bezugssystem reflektieren unterschiedliche Anforderungskontexte und deren spezifische Auswirkungen auf die Aktivitäts- und Partizipationsebene. ';
@@ -7971,7 +8030,7 @@ function generateInterpretationText(dsData) {
 
         if (hatAngst) {
             // Entwicklungsängste als narrative Einordnung
-            let angstNarrativ = `Bei ${name} `;
+            let angstNarrativ = `Bei ${nameDat} `;
 
             if (aengste.includes('stufe1')) {
                 angstNarrativ += 'dominiert die entwicklungstypische Angst vor Verlassenwerden und Alleinsein (Entwicklungsstufe I nach ELDiB), welche grundlegende Bindungsbedürfnisse reflektiert';
@@ -8048,7 +8107,10 @@ function generateInterpretationText(dsData) {
 }
 
 function generateSpezifischeBeduerfnisseText(dsData) {
-    const name = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim() || 'Das Kind';
+    const rawName = document.getElementById('schueler_name')?.value?.split(',')[0]?.trim();
+    const name = rawName || 'das Kind';
+    const nameGen = getNameWithCase(rawName, 'gen');
+    const nameDat = getNameWithCase(rawName, 'dat');
 
     // Text-Mappings für natürliche Sprache
     const M = {
@@ -8077,7 +8139,7 @@ function generateSpezifischeBeduerfnisseText(dsData) {
 
     if (hatBed) {
         const bedListe = liste(beduerfnisse, M.beduerfnis);
-        text += `Basierend auf der durchgeführten Diagnostik lassen sich die spezifischen Bedürfnisse von ${name} klar benennen. Im Vordergrund steht das Bedürfnis nach ${bedListe}. `;
+        text += `Basierend auf der durchgeführten Diagnostik lassen sich die spezifischen Bedürfnisse von ${nameDat} klar benennen. Im Vordergrund steht das Bedürfnis nach ${bedListe}. `;
 
         // Bedürfnisse kategorisieren für besseren Flow
         const emotionaleBed = beduerfnisse.filter(b => ['sichere_beziehungen', 'individuelle_aufmerksamkeit', 'emotionsregulation'].includes(b));
