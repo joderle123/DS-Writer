@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lernplattform — Psychische Gesundheit bei Jugendlichen</title>
+<style>
+:root{--primary:#1a5276;--accent:#667eea;--accent2:#764ba2;--bg:#f5f7fa;--sidebar-bg:#1a1a2e;--sidebar-text:#e0e0e0;--card-bg:#fff;--red:#dc3545;--green:#28a745;--yellow:#ffc107;--blue:#17a2b8;--text:#333;--text-light:#5d6d7e;--radius:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+/* SIDEBAR */
+.sidebar{width:280px;background:var(--sidebar-bg);color:var(--sidebar-text);padding:1.5rem 1rem;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;transition:transform .3s}
+.sidebar h2{font-size:1.3rem;margin-bottom:.3rem;color:#fff}
+.sidebar .subtitle{font-size:.85rem;color:#aaa;margin-bottom:1.5rem}
+.sidebar hr{border:none;border-top:1px solid #333;margin:1rem 0}
+.nav-btn{display:block;width:100%;text-align:left;background:none;border:none;color:var(--sidebar-text);padding:.7rem .8rem;border-radius:var(--radius);cursor:pointer;font-size:.9rem;margin-bottom:2px;transition:background .2s}
+.nav-btn:hover{background:rgba(255,255,255,.1)}
+.nav-btn.active{background:var(--accent);color:#fff;font-weight:600}
+.progress-bar{background:#333;border-radius:10px;height:8px;margin:.5rem 0}
+.progress-fill{background:linear-gradient(90deg,var(--accent),var(--accent2));height:100%;border-radius:10px;transition:width .5s;width:0%}
+.progress-label{font-size:.8rem;color:#aaa}
+.quiz-score{font-size:.85rem;color:#ccc;margin-top:.5rem}
+/* MAIN */
+.main{margin-left:280px;flex:1;padding:2rem 2.5rem;max-width:1100px}
+/* TABS */
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:2px solid #dee2e6;margin:1.5rem 0 1rem;padding-bottom:0}
+.tab-btn{padding:.6rem 1.2rem;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-size:.9rem;color:var(--text-light);transition:all .2s;margin-bottom:-2px}
+.tab-btn:hover{color:var(--primary)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+/* ACCORDION */
+.accordion{margin:.6rem 0}
+.acc-header{width:100%;text-align:left;background:#f8f9fa;border:1px solid #dee2e6;border-radius:var(--radius);padding:.8rem 1rem;cursor:pointer;font-size:.95rem;font-weight:500;display:flex;justify-content:space-between;align-items:center;transition:background .2s}
+.acc-header:hover{background:#e9ecef}
+.acc-header::after{content:'\25BC';font-size:.7rem;transition:transform .3s}
+.acc-header.open::after{transform:rotate(180deg)}
+.acc-body{display:none;padding:1rem;border:1px solid #dee2e6;border-top:none;border-radius:0 0 var(--radius) var(--radius);background:#fff;line-height:1.7}
+.acc-body.open{display:block}
+/* BOXES */
+.red-flag{background:#f8d7da;border-left:4px solid var(--red);border-radius:4px;padding:1rem;margin:1rem 0}
+.red-flag strong:first-child{color:var(--red)}
+.green-box{background:#d4edda;border-left:4px solid var(--green);border-radius:4px;padding:1rem;margin:1rem 0}
+.green-box strong:first-child{color:var(--green)}
+.case-study{background:#fff3cd;border-left:4px solid var(--yellow);border-radius:4px;padding:1rem;margin:1rem 0}
+.intervention{background:#d1ecf1;border-left:4px solid var(--blue);border-radius:4px;padding:1rem;margin:1rem 0}
+.warning-box{background:#fff3cd;border:1px solid #ffeeba;border-radius:var(--radius);padding:1rem;margin:1rem 0}
+.error-box{background:#f8d7da;border:1px solid #f5c6cb;border-radius:var(--radius);padding:1rem;margin:1rem 0}
+.info-box{background:#d1ecf1;border:1px solid #bee5eb;border-radius:var(--radius);padding:1rem;margin:1rem 0}
+/* QUIZ */
+.quiz{background:var(--card-bg);border:1px solid #dee2e6;border-radius:var(--radius);padding:1.2rem;margin:1.5rem 0}
+.quiz-question{font-weight:600;margin-bottom:.8rem;font-size:1rem}
+.quiz-options{list-style:none;margin-bottom:1rem}
+.quiz-options li{margin:.4rem 0}
+.quiz-options label{cursor:pointer;display:flex;align-items:flex-start;gap:.5rem;padding:.4rem .5rem;border-radius:4px;transition:background .2s}
+.quiz-options label:hover{background:#f0f0f0}
+.quiz-options input[type=radio]{margin-top:4px;accent-color:var(--accent)}
+.quiz-check{background:var(--accent);color:#fff;border:none;padding:.5rem 1.5rem;border-radius:var(--radius);cursor:pointer;font-size:.9rem;transition:background .2s}
+.quiz-check:hover{background:var(--accent2)}
+.quiz-result{padding:.8rem 1rem;border-radius:var(--radius);margin-top:.8rem;display:none;line-height:1.6}
+.quiz-correct{background:#d4edda;border:1px solid #c3e6cb}
+.quiz-wrong{background:#f8d7da;border:1px solid #f5c6cb}
+/* COLUMNS */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1rem 0}
+.cols-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1rem 0}
+/* DIALOG */
+.dialog-line{margin:.6rem 0;padding:.5rem .8rem;border-radius:var(--radius);line-height:1.6}
+.dialog-speaker{font-weight:600;margin-right:.3rem}
+.dialog-good{background:#d4edda;border-left:3px solid var(--green)}
+.dialog-bad{background:#f8d7da;border-left:3px solid var(--red)}
+.dialog-neutral{background:#e9ecef}
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem}
+th,td{border:1px solid #dee2e6;padding:.6rem .8rem;text-align:left}
+th{background:#f8f9fa;font-weight:600}
+/* MISC */
+h2{color:var(--primary);font-size:1.8rem;margin-bottom:.5rem}
+h3{color:var(--primary);margin:1.5rem 0 .8rem;font-size:1.3rem}
+h4{margin:1rem 0 .5rem;font-size:1.1rem}
+p,li{line-height:1.7}
+ul,ol{margin:.5rem 0 .5rem 1.5rem}
+strong{font-weight:600}
+em{font-style:italic;color:var(--text-light)}
+hr{border:none;border-top:1px solid #dee2e6;margin:1.5rem 0}
+a{color:var(--accent)}
+.module-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0}
+.module-card{background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;padding:1.5rem;color:#fff;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.module-card:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+.module-card h4{color:#fff;margin:0 0 .3rem;font-size:1.05rem}
+.module-card p{color:rgba(255,255,255,.85);font-size:.85rem;margin:0}
+/* MOBILE */
+.menu-toggle{display:none;position:fixed;top:1rem;left:1rem;z-index:200;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:.5rem .8rem;font-size:1.2rem;cursor:pointer}
+@media(max-width:900px){
+.sidebar{transform:translateX(-100%)}
+.sidebar.open{transform:translateX(0)}
+.main{margin-left:0;padding:1rem}
+.menu-toggle{display:block}
+.cols,.cols-3{grid-template-columns:1fr}
+.module-cards{grid-template-columns:1fr}
+.tabs{gap:2px}
+.tab-btn{padding:.5rem .7rem;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
+
+<nav class="sidebar" id="sidebar">
+  <h2>Lernplattform</h2>
+  <p class="subtitle">Jugendpsychologie fuer Schulpsychologen</p>
+  <hr>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <p class="progress-label">Fortschritt: <span id="progressPct">0</span>%</p>
+  <p class="quiz-score" id="quizScoreDisplay"></p>
+  <hr>
+  <button class="nav-btn active" onclick="showModule('home',this)">Startseite</button>
+  <button class="nav-btn" onclick="showModule('m1',this)">Modul 1: Grundlagen</button>
+  <button class="nav-btn" onclick="showModule('m2',this)">Modul 2: Stoerungsbilder</button>
+  <button class="nav-btn" onclick="showModule('m3',this)">Modul 3: Gespraechsfuehrung</button>
+  <button class="nav-btn" onclick="showModule('m4',this)">Modul 4: Interventionen</button>
+  <button class="nav-btn" onclick="showModule('m5',this)">Modul 5: Krisen</button>
+  <button class="nav-btn" onclick="showModule('m6',this)">Modul 6: Elternarbeit</button>
+  <button class="nav-btn" onclick="showModule('m7',this)">Modul 7: Diagnostik &amp; Selbstfuersorge</button>
+  <hr>
+  <p style="font-size:.8rem;color:#666">CDSE Luxemburg 2026</p>
+</nav>
+
+<div class="main" id="mainContent">
+
+<!-- ╔══════════════════════════════════════════╗ -->
+<!-- ║           STARTSEITE                      ║ -->
+<!-- ╚══════════════════════════════════════════╝ -->
+<div id="mod-home" class="module active">
+<h2>Psychische Gesundheit bei Jugendlichen</h2>
+<p><em>Ein interaktives Praxishandbuch fuer Schulpsycholog:innen — CDSE Luxemburg</em></p>
+<hr>
+<p>Willkommen zu deiner Lernplattform! Hier findest du <strong>7 Module</strong> mit allem, was du fuer die Arbeit mit Jugendlichen brauchst — interaktiv, praxisnah und evidenzbasiert.</p>
+
+<h3>Die Module im Ueberblick</h3>
+<div class="module-cards">
+  <div class="module-card" onclick="showModule('m1',document.querySelectorAll('.nav-btn')[1])"><h4>Modul 1: Grundlagen der Adoleszenz</h4><p>Gehirnentwicklung, Identitaet, Bindung, Emotionsregulation</p></div>
+  <div class="module-card" onclick="showModule('m2',document.querySelectorAll('.nav-btn')[2])"><h4>Modul 2: Stoerungsbilder</h4><p>Angst, Depression, SVV, ADHS, Trauma, Essstoerungen</p></div>
+  <div class="module-card" onclick="showModule('m3',document.querySelectorAll('.nav-btn')[3])"><h4>Modul 3: Gespraechsfuehrung</h4><p>Aktives Zuhoeren, MI, Loesungsorientierung, Dialogsimulationen</p></div>
+  <div class="module-card" onclick="showModule('m4',document.querySelectorAll('.nav-btn')[4])"><h4>Modul 4: Interventionen</h4><p>CBT, DBT-Skills, Achtsamkeit, Sicherheitsplanung</p></div>
+  <div class="module-card" onclick="showModule('m5',document.querySelectorAll('.nav-btn')[5])"><h4>Modul 5: Krisen &amp; Notfaelle</h4><p>SAFER-R, Suizidalitaet, De-Eskalation, Missbrauch</p></div>
+  <div class="module-card" onclick="showModule('m6',document.querySelectorAll('.nav-btn')[6])"><h4>Modul 6: Elternarbeit &amp; System</h4><p>Elterngespraeche, Lehrerberatung, Netzwerk Luxemburg</p></div>
+  <div class="module-card" onclick="showModule('m7',document.querySelectorAll('.nav-btn')[7])"><h4>Modul 7: Diagnostik &amp; Selbstfuersorge</h4><p>Screening, ABC-Analyse, Burnout-Praevention, Ethik</p></div>
+</div>
+
+<h3>Wie du diese Plattform nutzt</h3>
+<ul>
+  <li><strong>Navigation:</strong> Klicke links auf ein Modul oder auf die Karten oben</li>
+  <li><strong>Tabs:</strong> Jedes Modul hat mehrere Unterthemen als Tabs</li>
+  <li><strong>Quizzes:</strong> Teste dein Wissen — dein Score wird oben links gezaehlt</li>
+  <li><strong>Fallvignetten:</strong> Realistische Faelle mit Reflexionsfragen</li>
+  <li><strong>Aufklapp-Bereiche:</strong> Klicke auf Ueberschriften, um Details zu sehen</li>
+</ul>
+
+<div class="error-box"><strong>Notfallnummern Luxemburg:</strong><br>
+<strong>112</strong> — Notruf &nbsp;|&nbsp; <strong>45 45 45</strong> — SOS Detresse &nbsp;|&nbsp; <strong>116 111</strong> — Kanner-Jugendtelefon &nbsp;|&nbsp; <strong>247-73100</strong> — ONE (Kinderschutz)</div>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗ -->
+<!-- ║           MODUL 1                         ║ -->
+<!-- ╚══════════════════════════════════════════╝ -->
+<div id="mod-m1" class="module">
+<h2>Modul 1: Grundlagen der Adoleszenz</h2>
+<p><em>Verstehe, warum Jugendliche so handeln, wie sie handeln — und was das fuer deine Arbeit bedeutet.</em></p>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(this,'m1-t1')">Gehirnentwicklung</button>
+  <button class="tab-btn" onclick="showTab(this,'m1-t2')">Entwicklungsaufgaben</button>
+  <button class="tab-btn" onclick="showTab(this,'m1-t3')">Bindung</button>
+  <button class="tab-btn" onclick="showTab(this,'m1-t4')">Normal vs. Auffaellig</button>
+  <button class="tab-btn" onclick="showTab(this,'m1-t5')">Emotionsregulation</button>
+</div>
+
+<!-- TAB 1: GEHIRN -->
+<div id="m1-t1" class="tab-content active">
+<h3>Das Jugendgehirn: Eine Baustelle</h3>
+<p>Das Gehirn von Jugendlichen ist <strong>nicht einfach ein kleines Erwachsenengehirn</strong>. Es befindet sich in einem massiven Umbau, der bis etwa zum <strong>25. Lebensjahr</strong> andauert.</p>
+
+<h4>Das Dual-Systems-Modell</h4>
+<div class="cols">
+<div>
+<strong>Limbisches System (Gaspedal)</strong>
+<ul>
+<li>Amygdala: Alarmanlage, ueberreagiert</li>
+<li>Nucleus Accumbens: Belohnungszentrum, sucht Kicks</li>
+<li>Bereits voll entwickelt in der Pubertaet</li>
+<li>Steuert: Emotionen, Impulse, Belohnungssuche</li>
+</ul>
+</div>
+<div>
+<strong>Praefrontaler Kortex (Bremse)</strong>
+<ul>
+<li>Planung, Impulskontrolle, Konsequenzdenken</li>
+<li>Reift als LETZTES (bis ca. 25 Jahre)</li>
+<li>Noch nicht zuverlaessig verfuegbar</li>
+<li>Unter Stress faellt er als erstes aus</li>
+</ul>
+</div>
+</div>
+
+<div class="warning-box"><strong>Kerneinsicht:</strong> Jugendliche haben ein voll funktionsfaehiges Gaspedal, aber eine noch unreife Bremse. Das ist keine Charakterschwaeche — das ist Neurobiologie.</div>
+
+<h4>Wie zeigt sich das im Schulalltag?</h4>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Impulsive Ausbrueche im Unterricht</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Ein 14-Jaehriger ruft rein, wirft Sachen, reagiert uebertrieben auf Kritik.</p>
+<p><strong>Was dahinter steckt:</strong> Der praefrontale Kortex (Impulskontrolle) ist noch nicht ausgereift. Unter Stress faellt die ohnehin schwache Bremse komplett aus. Die Amygdala uebernimmt — Kampf- oder Fluchtreaktion.</p>
+<p><strong>Was du tun kannst:</strong></p>
+<ul>
+<li>Nicht in der akuten Situation diskutieren (PFC offline)</li>
+<li>Erst beruhigen lassen (mind. 20 Min fuer Adrenalinabbau)</li>
+<li>Spaeter reflektieren: "Was ist passiert? Was haette dir geholfen?"</li>
+<li>Psychoedukation: Erklaere dem Jugendlichen sein eigenes Gehirn</li>
+</ul>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Risikofreudiges Verhalten</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Mutproben, Substanzkonsum, gefaehrliche TikTok-Challenges, ungeschuetzter Sex.</p>
+<p><strong>Was dahinter steckt:</strong> Der Baseline-Dopaminspiegel SINKT, aber die Empfindlichkeit fuer Belohnung STEIGT. Jugendliche brauchen intensivere Reize, um sich "normal" zu fuehlen.</p>
+<p><strong>Was du tun kannst:</strong></p>
+<ul>
+<li>Nicht moralisieren ("Du weisst doch, dass das gefaehrlich ist" — ja, wissen sie, aber fuehlen es nicht)</li>
+<li>Gesundes Risiko anbieten: Sport, Klettern, Theater, Wettbewerbe</li>
+<li>Harm Reduction statt Abstinenzforderung</li>
+</ul>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Emotionale Ueberreaktionen</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Traenen wegen einer schlechten Note, Wutausbruch wegen eines Kommentars, "Ich hasse dich!" an die Eltern.</p>
+<p><strong>Was dahinter steckt:</strong> Die Amygdala ist hyperaktiv, waehrend der PFC noch reift. Jugendliche FUEHLEN Emotionen intensiver als Erwachsene und koennen sie schlechter regulieren.</p>
+<p><strong>Was du tun kannst:</strong></p>
+<ul>
+<li>Gefuehle validieren, nicht kleinreden ("Das klingt wirklich frustrierend")</li>
+<li>Emotionsregulationsstrategien vermitteln (siehe Modul 4)</li>
+<li>Normalisieren: "Dein Gehirn reagiert gerade sehr stark. Das ist normal."</li>
+</ul>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Schlafprobleme und Muedigkeit</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Schlaeft im Unterricht, kommt zu spaet, kann sich morgens nicht konzentrieren.</p>
+<p><strong>Was dahinter steckt:</strong> Die innere Uhr verschiebt sich in der Pubertaet um 1-3 Stunden nach hinten. Melatonin wird spaeter ausgeschuettet. Jugendliche sind biologisch "Nachteulen".</p>
+<p><strong>Was du tun kannst:</strong></p>
+<ul>
+<li>Schlafhygiene besprechen (kein Handy 1h vor dem Schlaf)</li>
+<li>Nicht pathologisieren — der spaete Rhythmus ist biologisch NORMAL</li>
+<li>Bei chronischer Muedigkeit: Depression ausschliessen</li>
+</ul>
+</div>
+</div>
+
+<hr>
+<div class="quiz" id="quiz_m1q1">
+<p class="quiz-question">Warum reagieren Jugendliche oft impulsiver als Erwachsene?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q1" value="0"> Weil sie respektlos sind und keine Grenzen kennen</label></li>
+<li><label><input type="radio" name="m1q1" value="1"> Weil der praefrontale Kortex noch nicht ausgereift ist und die Amygdala dominiert</label></li>
+<li><label><input type="radio" name="m1q1" value="2"> Weil sie zu viel Zucker essen</label></li>
+<li><label><input type="radio" name="m1q1" value="3"> Weil sie absichtlich provozieren wollen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q1',1,'Der praefrontale Kortex (Impulskontrolle, Planung, Konsequenzdenken) reift als letztes Hirnareal — erst mit ca. 25 Jahren. In der Zwischenzeit dominiert das limbische System.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q1"></div>
+</div>
+
+<div class="quiz" id="quiz_m1q2">
+<p class="quiz-question">Was passiert mit dem Dopaminsystem in der Adoleszenz?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q2" value="0"> Es schaltet sich komplett ab</label></li>
+<li><label><input type="radio" name="m1q2" value="1"> Der Baseline-Spiegel sinkt, aber die Belohnungsempfindlichkeit steigt</label></li>
+<li><label><input type="radio" name="m1q2" value="2"> Es wird weniger empfindlich fuer alle Reize</label></li>
+<li><label><input type="radio" name="m1q2" value="3"> Es veraendert sich nicht wesentlich</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q2',1,'Jugendliche haben einen niedrigeren Baseline-Dopaminspiegel (fuehlen sich oefter gelangweilt), reagieren aber STAERKER auf Belohnungsreize. Das erklaert die Suche nach intensiven Erlebnissen.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q2"></div>
+</div>
+</div>
+
+<!-- TAB 2: ENTWICKLUNGSAUFGABEN -->
+<div id="m1-t2" class="tab-content">
+<h3>Entwicklungsaufgaben der Adoleszenz</h3>
+
+<h4>Erikson: Identitaet vs. Rollendiffusion</h4>
+<p>Die <strong>zentrale Aufgabe</strong> der Adoleszenz ist die Identitaetsfindung: <em>Wer bin ich? Wer will ich sein?</em></p>
+<div class="cols">
+<div>
+<ul>
+<li><strong>Berufliche Identitaet:</strong> Was will ich werden?</li>
+<li><strong>Sexuelle/romantische Identitaet:</strong> Wen liebe ich?</li>
+<li><strong>Weltanschauung:</strong> Woran glaube ich?</li>
+</ul>
+</div>
+<div>
+<ul>
+<li><strong>Soziale Identitaet:</strong> Zu wem gehoere ich?</li>
+<li><strong>Koerperliche Identitaet:</strong> Wie stehe ich zu meinem Koerper?</li>
+<li><strong>Werte-Identitaet:</strong> Was ist mir wichtig?</li>
+</ul>
+</div>
+</div>
+
+<h4>Marcia: 4 Identitaetsstatus</h4>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">1. Diffuse Identitaet — 'Mir ist alles egal'</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Keine aktive Suche, keine Festlegung.</p>
+<p><strong>Im Schulalltag:</strong> "Weiss nicht" als Standardantwort, kein Interesse an Berufsorientierung, wechselt Freundesgruppen staendig, wirkt orientierungslos.</p>
+<p><strong>Was der/die Jugendliche braucht:</strong> Geduldige Exploration ohne Druck, Erfahrungsraeume (Praktika, Projekte), Frage: "Was hat dich als Kind begeistert?"</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">2. Uebernommene Identitaet — 'Ich werde Arzt, wie Papa'</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Festlegung OHNE eigene Exploration. Werte der Eltern uebernommen, ohne zu hinterfragen.</p>
+<p><strong>Im Schulalltag:</strong> Sehr bestimmte Zukunftsplaene ohne eigene Begeisterung, Angst vor Abweichung, wenig Flexibilitaet im Denken.</p>
+<p><strong>Was der/die Jugendliche braucht:</strong> Behutsames Hinterfragen ("Wie waere es, wenn du was anderes waehlen koenntest?"), NICHT Ueberzeugungen angreifen, Kontakt mit verschiedenen Lebensentwuerfen.</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">3. Moratorium — 'Ich suche noch'</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Aktive Suche, aber noch keine Entscheidung. GESUND und WUENSCHENSWERT.</p>
+<p><strong>Im Schulalltag:</strong> Probiert verschiedene Stile/Gruppen/Interessen aus, kann verunsichert wirken, hinterfragt Autoritaeten, wechselt Meinungen.</p>
+<p><strong>Was der/die Jugendliche braucht:</strong> Geduld und Raum, Ermutigung: "Es ist gut, dass du nachdenkst", keine Fixierung auf schnelle Entscheidungen.</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">4. Erarbeitete Identitaet — 'Ich weiss, wer ich bin'</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Nach aktiver Auseinandersetzung eigene Werte und Plaene entwickelt. Flexibel, aber gefestigt.</p>
+<p><strong>Im Schulalltag:</strong> Selbstbewusst, kann eigene Meinung vertreten UND andere Perspektiven tolerieren, stabile Freundschaften, kann mit Misserfolgen umgehen.</p>
+<p><strong>Hinweis:</strong> Nicht jeder erreicht diesen Status in allen Bereichen. Identitaetsentwicklung ist ein lebenslanger Prozess.</p>
+</div>
+</div>
+
+<hr>
+<div class="case-study">
+<strong>Fallvignette: Lara (16) — Identitaetskrise</strong><br><br>
+Lara war immer eine Musterschuelerin. Seit einigen Monaten faerbt sie sich die Haare bunt, hoert andere Musik, hat neue Freunde und ihre Noten sind abgesackt. Die Eltern sind besorgt und sehen das als "Rebellion". In der Beratung sagt Lara: "Ich weiss gar nicht, wer ich wirklich bin. Alles war immer schon fuer mich entschieden."
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Welchen Identitaetsstatus hatte Lara vorher?</button>
+<div class="acc-body"><p><strong>Uebernommene Identitaet (Foreclosed)</strong> — Sie hat die Werte und Plaene der Eltern uebernommen, ohne eigene Exploration. Jetzt bewegt sie sich ins Moratorium.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Ist Laras Verhalten besorgniserregend?</button>
+<div class="acc-body"><p><strong>Grundsaetzlich NEIN.</strong> Lara zeigt gesundes Explorationsverhalten. Das ist entwicklungspsychologisch wuenschenswert. Besorgniserregend waere es, wenn: Substanzkonsum dazukommt, sie sich selbst verletzt, die Stimmung dauerhaft depressiv ist, oder sie sich komplett isoliert.</p></div>
+</div>
+
+<div class="quiz">
+<p class="quiz-question">Welcher Identitaetsstatus ist entwicklungspsychologisch am gesuendesten fuer einen 16-Jaehrigen?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q3" value="0"> Erarbeitete Identitaet — je frueher, desto besser</label></li>
+<li><label><input type="radio" name="m1q3" value="1"> Uebernommene Identitaet — Stabilitaet ist wichtig</label></li>
+<li><label><input type="radio" name="m1q3" value="2"> Moratorium — aktive Suche ist der gesunde Weg zur Identitaet</label></li>
+<li><label><input type="radio" name="m1q3" value="3"> Diffuse Identitaet — Jugendliche sollten sich nicht stressen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q3',2,'Das Moratorium (aktive Exploration) ist der gesunde und erwuenschte Prozess. Man MUSS verschiedene Optionen ausprobieren, um zu einer echten eigenen Identitaet zu gelangen.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q3"></div>
+</div>
+</div>
+
+<!-- TAB 3: BINDUNG -->
+<div id="m1-t3" class="tab-content">
+<h3>Bindung im Jugendalter</h3>
+<p>Die Bindungstheorie erklaert, wie fruehe Beziehungserfahrungen das Verhalten in der Beratung beeinflussen.</p>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Sicher gebunden (55-65%) — 'Ich kann dir vertrauen'</button>
+<div class="acc-body">
+<p><strong>In der Beratung:</strong> Offen, kooperativ, kann ueber Gefuehle sprechen, sucht aktiv Hilfe.</p>
+<p><strong>Braucht:</strong> "Normales" therapeutisches Arbeiten funktioniert gut. Empathie, aktives Zuhoeren.</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Unsicher-vermeidend (20-25%) — 'Ich brauche niemanden'</button>
+<div class="acc-body">
+<p><strong>In der Beratung:</strong> Distanziert, "cool", redet ueber Fakten statt Gefuehle. "Mir geht es gut." Bricht Beratung frueh ab.</p>
+<p><strong>Dahinter:</strong> Fruehe Erfahrung: "Wenn ich Naehe zeige, werde ich abgewiesen."</p>
+<p><strong>Braucht:</strong> Geduld, KEINEN Druck sich zu oeffnen, Respekt fuer die Distanz, ueber "sichere Themen" Beziehung aufbauen (Hobbys, Gaming).</p>
+<div class="red-flag"><strong>Haeufige Fehler:</strong> Zu frueh nach Gefuehlen fragen, Distanz als "Widerstand" bewerten, aufgeben weil "er ja nicht will".</div>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Unsicher-ambivalent (10-15%) — 'Geh weg! Nein, bleib!'</button>
+<div class="acc-body">
+<p><strong>In der Beratung:</strong> Klammert sich an, dann stoesst ab. Testet staendig die Beziehung. Zwischen Sitzungen viele Nachrichten. Reagiert extrem auf Terminaenderungen.</p>
+<p><strong>Dahinter:</strong> "Manchmal bist du da, manchmal nicht."</p>
+<p><strong>Braucht:</strong> Zuverlaessigkeit und Vorhersagbarkeit (feste Termine, klare Regeln). Thematisieren: "Ich merke, du machst dir Sorgen, ob ich da bin. Ich bin da."</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Desorganisiert (5-10%) — 'Ich brauche dich, aber du machst mir Angst'</button>
+<div class="acc-body">
+<p><strong>In der Beratung:</strong> Widerspruechliches Verhalten, dissoziative Episoden, kann aggressiv werden wenn Naehe entsteht. Oft: Traumahintergrund.</p>
+<p><strong>Dahinter:</strong> Die Bezugsperson war gleichzeitig Quelle von Trost UND Angst.</p>
+<p><strong>Braucht:</strong> Maximale Vorhersagbarkeit, traumasensibles Arbeiten, keine Ueberraschungen, langsamer Beziehungsaufbau. Eventuell Weiterleitung an Traumatherapeut:in.</p>
+</div>
+</div>
+
+<div class="info-box"><strong>Zentrale Erkenntnis:</strong> Du als Berater:in kannst eine <strong>korrigierende Beziehungserfahrung</strong> bieten — "Es gibt jemanden, der zuverlaessig, wertschaetzend und praesent ist." Das ist oft wirkungsvoller als jede Technik.</div>
+
+<hr>
+<div class="quiz">
+<p class="quiz-question">Eine Schuelerin schickt dir zwischen den Sitzungen viele Nachrichten, klammert sich an dich, reagiert extrem wenn du einen Termin verschiebst. Welcher Bindungsstil?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q4" value="0"> Sicher</label></li>
+<li><label><input type="radio" name="m1q4" value="1"> Unsicher-vermeidend</label></li>
+<li><label><input type="radio" name="m1q4" value="2"> Unsicher-ambivalent</label></li>
+<li><label><input type="radio" name="m1q4" value="3"> Desorganisiert</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q4',2,'Typisch unsicher-ambivalent: Intensive Bindungssuche bei gleichzeitigem Misstrauen gegenueber der Zuverlaessigkeit. Feste Termine und klare Grenzen geben Sicherheit.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q4"></div>
+</div>
+</div>
+
+<!-- TAB 4: NORMAL VS AUFFAELLIG -->
+<div id="m1-t4" class="tab-content">
+<h3>Ist das noch normal? — Die zentrale Frage</h3>
+
+<h4>Vergleich: Normal vs. Warnsignal</h4>
+
+<p><strong>Stimmungsschwankungen</strong></p>
+<div class="cols">
+<div class="green-box"><strong>Normal:</strong> Wechselnde Stimmung innerhalb eines Tages, reagiert auf konkrete Ausloeser, kann sich wieder regulieren, hat auch gute Phasen</div>
+<div class="red-flag"><strong>Warnsignal:</strong> Anhaltend gedrueckte Stimmung ueber 2+ Wochen, kein erkennbarer Ausloeser, Interessenverlust, Hoffnungslosigkeit</div>
+</div>
+
+<p><strong>Sozialer Rueckzug</strong></p>
+<div class="cols">
+<div class="green-box"><strong>Normal:</strong> Zieht sich phasenweise zurueck, hat aber Freunde, sucht Privatsphaere, ist in der Peer-Group aktiv</div>
+<div class="red-flag"><strong>Warnsignal:</strong> Vollstaendiger Rueckzug ueber Wochen, verliert Freundschaften, meidet alle Kontakte</div>
+</div>
+
+<p><strong>Risikoverhalten</strong></p>
+<div class="cols">
+<div class="green-box"><strong>Normal:</strong> Experimentiert gelegentlich, Mutproben mit Peers, testet Grenzen, kann Risiken einschaetzen</div>
+<div class="red-flag"><strong>Warnsignal:</strong> Regelmaessiger Substanzkonsum, selbstverletzendes Verhalten, wiederholt gefaehrliche Aktionen</div>
+</div>
+
+<p><strong>Schulische Veraenderungen</strong></p>
+<div class="cols">
+<div class="green-box"><strong>Normal:</strong> Leichter Notenrueckgang, weniger Motivation in bestimmten Faechern, andere Prioritaeten</div>
+<div class="red-flag"><strong>Warnsignal:</strong> Dramatischer Leistungseinbruch, Schulverweigerung, kann sich nicht mehr konzentrieren</div>
+</div>
+
+<h4>Entscheidungshilfe: Wann intervenieren?</h4>
+<p>Frage dich bei jedem Verhalten diese <strong>4 Fragen</strong>:</p>
+<ol>
+<li><strong>Dauer:</strong> Wie lange geht das schon? (&gt; 2 Wochen = aufmerksam werden)</li>
+<li><strong>Intensitaet:</strong> Wie stark ist die Belastung? (beeintraechtigt Alltag?)</li>
+<li><strong>Funktionalitaet:</strong> Kann der/die Jugendliche noch am normalen Leben teilnehmen?</li>
+<li><strong>Leidensdruck:</strong> Leidet der/die Jugendliche selbst darunter?</li>
+</ol>
+<p>Wenn 2 oder mehr Fragen mit "Ja, das ist bedenklich" beantwortet werden: <strong>aktiv werden</strong>.</p>
+
+<hr>
+<div class="quiz">
+<p class="quiz-question">Ein 16-Jaehriger hat seit 4 Wochen Leistungseinbruch, zieht sich zurueck, schlaeft im Unterricht, hat aufgehoert Fussball zu spielen, und sagt 'Alles ist sinnlos'. Was tust du?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q5" value="0"> Abwarten, das ist normale Pubertaet</label></li>
+<li><label><input type="radio" name="m1q5" value="1"> Den Eltern Bescheid geben, dass er faul geworden ist</label></li>
+<li><label><input type="radio" name="m1q5" value="2"> Aktiv werden: Dauer ueber 2 Wochen, mehrere Bereiche betroffen, Interessenverlust, Hoffnungslosigkeit</label></li>
+<li><label><input type="radio" name="m1q5" value="3"> Ihn zum Direktor schicken</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q5',2,'Hier sind ALLE 4 Warnsignale erfuellt: Dauer &gt; 2 Wochen, hohe Intensitaet, Funktionseinschraenkung in mehreren Bereichen, Ausdruck von Sinnlosigkeit.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q5"></div>
+</div>
+</div>
+
+<!-- TAB 5: EMOTIONSREGULATION -->
+<div id="m1-t5" class="tab-content">
+<h3>Emotionsregulation bei Jugendlichen</h3>
+
+<h4>Das Gross-Modell: 5 Interventionspunkte</h4>
+<ol>
+<li><strong>Situationsselektion</strong> — Welche Situationen suche ich auf / meide ich?</li>
+<li><strong>Situationsmodifikation</strong> — Kann ich die Situation veraendern?</li>
+<li><strong>Aufmerksamkeitslenkung</strong> — Worauf richte ich meinen Fokus?</li>
+<li><strong>Kognitive Umbewertung</strong> — Wie bewerte ich das, was passiert?</li>
+<li><strong>Reaktionsmodulation</strong> — Wie gehe ich mit der bereits entstandenen Emotion um?</li>
+</ol>
+
+<h4>Wie schlechte Emotionsregulation sich in der Schule zeigt</h4>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Ausbrueche (Externalisierend)</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Schreien, Weinen, Tisch umwerfen, Tuer knallen.</p>
+<p><strong>Erstintervention:</strong> Sicherheit gewaehrleisten, ruhig bleiben, wenig sprechen, Raum wechseln wenn moeglich. NICHT in der Akutsituation diskutieren oder moralisieren. Erst wenn ruhiger: Grounding, Atmung.</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Shutdown (Internalisierend)</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Voellige Starre, antwortet nicht, starrer Blick, "wie eingefroren".</p>
+<p><strong>Erstintervention:</strong> Sanft ansprechen: "Ich bin hier. Du bist sicher." 5-4-3-2-1 Grounding (ueber Sinne zurueck in den Koerper). Kaltes Wasser, Eiswuerfel. NICHT anfassen ohne Erlaubnis.</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Somatisierung</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Bauchschmerzen vor Pruefungen, Kopfschmerzen bei Konflikten, Uebelkeit in sozialen Situationen.</p>
+<p><strong>Erstintervention:</strong> Ernst nehmen! Die Schmerzen sind REAL. "Dein Koerper reagiert auf etwas. Lass uns schauen, was das sein koennte." Koerperorientierte Methoden: Atmung, Body Scan.</p>
+</div>
+</div>
+
+<div class="intervention"><strong>Intervention: Das Fenster der Toleranz erklaeren</strong><br><br>
+"Stell dir eine Zone vor — dein Fenster der Toleranz. Innerhalb dieser Zone kannst du denken, fuehlen und handeln. Wenn du UEBER das Fenster hinausgehst (Hyperarousal): Wut, Panik, Ueberreizung. Wenn du UNTER das Fenster faellst (Hypoarousal): Taubheit, Starre, Dissoziation. Unser Ziel: Dein Fenster vergroessern. Wie? Durch Uebung: Atmung, Grounding, Koerperwahrnehmung."</div>
+
+<hr>
+<div class="quiz">
+<p class="quiz-question">Ein Schueler sitzt nach einem Streit voellig erstarrt da, reagiert auf nichts. Was ist am wahrscheinlichsten passiert?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q6" value="0"> Er ignoriert dich absichtlich</label></li>
+<li><label><input type="radio" name="m1q6" value="1"> Er ist ins Hypoarousal gerutscht (unter das Fenster der Toleranz)</label></li>
+<li><label><input type="radio" name="m1q6" value="2"> Er ueberlegt sich eine gute Antwort</label></li>
+<li><label><input type="radio" name="m1q6" value="3"> Er schlaeft</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q6',1,'Starre, fehlende Reaktion, Einfrieren — das sind Zeichen fuer Hypoarousal / Dissoziation. Das Nervensystem hat auf Totstellreflex geschaltet. Sanftes Grounding hilft.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q6"></div>
+</div>
+</div>
+</div><!-- END MODUL 1 -->
+
+<!-- PLACEHOLDER: Module 2-7 werden gleich eingefuegt -->
+
+</div><!-- END main -->
+
+<script>
+// STATE
+let quizTotal=0,quizCorrect=0;
+
+// NAVIGATION
+function showModule(id,btn){
+  document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const mod=document.getElementById('mod-'+id);
+  if(mod){mod.classList.add('active');mod.style.display='block'}
+  if(btn)btn.classList.add('active');
+  // reset tabs to first
+  const tabs=mod?mod.querySelectorAll('.tab-content'):[];
+  const btns=mod?mod.querySelectorAll('.tab-btn'):[];
+  tabs.forEach(t=>{t.classList.remove('active');t.style.display='none'});
+  btns.forEach(b=>b.classList.remove('active'));
+  if(tabs[0]){tabs[0].classList.add('active');tabs[0].style.display='block'}
+  if(btns[0])btns[0].classList.add('active');
+  // close mobile sidebar
+  document.querySelector('.sidebar').classList.remove('open');
+  window.scrollTo(0,0);
+}
+
+// TABS
+function showTab(btn,tabId){
+  const parent=btn.closest('.module');
+  parent.querySelectorAll('.tab-content').forEach(t=>{t.classList.remove('active');t.style.display='none'});
+  parent.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const tab=document.getElementById(tabId);
+  if(tab){tab.classList.add('active');tab.style.display='block'}
+}
+
+// ACCORDION
+function toggleAcc(header){
+  header.classList.toggle('open');
+  const body=header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// QUIZ
+function checkQuiz(name,correctIdx,explanation){
+  const selected=document.querySelector('input[name="'+name+'"]:checked');
+  const result=document.getElementById('result_'+name);
+  if(!selected){result.style.display='block';result.className='quiz-result quiz-wrong';result.innerHTML='Bitte waehle eine Antwort aus.';return}
+  const val=parseInt(selected.value);
+  result.style.display='block';
+  if(val===correctIdx){
+    result.className='quiz-result quiz-correct';
+    result.innerHTML='<strong>Richtig!</strong> '+explanation;
+    if(!result.dataset.counted){quizCorrect++;quizTotal++;result.dataset.counted='1'}
+  }else{
+    result.className='quiz-result quiz-wrong';
+    const options=document.querySelectorAll('input[name="'+name+'"]');
+    let correctText='';
+    options.forEach(o=>{if(parseInt(o.value)===correctIdx)correctText=o.parentElement.textContent.trim()});
+    result.innerHTML='<strong>Nicht ganz.</strong> Die richtige Antwort ist: <strong>'+correctText+'</strong><br>'+explanation;
+    if(!result.dataset.counted){quizTotal++;result.dataset.counted='1'}
+  }
+  updateScore();
+}
+
+function updateScore(){
+  const el=document.getElementById('quizScoreDisplay');
+  if(quizTotal>0)el.textContent='Quiz-Score: '+quizCorrect+'/'+quizTotal;
+  const pct=quizTotal>0?Math.round(quizCorrect/quizTotal*100):0;
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct;
+}
+
+// INIT: hide all modules except home
+document.querySelectorAll('.module').forEach(m=>{
+  if(!m.classList.contains('active')){m.style.display='none'}
+});
+// Init tabs: hide non-active
+document.querySelectorAll('.tab-content').forEach(t=>{
+  if(!t.classList.contains('active'))t.style.display='none';
+});
+</script>
+</body>
+</html>
