@@ -2454,7 +2454,7 @@ let quizTotal=0,quizCorrect=0;
 
 // NAVIGATION
 function showModule(id,btn){
-  document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+  document.querySelectorAll('.module').forEach(m=>{m.classList.remove('active');m.style.display='none'});
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   const mod=document.getElementById('mod-'+id);
   if(mod){mod.classList.add('active');mod.style.display='block'}
