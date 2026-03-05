@@ -1,0 +1,2531 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lernplattform — Psychische Gesundheit bei Jugendlichen</title>
+<style>
+:root{--primary:#1a5276;--accent:#667eea;--accent2:#764ba2;--bg:#f5f7fa;--sidebar-bg:#1a1a2e;--sidebar-text:#e0e0e0;--card-bg:#fff;--red:#dc3545;--green:#28a745;--yellow:#ffc107;--blue:#17a2b8;--text:#333;--text-light:#5d6d7e;--radius:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+/* SIDEBAR */
+.sidebar{width:280px;background:var(--sidebar-bg);color:var(--sidebar-text);padding:1.5rem 1rem;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;transition:transform .3s}
+.sidebar h2{font-size:1.3rem;margin-bottom:.3rem;color:#fff}
+.sidebar .subtitle{font-size:.85rem;color:#aaa;margin-bottom:1.5rem}
+.sidebar hr{border:none;border-top:1px solid #333;margin:1rem 0}
+.nav-btn{display:block;width:100%;text-align:left;background:none;border:none;color:var(--sidebar-text);padding:.7rem .8rem;border-radius:var(--radius);cursor:pointer;font-size:.9rem;margin-bottom:2px;transition:background .2s}
+.nav-btn:hover{background:rgba(255,255,255,.1)}
+.nav-btn.active{background:var(--accent);color:#fff;font-weight:600}
+.progress-bar{background:#333;border-radius:10px;height:8px;margin:.5rem 0}
+.progress-fill{background:linear-gradient(90deg,var(--accent),var(--accent2));height:100%;border-radius:10px;transition:width .5s;width:0%}
+.progress-label{font-size:.8rem;color:#aaa}
+.quiz-score{font-size:.85rem;color:#ccc;margin-top:.5rem}
+/* MAIN */
+.main{margin-left:280px;flex:1;padding:2rem 2.5rem;max-width:1100px}
+/* TABS */
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:2px solid #dee2e6;margin:1.5rem 0 1rem;padding-bottom:0}
+.tab-btn{padding:.6rem 1.2rem;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-size:.9rem;color:var(--text-light);transition:all .2s;margin-bottom:-2px}
+.tab-btn:hover{color:var(--primary)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+/* ACCORDION */
+.accordion{margin:.6rem 0}
+.acc-header{width:100%;text-align:left;background:#f8f9fa;border:1px solid #dee2e6;border-radius:var(--radius);padding:.8rem 1rem;cursor:pointer;font-size:.95rem;font-weight:500;display:flex;justify-content:space-between;align-items:center;transition:background .2s}
+.acc-header:hover{background:#e9ecef}
+.acc-header::after{content:'\25BC';font-size:.7rem;transition:transform .3s}
+.acc-header.open::after{transform:rotate(180deg)}
+.acc-body{display:none;padding:1rem;border:1px solid #dee2e6;border-top:none;border-radius:0 0 var(--radius) var(--radius);background:#fff;line-height:1.7}
+.acc-body.open{display:block}
+/* BOXES */
+.red-flag{background:#f8d7da;border-left:4px solid var(--red);border-radius:4px;padding:1rem;margin:1rem 0}
+.red-flag strong:first-child{color:var(--red)}
+.green-box{background:#d4edda;border-left:4px solid var(--green);border-radius:4px;padding:1rem;margin:1rem 0}
+.green-box strong:first-child{color:var(--green)}
+.case-study{background:#fff3cd;border-left:4px solid var(--yellow);border-radius:4px;padding:1rem;margin:1rem 0}
+.intervention{background:#d1ecf1;border-left:4px solid var(--blue);border-radius:4px;padding:1rem;margin:1rem 0}
+.warning-box{background:#fff3cd;border:1px solid #ffeeba;border-radius:var(--radius);padding:1rem;margin:1rem 0}
+.error-box{background:#f8d7da;border:1px solid #f5c6cb;border-radius:var(--radius);padding:1rem;margin:1rem 0}
+.info-box{background:#d1ecf1;border:1px solid #bee5eb;border-radius:var(--radius);padding:1rem;margin:1rem 0}
+/* QUIZ */
+.quiz{background:var(--card-bg);border:1px solid #dee2e6;border-radius:var(--radius);padding:1.2rem;margin:1.5rem 0}
+.quiz-question{font-weight:600;margin-bottom:.8rem;font-size:1rem}
+.quiz-options{list-style:none;margin-bottom:1rem}
+.quiz-options li{margin:.4rem 0}
+.quiz-options label{cursor:pointer;display:flex;align-items:flex-start;gap:.5rem;padding:.4rem .5rem;border-radius:4px;transition:background .2s}
+.quiz-options label:hover{background:#f0f0f0}
+.quiz-options input[type=radio]{margin-top:4px;accent-color:var(--accent)}
+.quiz-check{background:var(--accent);color:#fff;border:none;padding:.5rem 1.5rem;border-radius:var(--radius);cursor:pointer;font-size:.9rem;transition:background .2s}
+.quiz-check:hover{background:var(--accent2)}
+.quiz-result{padding:.8rem 1rem;border-radius:var(--radius);margin-top:.8rem;display:none;line-height:1.6}
+.quiz-correct{background:#d4edda;border:1px solid #c3e6cb}
+.quiz-wrong{background:#f8d7da;border:1px solid #f5c6cb}
+/* COLUMNS */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1rem 0}
+.cols-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1rem 0}
+/* DIALOG */
+.dialog-line{margin:.6rem 0;padding:.5rem .8rem;border-radius:var(--radius);line-height:1.6}
+.dialog-speaker{font-weight:600;margin-right:.3rem}
+.dialog-good{background:#d4edda;border-left:3px solid var(--green)}
+.dialog-bad{background:#f8d7da;border-left:3px solid var(--red)}
+.dialog-neutral{background:#e9ecef}
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem}
+th,td{border:1px solid #dee2e6;padding:.6rem .8rem;text-align:left}
+th{background:#f8f9fa;font-weight:600}
+/* MISC */
+h2{color:var(--primary);font-size:1.8rem;margin-bottom:.5rem}
+h3{color:var(--primary);margin:1.5rem 0 .8rem;font-size:1.3rem}
+h4{margin:1rem 0 .5rem;font-size:1.1rem}
+p,li{line-height:1.7}
+ul,ol{margin:.5rem 0 .5rem 1.5rem}
+strong{font-weight:600}
+em{font-style:italic;color:var(--text-light)}
+hr{border:none;border-top:1px solid #dee2e6;margin:1.5rem 0}
+a{color:var(--accent)}
+.module-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0}
+.module-card{background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;padding:1.5rem;color:#fff;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.module-card:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+.module-card h4{color:#fff;margin:0 0 .3rem;font-size:1.05rem}
+.module-card p{color:rgba(255,255,255,.85);font-size:.85rem;margin:0}
+/* MOBILE */
+.menu-toggle{display:none;position:fixed;top:1rem;left:1rem;z-index:200;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:.5rem .8rem;font-size:1.2rem;cursor:pointer}
+@media(max-width:900px){
+.sidebar{transform:translateX(-100%)}
+.sidebar.open{transform:translateX(0)}
+.main{margin-left:0;padding:1rem}
+.menu-toggle{display:block}
+.cols,.cols-3{grid-template-columns:1fr}
+.module-cards{grid-template-columns:1fr}
+.tabs{gap:2px}
+.tab-btn{padding:.5rem .7rem;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
+
+<nav class="sidebar" id="sidebar">
+  <h2>Lernplattform</h2>
+  <p class="subtitle">Jugendpsychologie fuer Schulpsychologen</p>
+  <hr>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <p class="progress-label">Fortschritt: <span id="progressPct">0</span>%</p>
+  <p class="quiz-score" id="quizScoreDisplay"></p>
+  <hr>
+  <button class="nav-btn active" onclick="showModule('home',this)">Startseite</button>
+  <button class="nav-btn" onclick="showModule('m1',this)">Modul 1: Grundlagen</button>
+  <button class="nav-btn" onclick="showModule('m2',this)">Modul 2: Stoerungsbilder</button>
+  <button class="nav-btn" onclick="showModule('m3',this)">Modul 3: Gespraechsfuehrung</button>
+  <button class="nav-btn" onclick="showModule('m4',this)">Modul 4: Interventionen</button>
+  <button class="nav-btn" onclick="showModule('m5',this)">Modul 5: Krisen</button>
+  <button class="nav-btn" onclick="showModule('m6',this)">Modul 6: Elternarbeit</button>
+  <button class="nav-btn" onclick="showModule('m7',this)">Modul 7: Diagnostik &amp; Selbstfuersorge</button>
+  <hr>
+  <p style="font-size:.8rem;color:#666">CDSE Luxemburg 2026</p>
+</nav>
+
+<div class="main" id="mainContent">
+
+<!-- ╔══════════════════════════════════════════╗ -->
+<!-- ║           STARTSEITE                      ║ -->
+<!-- ╚══════════════════════════════════════════╝ -->
+<div id="mod-home" class="module active">
+<h2>Psychische Gesundheit bei Jugendlichen</h2>
+<p><em>Ein interaktives Praxishandbuch fuer Schulpsycholog:innen — CDSE Luxemburg</em></p>
+<hr>
+<p>Willkommen zu deiner Lernplattform! Hier findest du <strong>7 Module</strong> mit allem, was du fuer die Arbeit mit Jugendlichen brauchst — interaktiv, praxisnah und evidenzbasiert.</p>
+
+<h3>Die Module im Ueberblick</h3>
+<div class="module-cards">
+  <div class="module-card" onclick="showModule('m1',document.querySelectorAll('.nav-btn')[1])"><h4>Modul 1: Grundlagen der Adoleszenz</h4><p>Gehirnentwicklung, Identitaet, Bindung, Emotionsregulation</p></div>
+  <div class="module-card" onclick="showModule('m2',document.querySelectorAll('.nav-btn')[2])"><h4>Modul 2: Stoerungsbilder</h4><p>Angst, Depression, SVV, ADHS, Trauma, Essstoerungen</p></div>
+  <div class="module-card" onclick="showModule('m3',document.querySelectorAll('.nav-btn')[3])"><h4>Modul 3: Gespraechsfuehrung</h4><p>Aktives Zuhoeren, MI, Loesungsorientierung, Dialogsimulationen</p></div>
+  <div class="module-card" onclick="showModule('m4',document.querySelectorAll('.nav-btn')[4])"><h4>Modul 4: Interventionen</h4><p>CBT, DBT-Skills, Achtsamkeit, Sicherheitsplanung</p></div>
+  <div class="module-card" onclick="showModule('m5',document.querySelectorAll('.nav-btn')[5])"><h4>Modul 5: Krisen &amp; Notfaelle</h4><p>SAFER-R, Suizidalitaet, De-Eskalation, Missbrauch</p></div>
+  <div class="module-card" onclick="showModule('m6',document.querySelectorAll('.nav-btn')[6])"><h4>Modul 6: Elternarbeit &amp; System</h4><p>Elterngespraeche, Lehrerberatung, Netzwerk Luxemburg</p></div>
+  <div class="module-card" onclick="showModule('m7',document.querySelectorAll('.nav-btn')[7])"><h4>Modul 7: Diagnostik &amp; Selbstfuersorge</h4><p>Screening, ABC-Analyse, Burnout-Praevention, Ethik</p></div>
+</div>
+
+<h3>Wie du diese Plattform nutzt</h3>
+<ul>
+  <li><strong>Navigation:</strong> Klicke links auf ein Modul oder auf die Karten oben</li>
+  <li><strong>Tabs:</strong> Jedes Modul hat mehrere Unterthemen als Tabs</li>
+  <li><strong>Quizzes:</strong> Teste dein Wissen — dein Score wird oben links gezaehlt</li>
+  <li><strong>Fallvignetten:</strong> Realistische Faelle mit Reflexionsfragen</li>
+  <li><strong>Aufklapp-Bereiche:</strong> Klicke auf Ueberschriften, um Details zu sehen</li>
+</ul>
+
+<div class="error-box"><strong>Notfallnummern Luxemburg:</strong><br>
+<strong>112</strong> — Notruf &nbsp;|&nbsp; <strong>45 45 45</strong> — SOS Detresse &nbsp;|&nbsp; <strong>116 111</strong> — Kanner-Jugendtelefon &nbsp;|&nbsp; <strong>247-73100</strong> — ONE (Kinderschutz)</div>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗ -->
+<!-- ║           MODUL 1                         ║ -->
+<!-- ╚══════════════════════════════════════════╝ -->
+<div id="mod-m1" class="module">
+<h2>Modul 1: Grundlagen der Adoleszenz</h2>
+<p><em>Verstehe, warum Jugendliche so handeln, wie sie handeln — und was das fuer deine Arbeit bedeutet.</em></p>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(this,'m1-t1')">Gehirnentwicklung</button>
+  <button class="tab-btn" onclick="showTab(this,'m1-t2')">Entwicklungsaufgaben</button>
+  <button class="tab-btn" onclick="showTab(this,'m1-t3')">Bindung</button>
+  <button class="tab-btn" onclick="showTab(this,'m1-t4')">Normal vs. Auffaellig</button>
+  <button class="tab-btn" onclick="showTab(this,'m1-t5')">Emotionsregulation</button>
+</div>
+
+<!-- TAB 1: GEHIRN -->
+<div id="m1-t1" class="tab-content active">
+<h3>Das Jugendgehirn: Eine Baustelle</h3>
+<p>Das Gehirn von Jugendlichen ist <strong>nicht einfach ein kleines Erwachsenengehirn</strong>. Es befindet sich in einem massiven Umbau, der bis etwa zum <strong>25. Lebensjahr</strong> andauert.</p>
+
+<h4>Das Dual-Systems-Modell</h4>
+<div class="cols">
+<div>
+<strong>Limbisches System (Gaspedal)</strong>
+<ul>
+<li>Amygdala: Alarmanlage, ueberreagiert</li>
+<li>Nucleus Accumbens: Belohnungszentrum, sucht Kicks</li>
+<li>Bereits voll entwickelt in der Pubertaet</li>
+<li>Steuert: Emotionen, Impulse, Belohnungssuche</li>
+</ul>
+</div>
+<div>
+<strong>Praefrontaler Kortex (Bremse)</strong>
+<ul>
+<li>Planung, Impulskontrolle, Konsequenzdenken</li>
+<li>Reift als LETZTES (bis ca. 25 Jahre)</li>
+<li>Noch nicht zuverlaessig verfuegbar</li>
+<li>Unter Stress faellt er als erstes aus</li>
+</ul>
+</div>
+</div>
+
+<div class="warning-box"><strong>Kerneinsicht:</strong> Jugendliche haben ein voll funktionsfaehiges Gaspedal, aber eine noch unreife Bremse. Das ist keine Charakterschwaeche — das ist Neurobiologie.</div>
+
+<h4>Wie zeigt sich das im Schulalltag?</h4>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Impulsive Ausbrueche im Unterricht</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Ein 14-Jaehriger ruft rein, wirft Sachen, reagiert uebertrieben auf Kritik.</p>
+<p><strong>Was dahinter steckt:</strong> Der praefrontale Kortex (Impulskontrolle) ist noch nicht ausgereift. Unter Stress faellt die ohnehin schwache Bremse komplett aus. Die Amygdala uebernimmt — Kampf- oder Fluchtreaktion.</p>
+<p><strong>Was du tun kannst:</strong></p>
+<ul>
+<li>Nicht in der akuten Situation diskutieren (PFC offline)</li>
+<li>Erst beruhigen lassen (mind. 20 Min fuer Adrenalinabbau)</li>
+<li>Spaeter reflektieren: "Was ist passiert? Was haette dir geholfen?"</li>
+<li>Psychoedukation: Erklaere dem Jugendlichen sein eigenes Gehirn</li>
+</ul>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Risikofreudiges Verhalten</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Mutproben, Substanzkonsum, gefaehrliche TikTok-Challenges, ungeschuetzter Sex.</p>
+<p><strong>Was dahinter steckt:</strong> Der Baseline-Dopaminspiegel SINKT, aber die Empfindlichkeit fuer Belohnung STEIGT. Jugendliche brauchen intensivere Reize, um sich "normal" zu fuehlen.</p>
+<p><strong>Was du tun kannst:</strong></p>
+<ul>
+<li>Nicht moralisieren ("Du weisst doch, dass das gefaehrlich ist" — ja, wissen sie, aber fuehlen es nicht)</li>
+<li>Gesundes Risiko anbieten: Sport, Klettern, Theater, Wettbewerbe</li>
+<li>Harm Reduction statt Abstinenzforderung</li>
+</ul>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Emotionale Ueberreaktionen</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Traenen wegen einer schlechten Note, Wutausbruch wegen eines Kommentars, "Ich hasse dich!" an die Eltern.</p>
+<p><strong>Was dahinter steckt:</strong> Die Amygdala ist hyperaktiv, waehrend der PFC noch reift. Jugendliche FUEHLEN Emotionen intensiver als Erwachsene und koennen sie schlechter regulieren.</p>
+<p><strong>Was du tun kannst:</strong></p>
+<ul>
+<li>Gefuehle validieren, nicht kleinreden ("Das klingt wirklich frustrierend")</li>
+<li>Emotionsregulationsstrategien vermitteln (siehe Modul 4)</li>
+<li>Normalisieren: "Dein Gehirn reagiert gerade sehr stark. Das ist normal."</li>
+</ul>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Schlafprobleme und Muedigkeit</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Schlaeft im Unterricht, kommt zu spaet, kann sich morgens nicht konzentrieren.</p>
+<p><strong>Was dahinter steckt:</strong> Die innere Uhr verschiebt sich in der Pubertaet um 1-3 Stunden nach hinten. Melatonin wird spaeter ausgeschuettet. Jugendliche sind biologisch "Nachteulen".</p>
+<p><strong>Was du tun kannst:</strong></p>
+<ul>
+<li>Schlafhygiene besprechen (kein Handy 1h vor dem Schlaf)</li>
+<li>Nicht pathologisieren — der spaete Rhythmus ist biologisch NORMAL</li>
+<li>Bei chronischer Muedigkeit: Depression ausschliessen</li>
+</ul>
+</div>
+</div>
+
+<hr>
+<div class="quiz" id="quiz_m1q1">
+<p class="quiz-question">Warum reagieren Jugendliche oft impulsiver als Erwachsene?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q1" value="0"> Weil sie respektlos sind und keine Grenzen kennen</label></li>
+<li><label><input type="radio" name="m1q1" value="1"> Weil der praefrontale Kortex noch nicht ausgereift ist und die Amygdala dominiert</label></li>
+<li><label><input type="radio" name="m1q1" value="2"> Weil sie zu viel Zucker essen</label></li>
+<li><label><input type="radio" name="m1q1" value="3"> Weil sie absichtlich provozieren wollen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q1',1,'Der praefrontale Kortex (Impulskontrolle, Planung, Konsequenzdenken) reift als letztes Hirnareal — erst mit ca. 25 Jahren. In der Zwischenzeit dominiert das limbische System.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q1"></div>
+</div>
+
+<div class="quiz" id="quiz_m1q2">
+<p class="quiz-question">Was passiert mit dem Dopaminsystem in der Adoleszenz?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q2" value="0"> Es schaltet sich komplett ab</label></li>
+<li><label><input type="radio" name="m1q2" value="1"> Der Baseline-Spiegel sinkt, aber die Belohnungsempfindlichkeit steigt</label></li>
+<li><label><input type="radio" name="m1q2" value="2"> Es wird weniger empfindlich fuer alle Reize</label></li>
+<li><label><input type="radio" name="m1q2" value="3"> Es veraendert sich nicht wesentlich</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q2',1,'Jugendliche haben einen niedrigeren Baseline-Dopaminspiegel (fuehlen sich oefter gelangweilt), reagieren aber STAERKER auf Belohnungsreize. Das erklaert die Suche nach intensiven Erlebnissen.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q2"></div>
+</div>
+</div>
+
+<!-- TAB 2: ENTWICKLUNGSAUFGABEN -->
+<div id="m1-t2" class="tab-content">
+<h3>Entwicklungsaufgaben der Adoleszenz</h3>
+
+<h4>Erikson: Identitaet vs. Rollendiffusion</h4>
+<p>Die <strong>zentrale Aufgabe</strong> der Adoleszenz ist die Identitaetsfindung: <em>Wer bin ich? Wer will ich sein?</em></p>
+<div class="cols">
+<div>
+<ul>
+<li><strong>Berufliche Identitaet:</strong> Was will ich werden?</li>
+<li><strong>Sexuelle/romantische Identitaet:</strong> Wen liebe ich?</li>
+<li><strong>Weltanschauung:</strong> Woran glaube ich?</li>
+</ul>
+</div>
+<div>
+<ul>
+<li><strong>Soziale Identitaet:</strong> Zu wem gehoere ich?</li>
+<li><strong>Koerperliche Identitaet:</strong> Wie stehe ich zu meinem Koerper?</li>
+<li><strong>Werte-Identitaet:</strong> Was ist mir wichtig?</li>
+</ul>
+</div>
+</div>
+
+<h4>Marcia: 4 Identitaetsstatus</h4>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">1. Diffuse Identitaet — 'Mir ist alles egal'</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Keine aktive Suche, keine Festlegung.</p>
+<p><strong>Im Schulalltag:</strong> "Weiss nicht" als Standardantwort, kein Interesse an Berufsorientierung, wechselt Freundesgruppen staendig, wirkt orientierungslos.</p>
+<p><strong>Was der/die Jugendliche braucht:</strong> Geduldige Exploration ohne Druck, Erfahrungsraeume (Praktika, Projekte), Frage: "Was hat dich als Kind begeistert?"</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">2. Uebernommene Identitaet — 'Ich werde Arzt, wie Papa'</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Festlegung OHNE eigene Exploration. Werte der Eltern uebernommen, ohne zu hinterfragen.</p>
+<p><strong>Im Schulalltag:</strong> Sehr bestimmte Zukunftsplaene ohne eigene Begeisterung, Angst vor Abweichung, wenig Flexibilitaet im Denken.</p>
+<p><strong>Was der/die Jugendliche braucht:</strong> Behutsames Hinterfragen ("Wie waere es, wenn du was anderes waehlen koenntest?"), NICHT Ueberzeugungen angreifen, Kontakt mit verschiedenen Lebensentwuerfen.</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">3. Moratorium — 'Ich suche noch'</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Aktive Suche, aber noch keine Entscheidung. GESUND und WUENSCHENSWERT.</p>
+<p><strong>Im Schulalltag:</strong> Probiert verschiedene Stile/Gruppen/Interessen aus, kann verunsichert wirken, hinterfragt Autoritaeten, wechselt Meinungen.</p>
+<p><strong>Was der/die Jugendliche braucht:</strong> Geduld und Raum, Ermutigung: "Es ist gut, dass du nachdenkst", keine Fixierung auf schnelle Entscheidungen.</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">4. Erarbeitete Identitaet — 'Ich weiss, wer ich bin'</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Nach aktiver Auseinandersetzung eigene Werte und Plaene entwickelt. Flexibel, aber gefestigt.</p>
+<p><strong>Im Schulalltag:</strong> Selbstbewusst, kann eigene Meinung vertreten UND andere Perspektiven tolerieren, stabile Freundschaften, kann mit Misserfolgen umgehen.</p>
+<p><strong>Hinweis:</strong> Nicht jeder erreicht diesen Status in allen Bereichen. Identitaetsentwicklung ist ein lebenslanger Prozess.</p>
+</div>
+</div>
+
+<hr>
+<div class="case-study">
+<strong>Fallvignette: Lara (16) — Identitaetskrise</strong><br><br>
+Lara war immer eine Musterschuelerin. Seit einigen Monaten faerbt sie sich die Haare bunt, hoert andere Musik, hat neue Freunde und ihre Noten sind abgesackt. Die Eltern sind besorgt und sehen das als "Rebellion". In der Beratung sagt Lara: "Ich weiss gar nicht, wer ich wirklich bin. Alles war immer schon fuer mich entschieden."
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Welchen Identitaetsstatus hatte Lara vorher?</button>
+<div class="acc-body"><p><strong>Uebernommene Identitaet (Foreclosed)</strong> — Sie hat die Werte und Plaene der Eltern uebernommen, ohne eigene Exploration. Jetzt bewegt sie sich ins Moratorium.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Ist Laras Verhalten besorgniserregend?</button>
+<div class="acc-body"><p><strong>Grundsaetzlich NEIN.</strong> Lara zeigt gesundes Explorationsverhalten. Das ist entwicklungspsychologisch wuenschenswert. Besorgniserregend waere es, wenn: Substanzkonsum dazukommt, sie sich selbst verletzt, die Stimmung dauerhaft depressiv ist, oder sie sich komplett isoliert.</p></div>
+</div>
+
+<div class="quiz">
+<p class="quiz-question">Welcher Identitaetsstatus ist entwicklungspsychologisch am gesuendesten fuer einen 16-Jaehrigen?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q3" value="0"> Erarbeitete Identitaet — je frueher, desto besser</label></li>
+<li><label><input type="radio" name="m1q3" value="1"> Uebernommene Identitaet — Stabilitaet ist wichtig</label></li>
+<li><label><input type="radio" name="m1q3" value="2"> Moratorium — aktive Suche ist der gesunde Weg zur Identitaet</label></li>
+<li><label><input type="radio" name="m1q3" value="3"> Diffuse Identitaet — Jugendliche sollten sich nicht stressen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q3',2,'Das Moratorium (aktive Exploration) ist der gesunde und erwuenschte Prozess. Man MUSS verschiedene Optionen ausprobieren, um zu einer echten eigenen Identitaet zu gelangen.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q3"></div>
+</div>
+</div>
+
+<!-- TAB 3: BINDUNG -->
+<div id="m1-t3" class="tab-content">
+<h3>Bindung im Jugendalter</h3>
+<p>Die Bindungstheorie erklaert, wie fruehe Beziehungserfahrungen das Verhalten in der Beratung beeinflussen.</p>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Sicher gebunden (55-65%) — 'Ich kann dir vertrauen'</button>
+<div class="acc-body">
+<p><strong>In der Beratung:</strong> Offen, kooperativ, kann ueber Gefuehle sprechen, sucht aktiv Hilfe.</p>
+<p><strong>Braucht:</strong> "Normales" therapeutisches Arbeiten funktioniert gut. Empathie, aktives Zuhoeren.</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Unsicher-vermeidend (20-25%) — 'Ich brauche niemanden'</button>
+<div class="acc-body">
+<p><strong>In der Beratung:</strong> Distanziert, "cool", redet ueber Fakten statt Gefuehle. "Mir geht es gut." Bricht Beratung frueh ab.</p>
+<p><strong>Dahinter:</strong> Fruehe Erfahrung: "Wenn ich Naehe zeige, werde ich abgewiesen."</p>
+<p><strong>Braucht:</strong> Geduld, KEINEN Druck sich zu oeffnen, Respekt fuer die Distanz, ueber "sichere Themen" Beziehung aufbauen (Hobbys, Gaming).</p>
+<div class="red-flag"><strong>Haeufige Fehler:</strong> Zu frueh nach Gefuehlen fragen, Distanz als "Widerstand" bewerten, aufgeben weil "er ja nicht will".</div>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Unsicher-ambivalent (10-15%) — 'Geh weg! Nein, bleib!'</button>
+<div class="acc-body">
+<p><strong>In der Beratung:</strong> Klammert sich an, dann stoesst ab. Testet staendig die Beziehung. Zwischen Sitzungen viele Nachrichten. Reagiert extrem auf Terminaenderungen.</p>
+<p><strong>Dahinter:</strong> "Manchmal bist du da, manchmal nicht."</p>
+<p><strong>Braucht:</strong> Zuverlaessigkeit und Vorhersagbarkeit (feste Termine, klare Regeln). Thematisieren: "Ich merke, du machst dir Sorgen, ob ich da bin. Ich bin da."</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Desorganisiert (5-10%) — 'Ich brauche dich, aber du machst mir Angst'</button>
+<div class="acc-body">
+<p><strong>In der Beratung:</strong> Widerspruechliches Verhalten, dissoziative Episoden, kann aggressiv werden wenn Naehe entsteht. Oft: Traumahintergrund.</p>
+<p><strong>Dahinter:</strong> Die Bezugsperson war gleichzeitig Quelle von Trost UND Angst.</p>
+<p><strong>Braucht:</strong> Maximale Vorhersagbarkeit, traumasensibles Arbeiten, keine Ueberraschungen, langsamer Beziehungsaufbau. Eventuell Weiterleitung an Traumatherapeut:in.</p>
+</div>
+</div>
+
+<div class="info-box"><strong>Zentrale Erkenntnis:</strong> Du als Berater:in kannst eine <strong>korrigierende Beziehungserfahrung</strong> bieten — "Es gibt jemanden, der zuverlaessig, wertschaetzend und praesent ist." Das ist oft wirkungsvoller als jede Technik.</div>
+
+<hr>
+<div class="quiz">
+<p class="quiz-question">Eine Schuelerin schickt dir zwischen den Sitzungen viele Nachrichten, klammert sich an dich, reagiert extrem wenn du einen Termin verschiebst. Welcher Bindungsstil?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q4" value="0"> Sicher</label></li>
+<li><label><input type="radio" name="m1q4" value="1"> Unsicher-vermeidend</label></li>
+<li><label><input type="radio" name="m1q4" value="2"> Unsicher-ambivalent</label></li>
+<li><label><input type="radio" name="m1q4" value="3"> Desorganisiert</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q4',2,'Typisch unsicher-ambivalent: Intensive Bindungssuche bei gleichzeitigem Misstrauen gegenueber der Zuverlaessigkeit. Feste Termine und klare Grenzen geben Sicherheit.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q4"></div>
+</div>
+</div>
+
+<!-- TAB 4: NORMAL VS AUFFAELLIG -->
+<div id="m1-t4" class="tab-content">
+<h3>Ist das noch normal? — Die zentrale Frage</h3>
+
+<h4>Vergleich: Normal vs. Warnsignal</h4>
+
+<p><strong>Stimmungsschwankungen</strong></p>
+<div class="cols">
+<div class="green-box"><strong>Normal:</strong> Wechselnde Stimmung innerhalb eines Tages, reagiert auf konkrete Ausloeser, kann sich wieder regulieren, hat auch gute Phasen</div>
+<div class="red-flag"><strong>Warnsignal:</strong> Anhaltend gedrueckte Stimmung ueber 2+ Wochen, kein erkennbarer Ausloeser, Interessenverlust, Hoffnungslosigkeit</div>
+</div>
+
+<p><strong>Sozialer Rueckzug</strong></p>
+<div class="cols">
+<div class="green-box"><strong>Normal:</strong> Zieht sich phasenweise zurueck, hat aber Freunde, sucht Privatsphaere, ist in der Peer-Group aktiv</div>
+<div class="red-flag"><strong>Warnsignal:</strong> Vollstaendiger Rueckzug ueber Wochen, verliert Freundschaften, meidet alle Kontakte</div>
+</div>
+
+<p><strong>Risikoverhalten</strong></p>
+<div class="cols">
+<div class="green-box"><strong>Normal:</strong> Experimentiert gelegentlich, Mutproben mit Peers, testet Grenzen, kann Risiken einschaetzen</div>
+<div class="red-flag"><strong>Warnsignal:</strong> Regelmaessiger Substanzkonsum, selbstverletzendes Verhalten, wiederholt gefaehrliche Aktionen</div>
+</div>
+
+<p><strong>Schulische Veraenderungen</strong></p>
+<div class="cols">
+<div class="green-box"><strong>Normal:</strong> Leichter Notenrueckgang, weniger Motivation in bestimmten Faechern, andere Prioritaeten</div>
+<div class="red-flag"><strong>Warnsignal:</strong> Dramatischer Leistungseinbruch, Schulverweigerung, kann sich nicht mehr konzentrieren</div>
+</div>
+
+<h4>Entscheidungshilfe: Wann intervenieren?</h4>
+<p>Frage dich bei jedem Verhalten diese <strong>4 Fragen</strong>:</p>
+<ol>
+<li><strong>Dauer:</strong> Wie lange geht das schon? (&gt; 2 Wochen = aufmerksam werden)</li>
+<li><strong>Intensitaet:</strong> Wie stark ist die Belastung? (beeintraechtigt Alltag?)</li>
+<li><strong>Funktionalitaet:</strong> Kann der/die Jugendliche noch am normalen Leben teilnehmen?</li>
+<li><strong>Leidensdruck:</strong> Leidet der/die Jugendliche selbst darunter?</li>
+</ol>
+<p>Wenn 2 oder mehr Fragen mit "Ja, das ist bedenklich" beantwortet werden: <strong>aktiv werden</strong>.</p>
+
+<hr>
+<div class="quiz">
+<p class="quiz-question">Ein 16-Jaehriger hat seit 4 Wochen Leistungseinbruch, zieht sich zurueck, schlaeft im Unterricht, hat aufgehoert Fussball zu spielen, und sagt 'Alles ist sinnlos'. Was tust du?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q5" value="0"> Abwarten, das ist normale Pubertaet</label></li>
+<li><label><input type="radio" name="m1q5" value="1"> Den Eltern Bescheid geben, dass er faul geworden ist</label></li>
+<li><label><input type="radio" name="m1q5" value="2"> Aktiv werden: Dauer ueber 2 Wochen, mehrere Bereiche betroffen, Interessenverlust, Hoffnungslosigkeit</label></li>
+<li><label><input type="radio" name="m1q5" value="3"> Ihn zum Direktor schicken</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q5',2,'Hier sind ALLE 4 Warnsignale erfuellt: Dauer &gt; 2 Wochen, hohe Intensitaet, Funktionseinschraenkung in mehreren Bereichen, Ausdruck von Sinnlosigkeit.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q5"></div>
+</div>
+</div>
+
+<!-- TAB 5: EMOTIONSREGULATION -->
+<div id="m1-t5" class="tab-content">
+<h3>Emotionsregulation bei Jugendlichen</h3>
+
+<h4>Das Gross-Modell: 5 Interventionspunkte</h4>
+<ol>
+<li><strong>Situationsselektion</strong> — Welche Situationen suche ich auf / meide ich?</li>
+<li><strong>Situationsmodifikation</strong> — Kann ich die Situation veraendern?</li>
+<li><strong>Aufmerksamkeitslenkung</strong> — Worauf richte ich meinen Fokus?</li>
+<li><strong>Kognitive Umbewertung</strong> — Wie bewerte ich das, was passiert?</li>
+<li><strong>Reaktionsmodulation</strong> — Wie gehe ich mit der bereits entstandenen Emotion um?</li>
+</ol>
+
+<h4>Wie schlechte Emotionsregulation sich in der Schule zeigt</h4>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Ausbrueche (Externalisierend)</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Schreien, Weinen, Tisch umwerfen, Tuer knallen.</p>
+<p><strong>Erstintervention:</strong> Sicherheit gewaehrleisten, ruhig bleiben, wenig sprechen, Raum wechseln wenn moeglich. NICHT in der Akutsituation diskutieren oder moralisieren. Erst wenn ruhiger: Grounding, Atmung.</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Shutdown (Internalisierend)</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Voellige Starre, antwortet nicht, starrer Blick, "wie eingefroren".</p>
+<p><strong>Erstintervention:</strong> Sanft ansprechen: "Ich bin hier. Du bist sicher." 5-4-3-2-1 Grounding (ueber Sinne zurueck in den Koerper). Kaltes Wasser, Eiswuerfel. NICHT anfassen ohne Erlaubnis.</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Somatisierung</button>
+<div class="acc-body">
+<p><strong>Was du siehst:</strong> Bauchschmerzen vor Pruefungen, Kopfschmerzen bei Konflikten, Uebelkeit in sozialen Situationen.</p>
+<p><strong>Erstintervention:</strong> Ernst nehmen! Die Schmerzen sind REAL. "Dein Koerper reagiert auf etwas. Lass uns schauen, was das sein koennte." Koerperorientierte Methoden: Atmung, Body Scan.</p>
+</div>
+</div>
+
+<div class="intervention"><strong>Intervention: Das Fenster der Toleranz erklaeren</strong><br><br>
+"Stell dir eine Zone vor — dein Fenster der Toleranz. Innerhalb dieser Zone kannst du denken, fuehlen und handeln. Wenn du UEBER das Fenster hinausgehst (Hyperarousal): Wut, Panik, Ueberreizung. Wenn du UNTER das Fenster faellst (Hypoarousal): Taubheit, Starre, Dissoziation. Unser Ziel: Dein Fenster vergroessern. Wie? Durch Uebung: Atmung, Grounding, Koerperwahrnehmung."</div>
+
+<hr>
+<div class="quiz">
+<p class="quiz-question">Ein Schueler sitzt nach einem Streit voellig erstarrt da, reagiert auf nichts. Was ist am wahrscheinlichsten passiert?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m1q6" value="0"> Er ignoriert dich absichtlich</label></li>
+<li><label><input type="radio" name="m1q6" value="1"> Er ist ins Hypoarousal gerutscht (unter das Fenster der Toleranz)</label></li>
+<li><label><input type="radio" name="m1q6" value="2"> Er ueberlegt sich eine gute Antwort</label></li>
+<li><label><input type="radio" name="m1q6" value="3"> Er schlaeft</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m1q6',1,'Starre, fehlende Reaktion, Einfrieren — das sind Zeichen fuer Hypoarousal / Dissoziation. Das Nervensystem hat auf Totstellreflex geschaltet. Sanftes Grounding hilft.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m1q6"></div>
+</div>
+</div>
+</div><!-- END MODUL 1 -->
+
+<!-- MODULE 2: STOERUNGSBILDER -->
+<div id="mod-m2" class="module">
+<h2>Modul 2: Stoerungsbilder &amp; Manifestationen</h2>
+<p><em>Wie zeigen sich psychische Belastungen KONKRET im Schulalltag? Und was tust du?</em></p>
+<div class="warning-box"><strong>Wichtig:</strong> Als Schulpsycholog:in stellst du KEINE Diagnosen. Du beschreibst Verhalten, erkennst Muster und entscheidest, ob du selbst intervenierst oder weiterleitest.</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(this,'m2-t1')">Angststoerungen</button>
+  <button class="tab-btn" onclick="showTab(this,'m2-t2')">Depression</button>
+  <button class="tab-btn" onclick="showTab(this,'m2-t3')">SVV &amp; Suizidalitaet</button>
+  <button class="tab-btn" onclick="showTab(this,'m2-t4')">ADHS</button>
+  <button class="tab-btn" onclick="showTab(this,'m2-t5')">Trauma &amp; PTBS</button>
+  <button class="tab-btn" onclick="showTab(this,'m2-t6')">Essstoerungen</button>
+  <button class="tab-btn" onclick="showTab(this,'m2-t7')">Weitere</button>
+</div>
+
+<!-- TAB 1: ANGSTSTOERUNGEN -->
+<div id="m2-t1" class="tab-content active">
+<h3>Angststoerungen bei Jugendlichen</h3>
+<p><strong>Praevalenz: 15-20%</strong> — die haeufigste psychische Stoerung bei Jugendlichen. Wird am meisten UEBERSEHEN, weil aengstliche Kinder still sind und nicht auffallen.</p>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Generalisierte Angststoerung (GAD) — Der/die chronische Sorgenmacher:in</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Uebermaeessige, unkontrollierbare Sorgen ueber ALLES — Schule, Gesundheit, Familie, Zukunft, Weltlage.</p>
+<p><strong>Wie es sich im Schulalltag zeigt:</strong></p>
+<ul>
+<li>Fragt Lehrer:innen wiederholt nach, ob Antworten richtig sind</li>
+<li>Macht Aufgaben mehrfach, weil sie nicht "gut genug" sind</li>
+<li>Kann sich nicht entscheiden (Angst vor falscher Wahl)</li>
+<li>Koerperliche Beschwerden: Bauchschmerzen, Kopfschmerzen, Muskelverspannungen</li>
+<li>Schlaeft schlecht, sieht muede aus</li>
+<li>Denkt staendig ueber "Was waere wenn"-Szenarien nach</li>
+</ul>
+<div class="red-flag"><strong>Red Flag:</strong> Wenn die Sorgen den Alltag dominieren (&gt; 50% der wachen Zeit), Schlaf massiv gestoert ist, oder der/die Jugendliche nicht mehr zur Schule kommen kann.</div>
+<div class="intervention"><strong>Erstintervention bei GAD:</strong><br>1. Sorgen externalisieren: "Die Sorgenmaschine in deinem Kopf laeuft auf Hochtouren"<br>2. Sorgenzeit einfuehren: 15 Min am Tag bewusst sorgen, Rest des Tages "parken"<br>3. Kognitive Umstrukturierung: "Wie wahrscheinlich ist es wirklich?" (1-100%)<br>4. Koerperlich: Progressive Muskelentspannung, Atemtechniken<br>5. Bei schwerer Auspraegung: Weiterleitung an Therapeut:in</div>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Soziale Angststoerung — Die Angst vor dem Urteil anderer</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Intensive Angst vor sozialen Situationen, in denen man bewertet werden koennte. Nicht einfach "Schuechternheit" — es ist eine laehmende Angst.</p>
+<p><strong>Wie es sich im Schulalltag zeigt:</strong></p>
+<ul>
+<li>Weigert sich, vor der Klasse zu praesentieren (wird ggf. "krank")</li>
+<li>Sitzt allein in der Pause, traut sich nicht, andere anzusprechen</li>
+<li>Geht auf die Toilette, wenn Gruppenarbeit angekuendigt wird</li>
+<li>Antwortet nur fluesternd oder gar nicht, wenn aufgerufen</li>
+<li>Meidet Augenkontakt</li>
+<li>Wird rot, zittert, schwitzt in sozialen Situationen</li>
+<li>Ist online aktiv, aber offline zurueckgezogen</li>
+</ul>
+<div class="intervention"><strong>Erstintervention:</strong><br>1. NICHT zwingen, vor der Klasse zu sprechen (verstaerkt die Angst!)<br>2. Graduierte Exposition: Erst 1:1, dann Kleingruppe, dann Klasse<br>3. Soziale Kompetenzen in sicherem Rahmen ueben<br>4. Kognitive Arbeit: "Was genau denkst du, was passieren wird?"<br>5. Lehrer:innen informieren: Alternative Pruefungsformen ermoeglichen</div>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Trennungsangst</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Uebermaeessige Angst bei Trennung von Bezugspersonen. Bei juengeren Jugendlichen (10-14) noch relativ haeufig, bei aelteren ein deutliches Warnsignal.</p>
+<ul>
+<li>Weint beim Abschied von den Eltern (auch mit 12-13 Jahren)</li>
+<li>Ruft Eltern mehrfach am Tag an</li>
+<li>Will nicht auf Klassenfahrt</li>
+<li>Koerperliche Beschwerden morgens, die am Wochenende verschwinden</li>
+<li>Angst, den Eltern koennte etwas passieren</li>
+</ul>
+<div class="intervention"><strong>Erstintervention:</strong><br>1. Sicherheitsverhalten langsam abbauen (nicht abrupt!)<br>2. Klare Abschiedsrituale mit den Eltern entwickeln<br>3. Kontaktmoeglichkeit vereinbaren (z.B. eine SMS mittags)<br>4. Selbstwirksamkeit staerken<br>5. Elternarbeit: Eigene Angst der Eltern bearbeiten</div>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Panikstoeung — Ploetzliche Panikattacken</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Wiederkehrende, unerwartete Panikattacken mit intensiven koerperlichen Symptomen. Jugendliche denken oft, sie sterben oder werden verrueckt.</p>
+<ul>
+<li>Ploetzliches Aufstehen im Unterricht und Rausgehen</li>
+<li>Herzrasen, Hyperventilation, Zittern, Schwindel</li>
+<li>"Ich kann nicht atmen" / "Mir wird schwarz vor Augen"</li>
+<li>Angst vor der naechsten Attacke (Angst vor der Angst)</li>
+<li>Meidet Orte, an denen Attacken auftraten</li>
+</ul>
+<div class="intervention"><strong>Erstintervention bei Panikattacke:</strong><br>1. Ruhig bleiben und Ruhe ausstrahlen<br>2. "Du hast eine Panikattacke. Das ist sehr unangenehm, aber nicht gefaehrlich."<br>3. Box Breathing: 4 Sekunden ein, 4 halten, 4 aus, 4 halten<br>4. Grounding: "Nenne mir 5 Dinge, die du siehst"<br>5. NICHT: "Beruhig dich!" oder "Stell dich nicht so an!"</div>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Selektiver Mutismus — Spricht zu Hause, schweigt in der Schule</button>
+<div class="acc-body">
+<p>Der/die Jugendliche KANN sprechen (spricht zu Hause normal), aber schweigt konsequent in bestimmten sozialen Kontexten. Nicht Trotz — Angst.</p>
+<ul>
+<li>Spricht kein einziges Wort im Unterricht</li>
+<li>Kommuniziert ueber Nicken, Zeigen, Schreiben</li>
+<li>Wirkt "eingefroren", wenn direkt angesprochen</li>
+</ul>
+<div class="intervention"><strong>Erstintervention:</strong><br>1. KEINEN Druck zum Sprechen ausueben!<br>2. Alternative Kommunikationswege akzeptieren<br>3. Sliding-in-Technik: Vertraute Person dabei, dann langsam zurueckziehen<br>4. Kleine Erfolge feiern<br>5. Unbedingt Fachperson einbeziehen</div>
+</div>
+</div>
+
+<hr>
+<div class="case-study">
+<strong>Fallvignette: Sophie (14) — Bauchschmerzen und Fehlzeiten</strong><br><br>
+Sophie fehlt seit 3 Wochen immer montags und mittwochs. Die Eltern sagen, sie habe Bauchschmerzen. Der Kinderarzt findet nichts. In der Schule sitzt sie in den Pausen allein, geht bei Gruppenarbeit auf die Toilette und fluestert nur, wenn sie direkt angesprochen wird. Ihre Noten sind gut — sie macht alles schriftlich perfekt.
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Was koennte hinter Sophies Verhalten stecken?</button>
+<div class="acc-body"><p><strong>Soziale Angststoerung</strong> mit somatischer Komponente. Die Bauchschmerzen sind ein koerperlicher Ausdruck der Angst (Somatisierung). Sie VERMEIDET soziale Situationen systematisch.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Warum wurde das so lange nicht erkannt?</button>
+<div class="acc-body"><p>Weil Sophie STILL ist. Aengstliche Jugendliche stoeren nicht. Lehrer:innen bemerken eher den lauten ADHS-Jungen als das still leidende Maedchen.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Was sind deine naechsten Schritte?</button>
+<div class="acc-body"><p>1. Einzelgespraech in ruhiger Umgebung<br>2. Behutsam explorieren<br>3. Lehrer:innen informieren: keine Praesentationen erzwingen<br>4. Mit Eltern sprechen: Psychoedukation ueber soziale Angst<br>5. Bei fortbestehender Belastung: Weiterleitung an Therapeut:in</p></div>
+</div>
+
+<div class="quiz" id="quiz_m2q1">
+<p class="quiz-question">Welche Angststoerung wird bei Jugendlichen am haeufigsten UEBERSEHEN?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m2q1" value="0"> Panikstoeung</label></li>
+<li><label><input type="radio" name="m2q1" value="1"> Soziale Angststoerung / GAD</label></li>
+<li><label><input type="radio" name="m2q1" value="2"> Spezifische Phobien</label></li>
+<li><label><input type="radio" name="m2q1" value="3"> Trennungsangst</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m2q1',1,'Aengstliche Jugendliche sind still und stoeren nicht. Sie fallen im Unterricht nicht auf. Die Praevalenz liegt bei 15-20%, aber viele werden nie erkannt.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m2q1"></div>
+</div>
+
+<div class="quiz" id="quiz_m2q2">
+<p class="quiz-question">Sophie geht bei Gruppenarbeit auf die Toilette. Was ist die richtige Reaktion als Lehrer:in?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m2q2" value="0"> Sie vor der Klasse darauf ansprechen</label></li>
+<li><label><input type="radio" name="m2q2" value="1"> Sie zwingen, in der Gruppe zu bleiben</label></li>
+<li><label><input type="radio" name="m2q2" value="2"> Eine Alternative anbieten (z.B. Partnerarbeit) und spaeter in Ruhe ansprechen</label></li>
+<li><label><input type="radio" name="m2q2" value="3"> Ignorieren und nichts tun</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m2q2',2,'Vor der Klasse ansprechen verstaerkt die Angst. Eine diskrete Alternative und ein Gespraech unter vier Augen ist der richtige Weg.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m2q2"></div>
+</div>
+
+<div class="quiz" id="quiz_m2q3">
+<p class="quiz-question">Ein Jugendlicher hat eine Panikattacke im Unterricht. Was machst du ZUERST?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m2q3" value="0"> "Beruhig dich mal!" sagen</label></li>
+<li><label><input type="radio" name="m2q3" value="1"> Ruhig bleiben und benennen: "Das ist eine Panikattacke. Nicht gefaehrlich."</label></li>
+<li><label><input type="radio" name="m2q3" value="2"> Sofort den Notarzt rufen</label></li>
+<li><label><input type="radio" name="m2q3" value="3"> Ihn auffordern, tief zu atmen und sich zusammenzureissen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m2q3',1,'Benennen gibt Orientierung und reduziert die Angst vor der Angst. Dann: Box Breathing und Grounding.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m2q3"></div>
+</div>
+</div>
+
+<!-- TAB 2: DEPRESSION -->
+<div id="m2-t2" class="tab-content">
+<h3>Depression bei Jugendlichen</h3>
+<div class="error-box"><strong>Kerneinsicht:</strong> Depression bei Jugendlichen sieht ANDERS aus als bei Erwachsenen. Das Hauptsymptom ist nicht Traurigkeit, sondern <strong>Reizbarkeit und Wut</strong>!</div>
+
+<h4>Wie Depression sich nach Geschlecht unterscheidet</h4>
+<div class="cols">
+<div>
+<strong>Jungen zeigen oft:</strong>
+<ul>
+<li>Aggression, Reizbarkeit, kurze Zuendschnur</li>
+<li>Risikoverhalten, Substanzkonsum</li>
+<li>Rueckzug in Gaming (exzessiv)</li>
+<li>Koerperliche Beschwerden</li>
+<li>"Mir ist langweilig" (kodiert fuer: ich fuehle nichts)</li>
+</ul>
+</div>
+<div>
+<strong>Maedchen zeigen oft:</strong>
+<ul>
+<li>Sozialer Rueckzug, Weinen</li>
+<li>Perfektionismus-Zusammenbruch</li>
+<li>Somatische Beschwerden (Kopf/Bauch)</li>
+<li>Social Media Doom-Scrolling</li>
+<li>Uebermaessiges Gruebeln</li>
+<li>Essprobleme, Koerperunzufriedenheit</li>
+</ul>
+</div>
+</div>
+
+<h4>Wie Depression sich nach Alter unterscheidet</h4>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Fruehe Adoleszenz (12-14 Jahre)</button>
+<div class="acc-body"><p>Somatische Beschwerden dominieren (Bauchweh, Kopfweh). Klammern an Eltern oder voelliges Ablehnen. Schulverweigerung mit koerperlicher Begruendung. Weinerlichkeit, Aengstlichkeit. Regressives Verhalten.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Mittlere Adoleszenz (14-16 Jahre)</button>
+<div class="acc-body"><p>Reizbarkeit als Hauptsymptom. Leistungseinbruch. Sozialer Rueckzug. Interessenverlust ("Ich hab auf nichts mehr Bock"). Schlaf veraendert sich massiv.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Spaete Adoleszenz (16-18 Jahre)</button>
+<div class="acc-body"><p>Hoffnungslosigkeit, existenzielle Verzweiflung. "Alles ist sinnlos." Substanzkonsum als Selbstmedikation. Identitaetskrise. Suizidgedanken koennen erstmals artikuliert werden. Zukunftsangst.</p></div>
+</div>
+
+<h4>Schlechte Laune vs. Depression</h4>
+<div class="cols">
+<div class="green-box"><strong>Normale schlechte Laune:</strong><br>Dauer: Stunden bis wenige Tage<br>Ausloeser: erkennbar<br>Funktionalitaet: erhalten<br>Interessen: noch vorhanden<br>Schlaf/Appetit: stabil<br>Erreichbar: reagiert auf Positives</div>
+<div class="red-flag"><strong>Depression:</strong><br>Dauer: 2+ Wochen, taeglich<br>Ausloeser: oft keiner erkennbar<br>Funktionalitaet: eingeschraenkt<br>Interessen: Verlust ("Alles egal")<br>Schlaf/Appetit: veraendert<br>Erreichbar: reagiert auf NICHTS mehr</div>
+</div>
+
+<hr>
+<div class="case-study">
+<strong>Fallvignette: Luca (15) — "Alles ist dumm"</strong><br><br>
+Lucas Noten sind in den letzten 2 Monaten von 2-3 auf 4-5 abgerutscht. Er war frueher im Fussballverein, hat aufgehoert. Im Unterricht ist er gereizt, hat einen Lehrer angeschrien. Zu Hause zockt er bis 3 Uhr nachts. Seine Mutter sagt: "Er ist einfach in der Pubertaet." Im Gespraech sagt er: "Alles ist dumm. Schule ist dumm. Leben ist dumm."
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Ist das "nur Pubertaet"?</button>
+<div class="acc-body"><p><strong>Nein.</strong> Mehrere Warnsignale: Dauer &gt; 2 Wochen, Leistungseinbruch, Interessenverlust (Fussball), Reizbarkeit, Schlafverschiebung, generalisierte Aussagen. Das Muster spricht fuer eine depressive Episode.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Was sind die Red Flags?</button>
+<div class="acc-body"><p>1. <strong>Interessenverlust</strong> (Fussball aufgegeben)<br>2. <strong>Leistungseinbruch</strong><br>3. <strong>Reizbarkeit</strong> (Lehrer angeschrien)<br>4. <strong>Schlafverschiebung</strong> (3 Uhr nachts)<br>5. <strong>Generalisierte Hoffnungslosigkeit</strong><br>6. Wichtig: "Leben ist dumm" braucht eine Nachfrage zur Suizidalitaet!</p></div>
+</div>
+
+<div class="quiz" id="quiz_m2q5">
+<p class="quiz-question">Was ist das HAUPTSYMPTOM von Depression bei Jugendlichen?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m2q5" value="0"> Traurigkeit und Weinen</label></li>
+<li><label><input type="radio" name="m2q5" value="1"> Reizbarkeit und Wut</label></li>
+<li><label><input type="radio" name="m2q5" value="2"> Muedigkeit</label></li>
+<li><label><input type="radio" name="m2q5" value="3"> Appetitlosigkeit</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m2q5',1,'Anders als bei Erwachsenen zeigt sich Depression bei Jugendlichen hauptsaechlich als Reizbarkeit, Wut und alles ist dumm.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m2q5"></div>
+</div>
+</div>
+
+<!-- TAB 3: SVV & SUIZIDALITAET -->
+<div id="m2-t3" class="tab-content">
+<h3>Selbstverletzung (SVV) und Suizidalitaet</h3>
+<div class="error-box"><strong>Grundregel:</strong> Selbstverletzung ist NICHT dasselbe wie ein Suizidversuch. Beides erfordert Aufmerksamkeit, aber unterschiedliche Reaktionen.</div>
+
+<h4>Selbstverletzendes Verhalten (SVV)</h4>
+<p><strong>Praevalenz: 17-25%</strong> der Jugendlichen. Meist Ritzen, aber auch Verbrennen, Schlagen, Kratzen.</p>
+
+<p><strong>Die 5 Funktionen von SVV:</strong></p>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Spannungsabbau</button>
+<div class="acc-body"><p>Unertraegliche innere Spannung wird durch Schmerz "abgelassen". Danach Erleichterung.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Emotionsregulation</button>
+<div class="acc-body"><p>Wenn Gefuehle so ueberwaeltigend sind, dass nichts anderes hilft. Der Schmerz "reset" das System.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Selbstbestrafung</button>
+<div class="acc-body"><p>Tief verinnerlichtes Gefuehl: "Ich verdiene es nicht besser." Oft bei Missbrauchs-/Vernachlaessigungserfahrung.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Kommunikation</button>
+<div class="acc-body"><p>Wenn Worte fuer den Schmerz fehlen. "Schaut her, wie schlecht es mir geht." Kein "Aufmerksamkeit suchen" — sondern Hilfeschrei.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Kontrolle</button>
+<div class="acc-body"><p>In einer als unkontrollierbar erlebten Welt ist SVV das Einzige, das der/die Jugendliche kontrollieren kann.</p></div>
+</div>
+
+<div class="intervention"><strong>Wenn du SVV entdeckst — Schritt fuer Schritt:</strong><br>
+1. Ruhig bleiben. Kein Erschrecken zeigen.<br>
+2. Nicht sofort auf die Wunden fokussieren. Erst Beziehung.<br>
+3. Fragen: "Ich habe gesehen, dass du dich verletzt. Ich mache mir Sorgen."<br>
+4. Zuhoeren, nicht urteilen. NICHT: "Warum machst du das?"<br>
+5. Fragen, ob Suizidgedanken bestehen<br>
+6. Wundversorgung sicherstellen<br>
+7. Eltern informieren (gemeinsam planen)<br>
+8. Alternatives Verhalten explorieren: Eiswuerfel, rote Farbe, Gummiband<br>
+9. Weiterleitung an Therapeut:in bei regelmaessigem SVV</div>
+
+<hr>
+<h4>Suizidalitaet</h4>
+<div class="error-box">Suizid ist die <strong>zweithaeufigste Todesursache</strong> bei Jugendlichen (15-24 Jahre).</div>
+
+<div class="cols">
+<div>
+<strong>Direkte Warnsignale:</strong>
+<ul>
+<li>"Ich will nicht mehr leben"</li>
+<li>"Es waere besser, wenn ich nicht mehr da waere"</li>
+<li>"Bald habt ihr eure Ruhe"</li>
+<li>Verschenkt persoenliche Gegenstaende</li>
+<li>Recherchiert Suizidmethoden</li>
+<li>Ploetzliche Ruhe nach Depression</li>
+</ul>
+</div>
+<div>
+<strong>Indirekte Warnsignale:</strong>
+<ul>
+<li>"Alles ist sinnlos"</li>
+<li>"Ich bin eine Last fuer alle"</li>
+<li>"Niemand wuerde mich vermissen"</li>
+<li>Sozialer Rueckzug</li>
+<li>Risikoverhalten ohne Selbstschutz</li>
+<li>Verabschiedung ("Danke fuer alles")</li>
+</ul>
+</div>
+</div>
+
+<h4>Wie du nach Suizidalitaet fragst</h4>
+<p>Direkte Fragen sind NICHT gefaehrlich. Sie erhoehen das Risiko NICHT.</p>
+<ul>
+<li><em>"Hast du manchmal Gedanken, dass du nicht mehr leben moechtest?"</em></li>
+<li><em>"Denkst du daran, dir etwas anzutun?"</em></li>
+<li><em>"Hast du einen konkreten Plan?"</em></li>
+<li><em>"Hast du Zugang zu Mitteln?"</em></li>
+</ul>
+
+<div class="red-flag"><strong>Was du NICHT sagen solltest:</strong><br>
+- "Das wird schon wieder" (bagatellisiert)<br>
+- "Andere haben es viel schlimmer" (entwertet)<br>
+- "Denk an deine Familie" (Schuldgefuehle)<br>
+- "Versprich mir, dass du dir nichts antust" (Anti-Suizid-Vertraege wirken NICHT)</div>
+
+<div class="quiz" id="quiz_m2q7">
+<p class="quiz-question">Was ist der Unterschied zwischen SVV und Suizidversuch?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m2q7" value="0"> Kein Unterschied</label></li>
+<li><label><input type="radio" name="m2q7" value="1"> SVV dient der Emotionsregulation, Suizidversuch hat das Ziel, das Leben zu beenden</label></li>
+<li><label><input type="radio" name="m2q7" value="2"> SVV ist harmlos</label></li>
+<li><label><input type="radio" name="m2q7" value="3"> SVV ist immer ein Hilferuf, Suizid nie</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m2q7',1,'SVV ist eine (dysfunktionale) Bewaeltigungsstrategie. Suizidversuch hat das Ziel, das Leben zu beenden. Beides braucht Aufmerksamkeit.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m2q7"></div>
+</div>
+
+<div class="quiz" id="quiz_m2q8">
+<p class="quiz-question">Ein depressiver Jugendlicher wirkt ploetzlich ruhig und verschenkt seine Sachen. Was koennte das bedeuten?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m2q8" value="0"> Er hat seine Depression ueberwunden</label></li>
+<li><label><input type="radio" name="m2q8" value="1"> Moegliches Warnsignal: Er koennte einen Entschluss gefasst haben</label></li>
+<li><label><input type="radio" name="m2q8" value="2"> Die Therapie wirkt</label></li>
+<li><label><input type="radio" name="m2q8" value="3"> Normaler Stimmungswechsel</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m2q8',1,'Ploetzliche Ruhe nach depressiver Phase kann bedeuten, dass der Jugendliche einen Entschluss gefasst hat. Das ist ein RED FLAG.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m2q8"></div>
+</div>
+</div>
+
+<!-- TAB 4: ADHS -->
+<div id="m2-t4" class="tab-content">
+<h3>ADHS im Jugendalter</h3>
+<p><strong>Praevalenz: 5-7%.</strong> ADHS ist nicht nur "der hyperaktive Junge".</p>
+
+<h4>Die drei ADHS-Typen</h4>
+<div class="cols-3">
+<div>
+<strong>Vorwiegend unaufmerksam</strong> (oft bei Maedchen)
+<ul>
+<li>Traeumend, verpasst Anweisungen</li>
+<li>Verliert Materialien</li>
+<li>Kann Aufgaben nicht beenden</li>
+<li>Vergisst Termine/Hausaufgaben</li>
+<li>Wird SELTEN erkannt!</li>
+</ul>
+</div>
+<div>
+<strong>Vorwiegend hyperaktiv-impulsiv</strong>
+<ul>
+<li>Zappelt, steht auf, laeuft herum</li>
+<li>Ruft rein, kann nicht warten</li>
+<li>Redet uebermaessig viel</li>
+<li>Unterbricht andere</li>
+<li>Wirkt "wie angetrieben"</li>
+</ul>
+</div>
+<div>
+<strong>Kombinierter Typ</strong>
+<ul>
+<li>Beide Symptomgruppen</li>
+<li>Am haeufigsten</li>
+<li>Hyperaktivitaet nimmt in der Adoleszenz ab</li>
+<li>Aufmerksamkeitsprobleme bleiben</li>
+</ul>
+</div>
+</div>
+
+<h4>Was Lehrer:innen sehen vs. was wirklich passiert</h4>
+<div class="cols">
+<div><strong>Was Lehrer:innen sehen:</strong>
+<ul><li>"Faul" / "Gibt sich keine Muehe"</li><li>"Respektlos" (ruft rein)</li><li>"Unorganisiert"</li><li>"Stoert den Unterricht"</li></ul></div>
+<div><strong>Was wirklich passiert:</strong>
+<ul><li>Exekutive Funktionen unreif</li><li>Impulskontrolle neurobiologisch erschwert</li><li>Arbeitsgedaechtnis ueberlastet</li><li>Dopaminmangel sucht Stimulation</li></ul></div>
+</div>
+
+<div class="intervention"><strong>ADHS-freundliche Beratung:</strong><br>
+- Kuerzere Sitzungen (20-30 Min)<br>
+- Bewegung erlauben (Stressball, stehen)<br>
+- Visuelle Hilfen (Whiteboards, Karten)<br>
+- Struktur geben (klare Agenda, Timer)<br>
+- Eine Anweisung auf einmal<br>
+- Staerken betonen (Kreativitaet, Energie)</div>
+
+<div class="quiz" id="quiz_m2q10">
+<p class="quiz-question">Welcher ADHS-Typ wird am haeufigsten uebersehen?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m2q10" value="0"> Hyperaktiv-impulsiv</label></li>
+<li><label><input type="radio" name="m2q10" value="1"> Kombiniert</label></li>
+<li><label><input type="radio" name="m2q10" value="2"> Vorwiegend unaufmerksam</label></li>
+<li><label><input type="radio" name="m2q10" value="3"> Alle werden gleich haeufig erkannt</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m2q10',2,'Der unaufmerksame Typ (haeufiger bei Maedchen) faellt nicht auf, weil er nicht stoert.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m2q10"></div>
+</div>
+</div>
+
+<!-- TAB 5: TRAUMA -->
+<div id="m2-t5" class="tab-content">
+<h3>Trauma und PTBS bei Jugendlichen</h3>
+<p><strong>25-70% der Jugendlichen</strong> erleben mindestens ein traumatisches Ereignis.</p>
+
+<h4>Die 3 Trauma-Typen</h4>
+<div class="cols-3">
+<div><strong>Typ I — Einzelereignis</strong><ul><li>Unfall, Naturkatastrophe</li><li>Einmaliger Uebergriff</li><li>Zeuge von Gewalt</li><li>Ploetzlicher Todesfall</li></ul></div>
+<div><strong>Typ II — Chronisch</strong><ul><li>Wiederholter Missbrauch</li><li>Haeusliche Gewalt</li><li>Mobbing ueber Monate</li><li>Krieg, Flucht</li></ul></div>
+<div><strong>Entwicklungstrauma</strong><ul><li>Vernachlaessigung in Kindheit</li><li>Emotionale Deprivation</li><li>Instabile Bezugspersonen</li><li>Oft: desorganisierte Bindung</li></ul></div>
+</div>
+
+<h4>Wie Trauma sich im Schulalltag zeigt</h4>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Hypervigilanz</button>
+<div class="acc-body"><p>Scannt staendig den Raum, sitzt am Ausgang, zuckt bei Geraueschen zusammen, kann sich nicht entspannen.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Dissoziation</button>
+<div class="acc-body"><p>Wirkt abwesend, "nicht da", starrer Blick, reagiert nicht auf Ansprache. NICHT mit Tagtraeumen oder ADHS verwechseln!</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Emotionale Ueberflutung</button>
+<div class="acc-body"><p>Ploetzliche Wutausbrueche oder Weinkraempfe, scheinbar ohne Ausloeser. Ein Geraeusch, Geruch oder Wort kann einen Flashback ausloesen.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Vermeidung</button>
+<div class="acc-body"><p>Meidet bestimmte Orte, Personen oder Themen. Fehlt bei Themen, die mit dem Trauma zusammenhaengen.</p></div>
+</div>
+
+<h4>KRITISCH: Trauma vs. ADHS — Verwechslungsgefahr</h4>
+<div class="cols">
+<div><strong>ADHS:</strong><ul><li>Symptome seit Kindheit</li><li>Konsistent ueber Kontexte</li><li>Hyperaktivitaet ist "freudig"</li><li>Reagiert auf Struktur</li><li>Kein Schreckreflex</li></ul></div>
+<div><strong>Trauma:</strong><ul><li>Symptome NACH einem Ereignis</li><li>Kontextabhaengig (Trigger)</li><li>Hyperaktivitaet ist "angespannt"</li><li>Reagiert auf Sicherheit</li><li>Uebertriebener Schreckreflex</li></ul></div>
+</div>
+
+<div class="red-flag"><strong>Was du NICHT tun solltest bei Traumatisierten:</strong><br>
+- Nicht erzwingen, ueber das Trauma zu sprechen<br>
+- Nicht "Schau mich an!" erzwingen<br>
+- Keine Ueberraschungsuebungen<br>
+- Nicht von hinten ansprechen oder anfassen<br>
+- Nicht: "Das ist lange her, jetzt ist es vorbei"</div>
+
+<hr>
+<div class="case-study">
+<strong>Fallvignette: Amara (16) — Fluechterfahrung</strong><br><br>
+Amara ist vor 2 Jahren aus Syrien geflohen. Sie ist eine gute Schuelerin, aber bei lauten Geraueschen erstarrt sie komplett. Einmal hat sie unter dem Tisch gesessen und gezittert. Lehrer:innen berichten, dass sie manchmal "wegdriftet".
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Was beobachtest du?</button>
+<div class="acc-body"><p><strong>PTBS:</strong> Hypervigilanz, Flashbacks/Reexperiencing, Dissoziation, Vermeidung.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Was tust du, wenn Amara unter dem Tisch sitzt?</button>
+<div class="acc-body"><p>1. Ruhig hinknien<br>2. "Amara, du bist in der Schule. Du bist sicher."<br>3. Grounding: "Kannst du den Boden spueren?"<br>4. NICHT anfassen ohne zu fragen<br>5. "Du bist sicher. Das war eine Erinnerung."</p></div>
+</div>
+
+<div class="quiz" id="quiz_m2q11">
+<p class="quiz-question">Was ist der wichtigste Unterschied zwischen ADHS und Trauma-bedingten Konzentrationsproblemen?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m2q11" value="0"> Kein Unterschied</label></li>
+<li><label><input type="radio" name="m2q11" value="1"> ADHS-Symptome bestehen seit der Kindheit, Trauma-Symptome beginnen NACH einem Ereignis</label></li>
+<li><label><input type="radio" name="m2q11" value="2"> ADHS ist neurologisch, Trauma ist psychologisch</label></li>
+<li><label><input type="radio" name="m2q11" value="3"> Trauma-Kinder sind stiller</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m2q11',1,'Zeitlicher Verlauf ist der Schluesselunterschied. ADHS-Symptome sind von Anfang an da. Trauma-Symptome beginnen nach einem belastenden Ereignis.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m2q11"></div>
+</div>
+</div>
+
+<!-- TAB 6: ESSSTOERUNGEN -->
+<div id="m2-t6" class="tab-content">
+<h3>Essstoerungen</h3>
+<div class="error-box"><strong>Essstoerungen haben die HOECHSTE Mortalitaetsrate aller psychischen Stoerungen.</strong> Frueherkennung rettet Leben.</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Anorexia Nervosa</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Starke Gewichtsreduktion, Angst vor Gewichtszunahme, verzerrte Koerperwahrnehmung.</p>
+<p><strong>In der Schule:</strong> Deutlich abgemagert, traegt weite Kleidung, isst in der Mensa extrem wenig, uebertriebener Sport, friert staendig, Haare werden duenn.</p>
+<div class="red-flag"><strong>Red Flag:</strong> BMI &lt; 17.5, Ohnmachtsanfaelle, Herzrhythmusstoerungen — sofortige medizinische Abklaerung!</div>
+</div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Bulimia Nervosa</button>
+<div class="acc-body">
+<p><strong>Was es ist:</strong> Essanfaelle gefolgt von Kompensation (Erbrechen, Abfuehrmittel, extremer Sport).</p>
+<p><strong>In der Schule:</strong> Normalgewichtig (daher schwer zu erkennen!), geht nach dem Essen auf die Toilette, Schwellungen im Gesicht, kaputte Zaehne.</p>
+<div class="red-flag"><strong>Red Flag:</strong> Elektrolytentgleisungen koennen lebensbedrohlich sein.</div>
+</div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Binge-Eating</button>
+<div class="acc-body">
+<p>Wiederholte Essanfaelle ohne Kompensation. Kontrollverlust beim Essen. Gewichtszunahme, isst heimlich, schaemt sich, depressive Symptome.</p>
+</div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Orthorexie</button>
+<div class="acc-body">
+<p>Zwanghaft "gesundes" Essen. Immer mehr Lebensmittel werden ausgeschlossen. Soziale Isolation wegen Essen, kann nicht bei Freunden essen.</p>
+</div>
+</div>
+
+<div class="red-flag"><strong>Was du NICHT sagen solltest:</strong><br>
+- "Iss doch einfach was"<br>
+- "Du siehst doch gar nicht duenn aus" (verstaerkt das Streben)<br>
+- Kommentare zum Gewicht — weder positiv noch negativ</div>
+
+<div class="quiz" id="quiz_m2q13">
+<p class="quiz-question">Welche Essstoerung hat die hoechste Mortalitaetsrate?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m2q13" value="0"> Bulimia Nervosa</label></li>
+<li><label><input type="radio" name="m2q13" value="1"> Binge-Eating</label></li>
+<li><label><input type="radio" name="m2q13" value="2"> Anorexia Nervosa</label></li>
+<li><label><input type="radio" name="m2q13" value="3"> Orthorexie</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m2q13',2,'Anorexia Nervosa hat die hoechste Mortalitaetsrate aller psychischen Stoerungen. 5-10% der Betroffenen sterben daran.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m2q13"></div>
+</div>
+</div>
+
+<!-- TAB 7: WEITERE -->
+<div id="m2-t7" class="tab-content">
+<h3>Weitere Stoerungsbilder</h3>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Schulverweigerung — 4 Typen</button>
+<div class="acc-body">
+<table>
+<tr><th>Typ</th><th>Motivation</th><th>Intervention</th></tr>
+<tr><td><strong>Schulangst</strong></td><td>Angst vor Schule</td><td>Angstbehandlung, graduierte Rueckkehr</td></tr>
+<tr><td><strong>Trennungsangst</strong></td><td>Angst, von Eltern getrennt zu sein</td><td>Elternarbeit, schrittweise Abloesung</td></tr>
+<tr><td><strong>Schwaenzen</strong></td><td>Keine Angst — kein Bock</td><td>Motivationsarbeit, Konsequenzen</td></tr>
+<tr><td><strong>Schulmuedigkeit</strong></td><td>Unter-/Ueberforderung</td><td>Schulische Anpassung</td></tr>
+</table>
+<p><strong>Wichtig:</strong> Jeder Typ braucht eine ANDERE Intervention!</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Aggression — Reaktiv vs. Proaktiv</button>
+<div class="acc-body">
+<div class="cols">
+<div><strong>Reaktive Aggression:</strong><ul><li>Emotional, impulsiv</li><li>Ausgeloest durch Provokation</li><li>Dahinter: Angst, Ueberforderung</li><li>Intervention: Emotionsregulation</li></ul></div>
+<div><strong>Proaktive Aggression:</strong><ul><li>Geplant, instrumentell</li><li>Zielgerichtet (Macht, Status)</li><li>Dahinter: Machtwunsch</li><li>Intervention: Klare Grenzen, Empathiefoerderung</li></ul></div>
+</div>
+<div class="info-box"><strong>Merksatz:</strong> Aggression maskiert IMMER ein unerfuelltes Beduerfnis (Sicherheit, Kontrolle, Zugehoerigkeit, Anerkennung).</div>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Substanzkonsum</button>
+<div class="acc-body">
+<table>
+<tr><th>Stufe</th><th>Beschreibung</th><th>Intervention</th></tr>
+<tr><td>Probierkonsum</td><td>Einmalig/selten, aus Neugier</td><td>Psychoedukation</td></tr>
+<tr><td>Regelmaessig</td><td>Woechentlich, sozial</td><td>Motivierende Gespraechsfuehrung</td></tr>
+<tr><td>Missbrauch</td><td>Trotz Konsequenzen</td><td>Beratung, Weiterverweisung</td></tr>
+<tr><td>Abhaengigkeit</td><td>Kontrollverlust, Entzug</td><td>Fachstelle, Therapie</td></tr>
+</table>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Mobbing &amp; Cybermobbing</button>
+<div class="acc-body">
+<p><strong>Praevalenz:</strong> 10-15%. Cybermobbing hoert nie auf — es folgt nach Hause.</p>
+<p><strong>Warnsignale (Opfer):</strong> Ploetzlich keine Freunde, will nicht zur Schule, veraendertes Online-Verhalten, somatische Beschwerden.</p>
+<p><strong>Erstintervention:</strong></p>
+<ol>
+<li>Glauben und Ernst nehmen</li>
+<li>Dokumentieren (Screenshots sichern)</li>
+<li>Schutz gewaehrleisten</li>
+<li>Taeter:innen ansprechen (nicht konfrontativ)</li>
+<li>Systemische Arbeit: Klasse, Eltern, Lehrer:innen</li>
+<li>Bei Cybermobbing: BEE SECURE (8002 1234)</li>
+</ol>
+</div>
+</div>
+
+<div class="quiz" id="quiz_m2q14">
+<p class="quiz-question">Ein Schueler schwaenzt regelmaessig und verbringt die Zeit mit Freunden. Welcher Typ?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m2q14" value="0"> Schulangst</label></li>
+<li><label><input type="radio" name="m2q14" value="1"> Trennungsangst</label></li>
+<li><label><input type="radio" name="m2q14" value="2"> Schwaenzen</label></li>
+<li><label><input type="radio" name="m2q14" value="3"> Schulmuedigkeit</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m2q14',2,'Schwaenzen: Keine Angst vor der Schule, sondern alternative Aktivitaeten sind attraktiver.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m2q14"></div>
+</div>
+</div>
+
+</div><!-- END MODUL 2 -->
+<!-- MODULE 3: GESPRAECHSFUEHRUNG -->
+<div id="mod-m3" class="module">
+<h2>Modul 3: Gespraechsfuehrung</h2>
+<p><em>Die Kernkompetenz: Wie du mit Jugendlichen sprichst — mit interaktiven Uebungen und Dialogsimulationen.</em></p>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(this,'m3-t1')">Grundhaltungen</button>
+  <button class="tab-btn" onclick="showTab(this,'m3-t2')">Aktives Zuhoeren</button>
+  <button class="tab-btn" onclick="showTab(this,'m3-t3')">Motivierende Gespraechsfuehrung</button>
+  <button class="tab-btn" onclick="showTab(this,'m3-t4')">Loesungsorientiert</button>
+  <button class="tab-btn" onclick="showTab(this,'m3-t5')">Erstgespraech</button>
+  <button class="tab-btn" onclick="showTab(this,'m3-t6')">Schwierige Situationen</button>
+</div>
+
+<!-- TAB 1: GRUNDHALTUNGEN -->
+<div id="m3-t1" class="tab-content active">
+<h3>Grundhaltungen nach Rogers</h3>
+<p>Drei Bedingungen, ohne die kein therapeutisches Gespraech funktioniert:</p>
+<div class="cols-3">
+<div><strong>Empathie</strong><br>Die Welt mit den Augen des Jugendlichen sehen. Nicht "Ich verstehe dich", sondern WIRKLICH verstehen, wie es sich anfuehlt.</div>
+<div><strong>Wertschaetzung</strong><br>Die Person akzeptieren, auch wenn du das Verhalten nicht gutheisst. "Ich mag dich, auch wenn ich dein Verhalten schwierig finde."</div>
+<div><strong>Kongruenz</strong><br>Echt sein. Keine Fassade. Deine Worte und deine Koerpersprache stimmen ueberein. Jugendliche spueren Falschheit sofort.</div>
+</div>
+
+<h4>Empathisch oder nicht? — Interaktive Uebung</h4>
+
+<div class="quiz" id="quiz_m3q1a">
+<p class="quiz-question">Schueler:in sagt: "Niemand mag mich in der Klasse." — Welche Antwort ist empathisch?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m3q1a" value="0"> "Das stimmt doch nicht, du hast doch Freunde!" (Korrigieren)</label></li>
+<li><label><input type="radio" name="m3q1a" value="1"> "Du fuehlst dich gerade ziemlich allein und ausgeschlossen." (Spiegeln)</label></li>
+<li><label><input type="radio" name="m3q1a" value="2"> "Vielleicht solltest du mal auf andere zugehen." (Ratschlag)</label></li>
+<li><label><input type="radio" name="m3q1a" value="3"> "Mir ging es in deinem Alter genauso." (Eigene Geschichte)</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m3q1a',1,'Perfekt: Du spiegelst das Gefuehl, ohne zu korrigieren oder zu bewerten. Ratschlaege sind keine Empathie.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m3q1a"></div>
+</div>
+
+<div class="quiz" id="quiz_m3q1b">
+<p class="quiz-question">Schueler:in sagt: "Ich habe mich geritzt. Aber es hilft mir." — Welche Antwort ist empathisch?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m3q1b" value="0"> "Das darfst du nicht machen!" (Verbot)</label></li>
+<li><label><input type="radio" name="m3q1b" value="1"> "Wollen wir mal schauen, ob wir andere Wege finden?" (Loesungsfokus)</label></li>
+<li><label><input type="radio" name="m3q1b" value="2"> "Es klingt, als waere das gerade dein einziger Weg, mit dem Schmerz umzugehen." (Empathie)</label></li>
+<li><label><input type="radio" name="m3q1b" value="3"> "Warum machst du so etwas?" (Warum-Frage)</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m3q1b',2,'Du anerkennst die Funktion des SVV, ohne es gutzuheissen. Das oeffnet den Dialog. Verbote fuehren zum Verschliessen.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m3q1b"></div>
+</div>
+
+<div class="quiz" id="quiz_m3q1">
+<p class="quiz-question">Was ist der haeufigste "Empathie-Killer" in der Beratung?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m3q1" value="0"> Stille zulassen</label></li>
+<li><label><input type="radio" name="m3q1" value="1"> Zu frueh Ratschlaege geben</label></li>
+<li><label><input type="radio" name="m3q1" value="2"> Offene Fragen stellen</label></li>
+<li><label><input type="radio" name="m3q1" value="3"> Gefuehle spiegeln</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m3q1',1,'Ratschlaege signalisieren: Ich weiss es besser als du. Empathie bedeutet: Erst verstehen, dann (vielleicht) loesen.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m3q1"></div>
+</div>
+</div>
+
+<!-- TAB 2: AKTIVES ZUHOEREN -->
+<div id="m3-t2" class="tab-content">
+<h3>Aktives Zuhoeren — 6 Techniken</h3>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Paraphrasieren</button>
+<div class="acc-body"><p><strong>Was es ist:</strong> Den Inhalt in eigenen Worten wiedergeben.</p><p><strong>Schueler:in sagt:</strong> <em>"Mein Bruder nervt mich total."</em></p><p><strong>Du sagst:</strong> <em>"Dein Bruder geht an deine Sachen und das macht dich richtig wuetend."</em></p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Gefuehle spiegeln</button>
+<div class="acc-body"><p><strong>Was es ist:</strong> Die Emotion benennen, die du hoerst.</p><p><strong>Schueler:in sagt:</strong> <em>"Ich habe die Pruefung verhauen. Ich bin so bloed."</em></p><p><strong>Du sagst:</strong> <em>"Du bist enttaeuscht und aergerst dich ueber dich selbst."</em></p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Zusammenfassen</button>
+<div class="acc-body"><p><strong>Was es ist:</strong> Mehrere Aussagen buendeln.</p><p><strong>Du sagst:</strong> <em>"Du hast gerade eine Menge auf dem Teller: Stress in der Schule, Zoff zu Hause und Aerger mit Freunden."</em></p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Offene Fragen</button>
+<div class="acc-body"><p><strong>Was es ist:</strong> Fragen, die mehr als Ja/Nein erfordern.</p><p>STATT: "Bist du traurig?" → <em>"Wie fuehlt sich das fuer dich an?" / "Was geht dir durch den Kopf?"</em></p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Minimale Ermutigungen</button>
+<div class="acc-body"><p>Kleine Signale, dass du zuhoerst: "Mhm", "Ja", "Aha", "Und dann?", Nicken, Blickkontakt halten.</p></div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Konkretisieren</button>
+<div class="acc-body"><p><strong>Schueler:in sagt:</strong> <em>"Alles ist scheisse."</em></p><p><strong>Du sagst:</strong> <em>"Was genau ist gerade scheisse? Kannst du mir ein Beispiel nennen?"</em></p></div>
+</div>
+
+<h4>Die haeufigsten Fehler</h4>
+<div class="cols">
+<div class="red-flag"><strong>Was du NICHT tun solltest:</strong><br>- Zu schnell Ratschlaege geben<br>- Eigene Erfahrungen erzaehlen<br>- Gefuehle kleinreden<br>- Moralisieren<br>- Vorschnell interpretieren<br>- Unterbrechen</div>
+<div class="green-box"><strong>Was du stattdessen tust:</strong><br>- Stille aushalten (5-10 Sekunden sind OK!)<br>- Gefuehle benennen, nicht bewerten<br>- "Erzaehl mir mehr" statt "Warum?"<br>- Zusammenfassen statt sofort reagieren<br>- Tempo des Jugendlichen folgen</div>
+</div>
+
+<div class="quiz" id="quiz_m3q2">
+<p class="quiz-question">Ein Schueler sagt: "Alles ist scheisse." Welche Technik wendest du an?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m3q2" value="0"> Paraphrasieren</label></li>
+<li><label><input type="radio" name="m3q2" value="1"> Konkretisieren</label></li>
+<li><label><input type="radio" name="m3q2" value="2"> Gefuehle spiegeln</label></li>
+<li><label><input type="radio" name="m3q2" value="3"> Zusammenfassen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m3q2',1,'Alles ist scheisse ist vage. Konkretisieren hilft: Was genau ist gerade scheisse?')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m3q2"></div>
+</div>
+</div>
+
+<!-- TAB 3: MI -->
+<div id="m3-t3" class="tab-content">
+<h3>Motivierende Gespraechsfuehrung (MI)</h3>
+<p><strong>Kernprinzip:</strong> Motivation kommt vom Klienten, nicht vom Berater. Du ZIEHST die Motivation heraus, statt sie HINEINZUDRUECKEN.</p>
+
+<h4>OARS — Die 4 MI-Techniken</h4>
+<div class="cols">
+<div><strong>O = Open Questions</strong><br>STATT: "Rauchst du?" → "Erzaehl mir ueber dein Rauchen."<br><br><strong>A = Affirmations</strong><br>Nicht: "Toll gemacht!" → "Du hast dich getraut, hierher zu kommen. Das zeigt Mut."</div>
+<div><strong>R = Reflections</strong><br>Einfach: "Du fuehlst dich unter Druck."<br>Komplex: "Einerseits geniesst du das Kiffen, andererseits merkst du, dass es Probleme macht."<br><br><strong>S = Summaries</strong><br>Buendeln, besonders die Ambivalenz hervorheben.</div>
+</div>
+
+<h4>Change Talk erkennen — DARN-CAT</h4>
+<table>
+<tr><th>Typ</th><th>Beispiel</th><th>Was du tust</th></tr>
+<tr><td><strong>D</strong>esire</td><td>"Ich wuenschte, ich koennte aufhoeren"</td><td>Vertiefen</td></tr>
+<tr><td><strong>A</strong>bility</td><td>"Ich koennte weniger kiffen, wenn ich wollte"</td><td>Staerken</td></tr>
+<tr><td><strong>R</strong>easons</td><td>"Meine Noten werden schlechter"</td><td>Explorieren</td></tr>
+<tr><td><strong>N</strong>eed</td><td>"Ich muss etwas aendern"</td><td>Unterstuetzen</td></tr>
+<tr><td><strong>C</strong>ommitment</td><td>"Ich werde weniger kiffen"</td><td>Konkretisieren</td></tr>
+<tr><td><strong>A</strong>ctivation</td><td>"Ich bin bereit"</td><td>Planen</td></tr>
+<tr><td><strong>T</strong>aking Steps</td><td>"Ich habe gestern nicht gekifft"</td><td>Feiern!</td></tr>
+</table>
+
+<h4>Dialog-Simulation: Cannabis-Konsum</h4>
+<p><em>Tim (16) wurde geschickt, weil er auf dem Schulhof gekifft hat.</em></p>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Tim:</span> "Ich weiss nicht, warum ich hier bin. Es war nur ein Joint."</div>
+<div class="dialog-line dialog-bad"><span class="dialog-speaker">Berater:in — FALSCH:</span> "Nur ein Joint? Cannabis ist illegal und schaedlich!"</div>
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Berater:in — RICHTIG:</span> "Du findest es uebertrieben, dass du wegen einem Joint hier sitzt."</div>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Tim:</span> "Ja, genau. Alle kiffen doch."</div>
+<div class="dialog-line dialog-bad"><span class="dialog-speaker">Berater:in — FALSCH:</span> "Nicht alle kiffen. Du redest dir das schoen!"</div>
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Berater:in — RICHTIG:</span> "Fuer dich gehoert das dazu. Gleichzeitig bist du jetzt hier. Was denkst du, wie es weitergeht?"</div>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Tim:</span> "Naja... Meine Mutter regt sich auf. Und meine Noten sind auch nicht toll."</div>
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Berater:in:</span> "Du merkst also, dass das Kiffen Auswirkungen hat — auf deine Mutter und auf die Schule." (Change Talk hervorheben!)</div>
+
+<div class="info-box"><strong>MI-Prinzip:</strong> Wenn du FUER die Veraenderung argumentierst, argumentiert der Klient DAGEGEN. Lass den Klienten seine eigenen Gruende finden.</div>
+
+<div class="quiz" id="quiz_m3q3">
+<p class="quiz-question">Tim sagt: "Meine Noten sind nicht so toll gerade." Was ist das in MI-Sprache?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m3q3" value="0"> Sustain Talk</label></li>
+<li><label><input type="radio" name="m3q3" value="1"> Change Talk (Grund fuer Veraenderung)</label></li>
+<li><label><input type="radio" name="m3q3" value="2"> Widerstand</label></li>
+<li><label><input type="radio" name="m3q3" value="3"> Smalltalk</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m3q3',1,'Tim benennt eine negative Konsequenz = Reasons (DARN). Das ist Change Talk! Vertiefe es.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m3q3"></div>
+</div>
+</div>
+
+<!-- TAB 4: LOESUNGSORIENTIERT -->
+<div id="m3-t4" class="tab-content">
+<h3>Loesungsorientierte Kurzberatung</h3>
+<p><strong>Grundprinzip:</strong> Statt Probleme zu analysieren, suchen wir nach Loesungen, die BEREITS funktionieren.</p>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Die Wunderfrage</button>
+<div class="acc-body">
+<p><strong>Wie du sie stellst:</strong> <em>"Stell dir vor, heute Nacht passiert ein Wunder, und das Problem ist geloest. Woran wuerdest du morgen frueh als erstes merken, dass das Wunder passiert ist?"</em></p>
+<p><strong>Warum sie wirkt:</strong> Umgeht das "Ja, aber" des Problemdenkens. Macht eine positive Zukunft vorstellbar. Fuehrt zu konkreten Zielen.</p>
+</div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Skalierungsfragen</button>
+<div class="acc-body">
+<p><em>"Auf einer Skala von 1 bis 10 — wo stehst du gerade?"</em></p>
+<p><strong>Nachfragen:</strong></p>
+<ul>
+<li>"Was hat dich von 1 auf [aktuelle Zahl] gebracht?" (Ressourcen!)</li>
+<li>"Was muesste passieren, damit du einen Punkt hoeher kommst?" (Kleiner Schritt!)</li>
+</ul>
+</div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Ausnahmefragen</button>
+<div class="acc-body">
+<p><strong>Grundidee:</strong> Kein Problem tritt 24/7 auf.</p>
+<ul>
+<li>"Wann war das Problem etwas weniger schlimm?"</li>
+<li>"Was war da anders? Was hast DU anders gemacht?"</li>
+<li>"Was machen die guten Tage anders?"</li>
+</ul>
+</div>
+</div>
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Bewaeltigungsfragen</button>
+<div class="acc-body">
+<p>"Bei allem, was du durchmachst — wie schaffst du es, trotzdem jeden Tag aufzustehen?"<br>"Was gibt dir die Kraft, weiterzumachen?"</p>
+<p><strong>Warum es wirkt:</strong> Validiert die Belastung UND die Staerke.</p>
+</div>
+</div>
+
+<div class="quiz" id="quiz_m3q5">
+<p class="quiz-question">Eine Schuelerin sagt: "Auf der Skala bin ich bei einer 3." Was fragst du ZUERST?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m3q5" value="0"> "Warum bist du nur bei einer 3?"</label></li>
+<li><label><input type="radio" name="m3q5" value="1"> "Was muesste passieren fuer eine 10?"</label></li>
+<li><label><input type="radio" name="m3q5" value="2"> "Was hat dich von 1 auf 3 gebracht?"</label></li>
+<li><label><input type="radio" name="m3q5" value="3"> "Warum nicht hoeher?"</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m3q5',2,'Immer erst nach den RESSOURCEN fragen: Was hat die 3 ermoeglicht? Nicht: Warum nicht hoeher?')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m3q5"></div>
+</div>
+</div>
+
+<!-- TAB 5: ERSTGESPRAECH -->
+<div id="m3-t5" class="tab-content">
+<h3>Das Erstgespraech — 3 Szenarien</h3>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Szenario 1: Freiwilliger Jugendlicher</button>
+<div class="acc-body">
+<p><strong>Eroeffnung:</strong> <em>"Hallo, schoen dass du da bist. Ich bin [Name]. Alles, was du mir erzaehlst, bleibt unter uns — es sei denn, du bist in Gefahr. Was fuehrt dich her?"</em></p>
+<p><strong>Ablauf:</strong></p>
+<ol>
+<li>Begruessung, Rahmen setzen</li>
+<li>Anliegen explorieren</li>
+<li>Lebenssituation verstehen</li>
+<li>Staerken erfragen</li>
+<li>Aktuelle Belastungen</li>
+<li>Suizidalitaet/SVV checken (routinemaessig)</li>
+<li>Erwartungen klaeren</li>
+<li>Naechste Schritte vereinbaren</li>
+<li>Dokumentieren</li>
+</ol>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Szenario 2: "Ich hab keinen Bock, hier zu sein"</button>
+<div class="acc-body">
+<p><strong>Was du sagst:</strong> <em>"Hey, ich merke, du hast nicht freiwillig hergefunden. Das ist OK. Du musst hier nicht reden. Aber wir haben diese Zeit — wir koennen sie nutzen oder einfach still sitzen. Du entscheidest."</em></p>
+<p><strong>Wenn Stille folgt:</strong> Halte sie aus. 30 Sekunden, eine Minute. Das ist OK.</p>
+<p><strong>Wenn er sagt "Mir geht es gut":</strong> <em>"OK, mag sein. Was glaubst du, warum [Lehrer/Eltern] sich Sorgen machen?"</em> (verschiebt die Perspektive)</p>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Szenario 3: Sehr stiller Jugendlicher</button>
+<div class="acc-body">
+<ol>
+<li>Druck rausnehmen: "Du musst nicht reden."</li>
+<li>Schreiben anbieten</li>
+<li>Geschlossene Fragen als Einstieg</li>
+<li>Ueber Dritte sprechen: "Manche Jugendliche finden es schwer..."</li>
+<li>Kreative Methoden: Zeichnen, Karten, Emotionsrad</li>
+<li>Skalierung mit Fingern</li>
+<li>Stille aushalten — manchmal braucht es 3-4 Sitzungen</li>
+</ol>
+</div>
+</div>
+
+<h4>Checkliste Erstgespraech</h4>
+<ul>
+<li>Begruessung und Vorstellung</li>
+<li>Vertraulichkeit und Grenzen erklaert</li>
+<li>Anliegen / Anlass besprochen</li>
+<li>Lebenssituation exploriert</li>
+<li>Staerken und Ressourcen erfragt</li>
+<li>Aktuelle Belastungsfaktoren identifiziert</li>
+<li>Suizidalitaet / SVV abgefragt (Routine!)</li>
+<li>Erwartungen geklaert</li>
+<li>Naechste Schritte vereinbart</li>
+<li>Dokumentation erstellt</li>
+</ul>
+
+<div class="quiz" id="quiz_m3q6">
+<p class="quiz-question">Ein widerstaendiger Schueler sagt: "Ich brauche keine Hilfe." Wie reagierst du?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m3q6" value="0"> "Wenn es dir gut ginge, waerst du nicht hier."</label></li>
+<li><label><input type="radio" name="m3q6" value="1"> "OK, mag sein. Was glaubst du, warum die anderen sich Sorgen machen?"</label></li>
+<li><label><input type="radio" name="m3q6" value="2"> "Dann koennen wir ja aufhoeren."</label></li>
+<li><label><input type="radio" name="m3q6" value="3"> "Du musst zugeben, dass du Hilfe brauchst."</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m3q6',1,'Die Perspektive verschieben, ohne zu konfrontieren. Andere sehen etwas — was koennten sie sehen?')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m3q6"></div>
+</div>
+</div>
+
+<!-- TAB 6: SCHWIERIGE SITUATIONEN -->
+<div id="m3-t6" class="tab-content">
+<h3>Schwierige Gespraechssituationen</h3>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Schueler:in weint unkontrolliert</button>
+<div class="acc-body">
+<ol>
+<li>Stille aushalten. Nicht sofort reden. Weinen duerfen.</li>
+<li>Taschentuecher anbieten, Wasser hinstellen.</li>
+<li>"Ich bin hier. Nimm dir die Zeit."</li>
+<li>NICHT: "Nicht weinen", "Ist doch nicht so schlimm", oder sofort umarmen.</li>
+<li>Wenn ruhiger: "Magst du mir erzaehlen, was dich so bewegt?"</li>
+</ol>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Schueler:in wird aggressiv / droht</button>
+<div class="acc-body">
+<ol>
+<li><strong>Sicherheit ZUERST.</strong> Wenn bedroht: Raum verlassen.</li>
+<li>Abstand halten (1.5+ Meter), seitlich positionieren</li>
+<li>Ruhig bleiben. Stimme senken.</li>
+<li>Gefuehl validieren: "Ich sehe, dass du wuetend bist. Das ist OK."</li>
+<li>Verhalten begrenzen: "Wuetend sein ist OK. Sachen kaputtmachen nicht."</li>
+<li>Wahlmoeglichkeiten anbieten</li>
+<li>NICHT: Argumentieren, drohen, schreien, festhalten.</li>
+<li>Zeit geben. Adrenalin braucht 20+ Minuten.</li>
+</ol>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Schueler:in dissoziiert (ist "weg")</button>
+<div class="acc-body">
+<ol>
+<li>Erkennen: Starrer Blick, reagiert nicht, wirkt "nicht da"</li>
+<li>Sanft mit Namen ansprechen: "[Name], ich bin hier. Du bist in der Schule."</li>
+<li>Grounding: "Kannst du deine Fuesse auf dem Boden spueren?"</li>
+<li>Sinne aktivieren: Eiswuerfel, kaltes Wasser, Pfefferminz</li>
+<li>5-4-3-2-1: "Nenne mir 5 Dinge, die du siehst."</li>
+<li>NICHT: Anfassen ohne Erlaubnis, schuetteln, anschreien.</li>
+</ol>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Schueler:in offenbart Missbrauch</button>
+<div class="acc-body">
+<ol>
+<li>Ruhig bleiben.</li>
+<li><strong>"Ich glaube dir."</strong> (Die wichtigsten Worte.)</li>
+<li>Zuhoeren. Nicht unterbrechen.</li>
+<li>KEINE Leitfragen. Offene Fragen: "Was ist passiert?"</li>
+<li><strong>"Das ist nicht deine Schuld."</strong></li>
+<li>Ehrlich sein: "Ich muss dafuer sorgen, dass du sicher bist."</li>
+<li>Dokumentieren (woertliche Aussagen)</li>
+<li>ONE melden (247-73100) innerhalb von 24h</li>
+<li>Taeter:in NICHT konfrontieren</li>
+<li>Eltern NICHT informieren, wenn Taeter:in im Haushalt lebt</li>
+</ol>
+<div class="red-flag"><strong>Pflichtmeldung Luxemburg:</strong> Artikel 7 Jugendschutzgesetz. Kinderschutz geht VOR Schweigepflicht. ONE: 247-73100</div>
+</div>
+</div>
+
+<div class="accordion">
+<button class="acc-header" onclick="toggleAcc(this)">Schueler:in sagt "Ich will sterben"</button>
+<div class="acc-body">
+<ol>
+<li>Ruhig bleiben.</li>
+<li>Direkt nachfragen: "Hast du Gedanken, dir etwas anzutun?"</li>
+<li>Zuhoeren. Nicht sofort beruhigen.</li>
+<li>Risiko einschaetzen: Plan? Zugang zu Mitteln?</li>
+<li>Ernst nehmen. Jede Aussage ueber Suizid ist ernst.</li>
+<li>Nicht alleine lassen bei akuter Gefahr.</li>
+<li>Bei akuter Gefahr: 112. Sonst: SOS Detresse 45 45 45</li>
+<li>Sicherheitsplan erstellen (siehe Modul 4)</li>
+<li>Folgetermin am naechsten Tag.</li>
+</ol>
+<div class="error-box"><strong>NOTFALLNUMMERN:</strong> 112 (Notruf) | 45 45 45 (SOS Detresse) | 116 111 (Kanner-Jugendtelefon)</div>
+</div>
+</div>
+
+<div class="quiz" id="quiz_m3q7">
+<p class="quiz-question">Ein Schueler sagt: "Mein Stiefvater schlaegt mich." Was sagst du ZUERST?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m3q7" value="0"> "Bist du sicher?"</label></li>
+<li><label><input type="radio" name="m3q7" value="1"> "Ich glaube dir."</label></li>
+<li><label><input type="radio" name="m3q7" value="2"> "Warum hast du das nicht frueher gesagt?"</label></li>
+<li><label><input type="radio" name="m3q7" value="3"> "Das muessen wir sofort melden."</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m3q7',1,'Ich glaube dir — die drei wichtigsten Worte bei einer Offenbarung. Nicht hinterfragen, nicht anzweifeln.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m3q7"></div>
+</div>
+</div>
+
+</div><!-- END MODUL 3 -->
+<!-- MODULE 4: INTERVENTIONEN -->
+<div id="mod-m4" class="module">
+<h2>Modul 4: Interventionen &amp; Methoden</h2>
+<p><em>Deine Toolbox: Welche Technik wann? Schritt-fuer-Schritt-Anleitungen mit Kontraindikationen.</em></p>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(this,'m4-t1')">CBT-Techniken</button>
+  <button class="tab-btn" onclick="showTab(this,'m4-t2')">Emotionsregulation</button>
+  <button class="tab-btn" onclick="showTab(this,'m4-t3')">DBT-Skills</button>
+  <button class="tab-btn" onclick="showTab(this,'m4-t4')">Narrative &amp; Kreativ</button>
+  <button class="tab-btn" onclick="showTab(this,'m4-t5')">Achtsamkeit</button>
+  <button class="tab-btn" onclick="showTab(this,'m4-t6')">Sicherheitsplanung</button>
+</div>
+
+<div id="m4-t1" class="tab-content active">
+<h3>Kognitive Verhaltenstherapie (CBT)</h3>
+<p><strong>Grundprinzip:</strong> Gedanke → Gefuehl → Verhalten. Veraendere den Gedanken, veraendert sich das Gefuehl.</p>
+
+<h4>Die 10 wichtigsten kognitiven Verzerrungen</h4>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Schwarz-Weiss-Denken</button><div class="acc-body"><p><strong>Was:</strong> Alles oder nichts.</p><p><strong>Jugendlicher:</strong> <em>"Wenn ich keine 1 habe, bin ich ein Versager."</em></p><p><strong>Gegenfrage:</strong> <em>"Gibt es etwas zwischen Versager und perfekt?"</em></p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Katastrophisieren</button><div class="acc-body"><p><strong>Jugendlicher:</strong> <em>"Wenn ich durchfalle, ist mein ganzes Leben vorbei."</em></p><p><strong>Gegenfrage:</strong> <em>"Was wuerde WIRKLICH passieren? Und dann?"</em></p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Gedankenlesen</button><div class="acc-body"><p><strong>Jugendlicher:</strong> <em>"Alle denken, ich bin dumm."</em></p><p><strong>Gegenfrage:</strong> <em>"Woher weisst du das? Haben sie das gesagt?"</em></p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Uebergeneralisierung</button><div class="acc-body"><p><strong>Jugendlicher:</strong> <em>"Nie klappt etwas bei mir."</em></p><p><strong>Gegenfrage:</strong> <em>"NIE? Gab es letzte Woche einen Moment, wo etwas geklappt hat?"</em></p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Emotionales Schlussfolgern</button><div class="acc-body"><p><strong>Jugendlicher:</strong> <em>"Ich fuehle mich dumm, also bin ich dumm."</em></p><p><strong>Gegenfrage:</strong> <em>"Gefuehle sind keine Fakten. Was sagen die Beweise?"</em></p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Personalisierung</button><div class="acc-body"><p><strong>Jugendlicher:</strong> <em>"Die Lehrerin mag mich nicht, deshalb die schlechte Note."</em></p><p><strong>Gegenfrage:</strong> <em>"Welche anderen Gruende koennte es geben?"</em></p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Sollte-Tyrannei</button><div class="acc-body"><p><strong>Jugendlicher:</strong> <em>"Ich sollte IMMER gute Noten haben."</em></p><p><strong>Gegenfrage:</strong> <em>"Woher kommt dieses Sollen? Was passiert, wenn nicht?"</em></p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Selektive Aufmerksamkeit</button><div class="acc-body"><p><strong>Jugendlicher:</strong> <em>"Die eine 4 ruiniert alles" (trotz drei 2en).</em></p><p><strong>Gegenfrage:</strong> <em>"Wenn wir ALLE Noten anschauen — was faellt dir auf?"</em></p></div></div>
+
+<h4>Gedankenprotokoll</h4>
+<table>
+<tr><th>Spalte</th><th>Inhalt</th></tr>
+<tr><td>Situation</td><td>Mathearbeit: Note 4</td></tr>
+<tr><td>Automatischer Gedanke</td><td>"Ich bin dumm. Ich werde nie Abi schaffen."</td></tr>
+<tr><td>Gefuehl</td><td>Scham (80%), Angst (70%), Wut (40%)</td></tr>
+<tr><td>Beweise DAFUER</td><td>Eine schlechte Note, habe nicht alles verstanden</td></tr>
+<tr><td>Beweise DAGEGEN</td><td>In Deutsch 2, in Bio 1, letzte Mathearbeit war 3</td></tr>
+<tr><td>Alternativer Gedanke</td><td>"Eine 4 ist aergerlich, aber kein Weltuntergang."</td></tr>
+</table>
+
+<div class="red-flag"><strong>Wann CBT NICHT anwenden:</strong><br>- Akute Krise (erst stabilisieren!)<br>- Schweres Trauma (erst Sicherheit)<br>- Aktive Psychose<br>- Starke Dissoziation</div>
+
+<div class="quiz" id="quiz_m4q1">
+<p class="quiz-question">Eine Schuelerin sagt: "Ich fuehle mich haesslich, also BIN ich haesslich." Welche kognitive Verzerrung?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m4q1" value="0"> Katastrophisieren</label></li>
+<li><label><input type="radio" name="m4q1" value="1"> Emotionales Schlussfolgern</label></li>
+<li><label><input type="radio" name="m4q1" value="2"> Personalisierung</label></li>
+<li><label><input type="radio" name="m4q1" value="3"> Gedankenlesen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m4q1',1,'Emotionales Schlussfolgern: Ich fuehle X, also ist X wahr. Gefuehle werden als Beweis genommen.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m4q1"></div>
+</div>
+</div>
+
+<div id="m4-t2" class="tab-content">
+<h3>Emotionsregulationsstrategien</h3>
+<table>
+<tr><th>Zustand</th><th>Technik</th><th>Warum</th></tr>
+<tr><td>Sehr aufgeregt, panisch</td><td><strong>TIPP (Temperatur)</strong></td><td>Kaltes Wasser aktiviert Tauchreflex</td></tr>
+<tr><td>Aengstlich, angespannt</td><td><strong>Box Breathing</strong></td><td>Parasympathikus aktivieren</td></tr>
+<tr><td>Dissoziierend, "weg"</td><td><strong>5-4-3-2-1 Grounding</strong></td><td>Sinnesreize holen zurueck</td></tr>
+<tr><td>Wuetend, voller Energie</td><td><strong>Intense Bewegung</strong></td><td>Adrenalin abbauen</td></tr>
+<tr><td>Ueberwaeltigt</td><td><strong>Emotion Surfing</strong></td><td>Welle beobachten statt kaempfen</td></tr>
+</table>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Box Breathing (4-4-4-4)</button><div class="acc-body"><p>1. Einatmen — 4 zaehlen<br>2. Luft anhalten — 4 zaehlen<br>3. Ausatmen — 4 zaehlen<br>4. Luft anhalten — 4 zaehlen<br>5. 4-5 Mal wiederholen</p><p><em>"Stell dir vor, du zeichnest ein Quadrat in der Luft."</em></p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">5-4-3-2-1 Grounding</button><div class="acc-body"><p><strong>5</strong> Dinge, die du SIEHST<br><strong>4</strong> Dinge, die du FUEHLST<br><strong>3</strong> Dinge, die du HOERST<br><strong>2</strong> Dinge, die du RIECHST<br><strong>1</strong> Ding, das du SCHMECKST</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">TIPP-Skills</button><div class="acc-body"><p><strong>T = Temperatur:</strong> Kaltes Wasser ins Gesicht → Herzfrequenz sinkt sofort um 10-25%<br><strong>I = Intense Bewegung:</strong> Treppen rennen, Liegestuetze, 5-10 Min<br><strong>P = Paced Breathing:</strong> Ausatmung laenger als Einatmung (4 ein, 6 aus)<br><strong>P = Progressive Muskelentspannung:</strong> 5 Sek anspannen, dann loslassen</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Emotion Surfing</button><div class="acc-body"><p><em>"Gefuehle sind wie Wellen im Meer. Sie kommen, werden groesser, erreichen den Hoehepunkt — und gehen wieder. Du bist der Surfer: Du reitest die Welle, statt gegen sie zu kaempfen."</em></p></div></div>
+
+<div class="quiz" id="quiz_m4q3">
+<p class="quiz-question">Ein Schueler sitzt erstarrt da und reagiert nicht (Dissoziation). Welche Technik?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m4q3" value="0"> Box Breathing</label></li>
+<li><label><input type="radio" name="m4q3" value="1"> 5-4-3-2-1 Grounding</label></li>
+<li><label><input type="radio" name="m4q3" value="2"> Emotion Surfing</label></li>
+<li><label><input type="radio" name="m4q3" value="3"> Progressive Muskelentspannung</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m4q3',1,'5-4-3-2-1 Grounding: Sinnesreize holen den Jugendlichen zurueck in den Koerper und den Raum.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m4q3"></div>
+</div>
+</div>
+
+<div id="m4-t3" class="tab-content">
+<h3>DBT-Skills fuer Jugendliche</h3>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">STOP-Skill</button><div class="acc-body">
+<p><strong>S = Stop</strong> — Halte an. Tue NICHTS.<br><strong>T = Take a step back</strong> — Tritt zurueck.<br><strong>O = Observe</strong> — Was passiert? Was fuehle ich?<br><strong>P = Proceed mindfully</strong> — Handle bewusst.</p>
+<p><strong>Beispiel:</strong> Max (15) will eine wuetende Nachricht an seine Ex schicken.<br>S: Handy weglegen. T: Raum wechseln. O: "Ich bin wuetend und verletzt." P: "Was passiert morgen, wenn ich das schicke?"</p>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">DEAR MAN — Sich durchsetzen, ohne zu verletzen</button><div class="acc-body">
+<p><strong>D</strong> = Describe (Fakten beschreiben)<br><strong>E</strong> = Express (Gefuehle ausdruecken)<br><strong>A</strong> = Assert (Sagen, was du willst)<br><strong>R</strong> = Reinforce (Erklaeren, warum es fuer beide gut waere)<br><strong>M</strong> = Mindful (Beim Thema bleiben)<br><strong>A</strong> = Appear confident<br><strong>N</strong> = Negotiate</p>
+<p><em>"Wenn du ueber meine Sachen gehst, ohne zu fragen (D), fuehle ich mich nicht respektiert (E). Ich moechte, dass du mich vorher fragst (A). Dann wuerde ich sie dir gerne leihen (R)."</em></p>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Wise Mind — Der kluge Geist</button><div class="acc-body">
+<table>
+<tr><th>Emotionaler Geist</th><th>Vernuenftiger Geist</th><th>Weiser Geist</th></tr>
+<tr><td>"Ich bin so wuetend, ich schmeiss alles hin!"</td><td>"Statistisch ist Abbruch schlecht."</td><td>"Ich bin wuetend, aber Aufhoeren waere keine gute Entscheidung."</td></tr>
+<tr><td>Heiss, impulsiv</td><td>Kalt, logisch</td><td>Warm, integriert</td></tr>
+</table>
+</div></div>
+
+<div class="quiz" id="quiz_m4q4">
+<p class="quiz-question">Ein Schueler will eine wuetende Nachricht an seinen Lehrer schicken. Welchen Skill?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m4q4" value="0"> DEAR MAN</label></li>
+<li><label><input type="radio" name="m4q4" value="1"> STOP-Skill</label></li>
+<li><label><input type="radio" name="m4q4" value="2"> Wise Mind</label></li>
+<li><label><input type="radio" name="m4q4" value="3"> Emotion Surfing</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m4q4',1,'STOP: Erst anhalten, bevor eine impulsive Handlung Konsequenzen hat.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m4q4"></div>
+</div>
+</div>
+
+<div id="m4-t4" class="tab-content">
+<h3>Narrative Therapie &amp; Kreative Methoden</h3>
+
+<h4>Externalisierung — Das Problem von der Person trennen</h4>
+<p>Nicht "Du BIST aengstlich", sondern "Die Angst SAGT DIR..."</p>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Berater:in:</span> "Wie heisst diese Angst? Gib ihr einen Namen."</div>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Jugendliche:</span> "Der schwarze Schatten."</div>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Berater:in:</span> "Wann kommt der schwarze Schatten? Was fluester er dir ein?"</div>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Jugendliche:</span> "Vor Pruefungen. Er sagt, ich werde versagen."</div>
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Berater:in:</span> "Und gibt es Momente, wo er leiser ist?"</div>
+
+<div class="intervention"><strong>Tree of Life — Der Lebensbaum (45-60 Min):</strong><br>
+<strong>Wurzeln:</strong> Wo komme ich her?<br>
+<strong>Stamm:</strong> Meine Staerken und Faehigkeiten<br>
+<strong>Aeste:</strong> Meine Wuensche und Hoffnungen<br>
+<strong>Blaetter:</strong> Wichtige Menschen<br>
+<strong>Fruechte:</strong> Meine Erfolge<br>
+<strong>Blueten:</strong> Was ich anderen gebe</div>
+
+<h4>10 Kreative Methoden</h4>
+<table>
+<tr><th>Methode</th><th>Alter</th><th>Dauer</th><th>Beschreibung</th></tr>
+<tr><td>Emotionsrad</td><td>12-16</td><td>15 Min</td><td>Emotionen zeichnen und benennen</td></tr>
+<tr><td>Koerperumriss</td><td>10-18</td><td>20 Min</td><td>Emotionen im Koerper lokalisieren</td></tr>
+<tr><td>Lebenscollage</td><td>14-18</td><td>45 Min</td><td>So bin ich / So will ich sein</td></tr>
+<tr><td>Wutvulkan</td><td>10-14</td><td>20 Min</td><td>Ausloeser und Abkuehlung visualisieren</td></tr>
+<tr><td>Sorgen-Box</td><td>10-16</td><td>10 Min</td><td>Sorgen symbolisch ablegen</td></tr>
+<tr><td>Staerken-Stern</td><td>12-18</td><td>15 Min</td><td>5 Zacken = 5 Staerken</td></tr>
+<tr><td>Brief an juengeres Ich</td><td>14-18</td><td>20 Min</td><td>Selbstmitgefuehl</td></tr>
+<tr><td>Soundtrack meines Lebens</td><td>14-18</td><td>30 Min</td><td>5 Songs, die mein Leben beschreiben</td></tr>
+<tr><td>Masken</td><td>12-18</td><td>30 Min</td><td>Aussen vs. Innen</td></tr>
+<tr><td>Bemalte Steine</td><td>10-16</td><td>20 Min</td><td>Ressourcen-Anker zum Mitnehmen</td></tr>
+</table>
+
+<div class="quiz" id="quiz_m4q5">
+<p class="quiz-question">Ein Jugendlicher sagt: "Ich BIN ein Versager." Welche Technik?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m4q5" value="0"> Gedankenprotokoll</label></li>
+<li><label><input type="radio" name="m4q5" value="1"> Externalisierung</label></li>
+<li><label><input type="radio" name="m4q5" value="2"> Box Breathing</label></li>
+<li><label><input type="radio" name="m4q5" value="3"> Skalierungsfrage</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m4q5',1,'Externalisierung: Es gibt eine Stimme, die sagt du bist ein Versager. Wann ist sie laut? Wann leiser?')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m4q5"></div>
+</div>
+</div>
+
+<div id="m4-t5" class="tab-content">
+<h3>Achtsamkeit fuer Jugendliche</h3>
+<div class="warning-box"><strong>Vorsicht bei Trauma:</strong> Achtsamkeitsuebungen mit Augen schliessen koennen bei traumatisierten Jugendlichen Flashbacks ausloesen. Immer Option geben, Augen offen zu lassen. Bei Dissoziation: ABBRECHEN und Grounding.</div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Achtsames Atmen (3 Min)</button><div class="acc-body"><p>Atme normal und zaehle die Atemzuege bis 10, dann von vorne. Gedanken kommen und gehen — bringe die Aufmerksamkeit sanft zurueck zum Atem.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Body Scan Kurzversion (5 Min)</button><div class="acc-body"><p>Fuesse → Beine → Bauch → Brust → Arme → Haende → Schultern → Nacken → Kopf. Nur wahrnehmen, nicht veraendern.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">RAIN</button><div class="acc-body"><p><strong>R</strong>ecognize: Was passiert gerade?<br><strong>A</strong>llow: Es sein lassen<br><strong>I</strong>nvestigate: Wo im Koerper spuere ich das?<br><strong>N</strong>on-Identification: "Ich HABE Wut, ich BIN nicht die Wut"</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Drei gute Dinge</button><div class="acc-body"><p>Jeden Abend 3 Dinge aufschreiben, die heute gut waren. Auch kleine Dinge. Forschung zeigt: Nach 2 Wochen steigt das Wohlbefinden.</p></div></div>
+
+<h4>Psychoedukation: Das Gehirn erklaeren</h4>
+<div class="info-box"><em>"In deinem Gehirn gibt es einen Wachhund — die Amygdala. Sie schuetzt dich. Wenn sie Alarm schlaegt: Herz rast, Muskeln spannen. Das ist super bei echter Gefahr. Aber manchmal schlaegt sie Alarm, obwohl keine echte Gefahr da ist — z.B. vor einer Pruefung. Mit Atemuebungen kannst du dem Wachhund sagen: Es ist OK."</em></div>
+
+<div class="quiz" id="quiz_m4q6">
+<p class="quiz-question">Wann solltest du Achtsamkeit mit Augen schliessen NICHT durchfuehren?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m4q6" value="0"> Bei Pruefungsangst</label></li>
+<li><label><input type="radio" name="m4q6" value="1"> Bei Jugendlichen mit Traumahintergrund</label></li>
+<li><label><input type="radio" name="m4q6" value="2"> Bei ADHS</label></li>
+<li><label><input type="radio" name="m4q6" value="3"> Bei Traurigkeit</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m4q6',1,'Augen schliessen + Koerperfokus kann bei Trauma Flashbacks ausloesen. Immer Augen-offen-Option geben.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m4q6"></div>
+</div>
+</div>
+
+<div id="m4-t6" class="tab-content">
+<h3>Sicherheitsplanung (Stanley &amp; Brown)</h3>
+<div class="error-box"><strong>Wichtig:</strong> Sicherheitsplaene ersetzen Anti-Suizid-Vertraege (die wirken NICHT). Der Plan wird GEMEINSAM mit dem Jugendlichen erstellt.</div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Schritt 1: Warnsignale erkennen</button><div class="acc-body"><p>Was sind DEINE persoenlichen Warnsignale? Z.B. "Ich ziehe mich zurueck", "Ich schlafe nicht", "Alles ist sinnlos", "Ich fuehle mich taub"</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Schritt 2: Eigene Bewaeltigungsstrategien</button><div class="acc-body"><p>Was kannst DU selbst tun? Musik hoeren, joggen, duschen, zeichnen, mit dem Hund rausgehen, Tagebuch schreiben.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Schritt 3: Menschen und Orte zur Ablenkung</button><div class="acc-body"><p>Wohin kannst du gehen? Wen treffen (ohne ueber das Problem zu reden)? Cafe, Bibliothek, Sportverein.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Schritt 4: Menschen, die helfen koennen</button><div class="acc-body"><p>Wen kannst du anrufen und sagen: "Mir geht es nicht gut"? Mindestens 3 Personen mit Telefonnummern.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Schritt 5: Professionelle Hilfe</button><div class="acc-body"><p><strong>112</strong> — Notruf<br><strong>45 45 45</strong> — SOS Detresse (24/7)<br><strong>116 111</strong> — Kanner-Jugendtelefon<br>Naechste Notaufnahme: CHL Luxembourg</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Schritt 6: Umgebung sicher machen</button><div class="acc-body"><p>Medikamente wegsperren, scharfe Gegenstaende entfernen, Zugang zu Mitteln reduzieren.</p></div></div>
+
+<h4>Staerkenorientierung — 9 Fragen</h4>
+<ol>
+<li>Was kannst du besonders gut?</li>
+<li>Was sagen andere, was du gut kannst?</li>
+<li>Worauf bist du stolz?</li>
+<li>Was gibt dir Energie?</li>
+<li>Wann fuehlst du dich am wohlsten?</li>
+<li>Was hast du schon Schwieriges ueberstanden?</li>
+<li>Wer glaubt an dich?</li>
+<li>Was wuerdest du gerne lernen?</li>
+<li>Was macht dich einzigartig?</li>
+</ol>
+
+<div class="quiz" id="quiz_m4q7">
+<p class="quiz-question">Warum werden Anti-Suizid-Vertraege NICHT empfohlen?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m4q7" value="0"> Sie funktionieren genauso gut</label></li>
+<li><label><input type="radio" name="m4q7" value="1"> Sie erzeugen Schuldgefuehle statt echte Sicherheit und sind nicht evidenzbasiert</label></li>
+<li><label><input type="radio" name="m4q7" value="2"> Sie sind zu aufwaendig</label></li>
+<li><label><input type="radio" name="m4q7" value="3"> Sie sind nur fuer Erwachsene</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m4q7',1,'Anti-Suizid-Vertraege sind NICHT evidenzbasiert. Sie erzeugen Schuldgefuehle. Sicherheitsplaene sind der Goldstandard.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m4q7"></div>
+</div>
+</div>
+
+</div><!-- END MODUL 4 -->
+<!-- MODULE 5: KRISEN -->
+<div id="mod-m5" class="module">
+<h2>Modul 5: Krisen &amp; Notfaelle</h2>
+<p><em>Was tust du in den ersten 5 Minuten? Schritt-fuer-Schritt-Protokolle fuer jede Krisensituation.</em></p>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(this,'m5-t1')">SAFER-R Modell</button>
+  <button class="tab-btn" onclick="showTab(this,'m5-t2')">Akute Suizidalitaet</button>
+  <button class="tab-btn" onclick="showTab(this,'m5-t3')">Aggression &amp; Gewalt</button>
+  <button class="tab-btn" onclick="showTab(this,'m5-t4')">Offenbarung Missbrauch</button>
+  <button class="tab-btn" onclick="showTab(this,'m5-t5')">Notfallnummern</button>
+</div>
+
+<div id="m5-t1" class="tab-content active">
+<h3>SAFER-R — 6-Phasen-Modell der Krisenintervention</h3>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">S — Stabilisieren</button><div class="acc-body"><p>Physische Sicherheit gewaehrleisten. Reize reduzieren (ruhiger Raum). Ruhig und praesent sein. "Du bist hier sicher. Ich bin bei dir."</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">A — Anerkennen</button><div class="acc-body"><p>"Ich sehe, dass es dir gerade sehr schlecht geht." Gefuehle ernst nehmen, nicht kleinreden.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">F — Facilitate (Verstehen foerdern)</button><div class="acc-body"><p>"Was du erlebst, ist eine normale Reaktion auf eine unnormale Situation." Koerperliche Symptome erklaeren.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">E — Encourage (Bewaeltigung aktivieren)</button><div class="acc-body"><p>"Was hat dir in schwierigen Situationen frueher geholfen?" "Wer ist fuer dich da?" Bewaeltigungsstrategien anbieten.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">R — Recovery (Erholung)</button><div class="acc-body"><p>Konkrete naechste Schritte planen. "Was brauchst du jetzt?" Struktur geben: "Wir treffen uns morgen nochmal."</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">R — Referral (Weiterleitung)</button><div class="acc-body"><p>Aktive Weiterleitung (nicht nur eine Nummer geben!). "Ich rufe jetzt dort an." Begleitung zum Termin anbieten.</p></div></div>
+
+<hr>
+<div class="case-study">
+<strong>Krisenszenario: Lea (14) im Badezimmer</strong><br><br>
+Eine Lehrerin findet Lea im Schulbadezimmer. Sie sitzt auf dem Boden, weint, hyperventiliert, und sagt: "Ich kann nicht mehr, ich kann nicht mehr." Du wirst gerufen.
+</div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Was tust du ZUERST? (S — Stabilisieren)</button><div class="acc-body"><p>1. Ruhig in die Naehe gehen<br>2. Auf ihre Hoehe (hinknien)<br>3. "Lea, ich bin [Name]. Ich bin hier bei dir. Du bist sicher."<br>4. Lehrerin bitten, Ruhe zu sichern<br>5. Nicht anfassen ohne Erlaubnis</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Lea hyperventiliert. Was machst du?</button><div class="acc-body"><p>1. "Lea, atme mit mir. Schau meine Haende an."<br>2. Box Breathing vormachen<br>3. Wenn das nicht geht: In die Haende atmen lassen<br>4. Grounding: "Spuerst du den Boden? Drueck deine Fuesse fest drauf."</p></div></div>
+
+<div class="quiz" id="quiz_m5q1">
+<p class="quiz-question">Was ist der ERSTE Schritt im SAFER-R Modell?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m5q1" value="0"> Fragen, was passiert ist</label></li>
+<li><label><input type="radio" name="m5q1" value="1"> Stabilisieren und Sicherheit herstellen</label></li>
+<li><label><input type="radio" name="m5q1" value="2"> Eltern anrufen</label></li>
+<li><label><input type="radio" name="m5q1" value="3"> Einen Termin vereinbaren</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m5q1',1,'Erst SICHERHEIT — physisch und emotional. Ohne Sicherheit kann kein Gespraech stattfinden.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m5q1"></div>
+</div>
+</div>
+
+<div id="m5-t2" class="tab-content">
+<h3>Akute Suizidalitaet — Minuten-Protokoll</h3>
+<div class="error-box"><strong>Dies ist die kritischste Situation. Direktes, ruhiges Handeln rettet Leben.</strong></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Minuten 0-5: Sicherheit</button><div class="acc-body"><p>- Ruhig bleiben<br>- Bei der Person bleiben. NICHT alleine lassen.<br>- Mittel entfernen wenn moeglich<br>- Sicheren Raum aufsuchen</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Minuten 5-15: Direkt fragen</button><div class="acc-body"><p>1. "Hast du Gedanken, dir etwas anzutun?"<br>2. Wenn ja: "Hast du einen konkreten Plan?"<br>3. Wenn ja: "Hast du Zugang zu Mitteln?"<br>4. "Hast du schon einmal versucht, dir etwas anzutun?"<br>5. "Gibt es jemanden, dem du dich anvertrauen kannst?"<br><br>ZUHOEREN. Nicht sofort beruhigen.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Minuten 15-30: Risiko einschaetzen</button><div class="acc-body">
+<table>
+<tr><th>Risiko</th><th>Merkmale</th><th>Massnahme</th></tr>
+<tr><td><strong>Gering</strong></td><td>Passive Gedanken, kein Plan, Schutzfaktoren</td><td>Beratung, Monitoring, Sicherheitsplan</td></tr>
+<tr><td><strong>Mittel</strong></td><td>Aktive Gedanken, vager Plan, ambivalent</td><td>Intensivierter Kontakt, Eltern, Fachstelle</td></tr>
+<tr><td><strong>Hoch</strong></td><td>Konkreter Plan, Zugang zu Mitteln, frueherer Versuch</td><td>Sofortmassnahmen, Notfallambulanz</td></tr>
+<tr><td><strong>Akut</strong></td><td>Unmittelbar bevorstehend, nicht distanzierbar</td><td><strong>112 RUFEN. Nicht alleine lassen.</strong></td></tr>
+</table>
+</div></div>
+
+<hr>
+<div class="case-study">
+<strong>Fallvignette: Jonas (16) — "Es hat alles keinen Sinn mehr"</strong><br><br>
+Jonas wurde vom Klassenlehrer geschickt. Er sagt: "Es hat alles keinen Sinn mehr. Meine Eltern lassen sich scheiden, meine Freundin hat Schluss gemacht, meine Noten sind im Keller. Wozu noch?"
+</div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Wie fragst du nach Suizidalitaet?</button><div class="acc-body"><p>Direkt und ruhig: "Jonas, wenn du sagst, es hat keinen Sinn mehr — hast du manchmal Gedanken, dass du nicht mehr leben moechtest?"<br>NICHT: "Du willst dir doch nicht etwas antun?" (suggestiv)</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Jonas sagt: "Manchmal denke ich, alle waeren besser dran ohne mich."</button><div class="acc-body"><p><strong>Risikoeinschaetzung: MITTEL</strong> (aktive Gedanken, aber kein Plan)<br>1. Validieren: "Du traegst gerade eine enorme Last."<br>2. Sicherheitsplan erstellen<br>3. Eltern informieren (gemeinsam mit Jonas)<br>4. Folgetermin morgen<br>5. Fachstelle kontaktieren<br>6. Notfallnummern mitgeben: 45 45 45</p></div></div>
+
+<div class="quiz" id="quiz_m5q2">
+<p class="quiz-question">Erhoehen direkte Fragen nach Suizidalitaet das Risiko?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m5q2" value="0"> Ja, man bringt jemanden auf die Idee</label></li>
+<li><label><input type="radio" name="m5q2" value="1"> Nein — Forschung zeigt, dass direkte Fragen sicher und notwendig sind</label></li>
+<li><label><input type="radio" name="m5q2" value="2"> Nur bei Jugendlichen unter 14</label></li>
+<li><label><input type="radio" name="m5q2" value="3"> Es kommt darauf an</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m5q2',1,'Direkte Fragen erhoehen das Risiko NICHT. Sie zeigen: Ich nehme dich ernst. Dieses Thema ist nicht tabu.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m5q2"></div>
+</div>
+</div>
+
+<div id="m5-t3" class="tab-content">
+<h3>Akute Aggression — De-Eskalation in 10 Schritten</h3>
+<ol>
+<li><strong>Eigene Sicherheit ZUERST.</strong> Wenn bedroht: Raum verlassen, Hilfe holen.</li>
+<li><strong>Abstand halten.</strong> Mindestens 1.5 Meter. Nie in die Ecke draengen.</li>
+<li><strong>Seitlich positionieren.</strong> Nicht frontal (wirkt konfrontativ).</li>
+<li><strong>Haende sichtbar.</strong> Offene Handflaechen = keine Bedrohung.</li>
+<li><strong>Stimme senken.</strong> Langsam und ruhig. Leiser als der Jugendliche.</li>
+<li><strong>Gefuehle validieren.</strong> "Ich sehe, dass du richtig wuetend bist."</li>
+<li><strong>Nicht argumentieren.</strong> Keine Logik. Das Gehirn ist im Kampfmodus.</li>
+<li><strong>Wahlmoeglichkeiten anbieten.</strong> "Setzen oder eine Runde drehen?"</li>
+<li><strong>Zeit geben.</strong> Adrenalin braucht 20+ Minuten.</li>
+<li><strong>Hilfe holen</strong> wenn noetig. Das ist keine Schwaeche.</li>
+</ol>
+
+<div class="cols">
+<div class="green-box"><strong>Was funktioniert:</strong><br>- Ruhig bleiben<br>- Gefuehle benennen<br>- Wahlmoeglichkeiten<br>- Zeit und Raum geben<br>- Spaeter reflektieren</div>
+<div class="red-flag"><strong>Was NICHT funktioniert:</strong><br>- Zurueckschreien<br>- Drohen oder strafen<br>- Festhalten (ausser Gefahr)<br>- Vor der Gruppe beschaemen<br>- Logisch argumentieren<br>- Sarkasmus</div>
+</div>
+
+<div class="quiz" id="quiz_m5q4">
+<p class="quiz-question">Wie lange braucht Adrenalin zum Abbauen?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m5q4" value="0"> 2-3 Minuten</label></li>
+<li><label><input type="radio" name="m5q4" value="1"> 5 Minuten</label></li>
+<li><label><input type="radio" name="m5q4" value="2"> 20+ Minuten</label></li>
+<li><label><input type="radio" name="m5q4" value="3"> 1 Stunde</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m5q4',2,'Adrenalin braucht mindestens 20 Minuten. In dieser Zeit ist das Gehirn im Kampf-Flucht-Modus.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m5q4"></div>
+</div>
+</div>
+
+<div id="m5-t4" class="tab-content">
+<h3>Wenn ein Kind Missbrauch offenbart — 12-Schritte-Protokoll</h3>
+<div class="error-box"><strong>Pflichtmeldung:</strong> Artikel 7 Jugendschutzgesetz Luxemburg. Kinderschutz geht VOR Schweigepflicht.</div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">1. Ruhig bleiben</button><div class="acc-body"><p>Kein Erschrecken. Deine Reaktion bestimmt, ob das Kind weiterspricht.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">2. Glauben</button><div class="acc-body"><p>"Ich glaube dir." — Die drei wichtigsten Worte.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">3. Nicht verhoerartig fragen</button><div class="acc-body"><p>Keine Leitfragen. Offene Fragen: "Was ist passiert?"</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">4. Zuhoeren</button><div class="acc-body"><p>Nicht unterbrechen. Was das Kind freiwillig erzaehlt, reicht.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">5. "Das ist nicht deine Schuld."</button><div class="acc-body"><p>Schuld vom Kind nehmen.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">6. Ehrlich sein</button><div class="acc-body"><p>"Ich muss dafuer sorgen, dass du sicher bist. Dafuer brauche ich Hilfe."</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">7-12: Dokumentieren, ONE melden, Taeter NICHT konfrontieren</button><div class="acc-body"><p>7. Woertliche Aussagen aufschreiben<br>8. ONE: 247-73100 innerhalb 24h<br>9. Taeter:in NICHT konfrontieren<br>10. Eltern NICHT informieren wenn Taeter im Haushalt<br>11. Sicherheit pruefen: Kann das Kind nach Hause?<br>12. Kind nicht alleine lassen</p></div></div>
+
+<hr>
+<div class="case-study">
+<strong>Fallvignette: Mia (13) — "Mein Stiefvater tut mir weh"</strong><br><br>
+Mia kommt nach der Pause zu dir und sagt leise: "Ich muss dir was sagen. Aber du darfst es niemandem sagen." Du sagst: "Ich hoere dir zu. Es gibt nur eine Ausnahme: Wenn du in Gefahr bist, muss ich dafuer sorgen, dass du sicher bist." Mia sagt: "Mein Stiefvater... er tut mir weh. Abends, wenn Mama arbeitet."
+</div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Was sagst du ZUERST?</button><div class="acc-body"><p>"Ich glaube dir, Mia. Das ist nicht deine Schuld. Dass du mir das erzaehlst, ist sehr mutig."</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Naechste Schritte?</button><div class="acc-body"><p>1. Dokumentieren<br>2. ONE anrufen (247-73100)<br>3. Mutter NICHT informieren (Stiefvater im Haushalt!)<br>4. Stiefvater NICHT konfrontieren<br>5. Kann Mia sicher nach Hause? Wenn nein: Schutzunterbringung.<br>6. Mia nicht alleine lassen</p></div></div>
+
+<div class="quiz" id="quiz_m5q5">
+<p class="quiz-question">Mia bittet dich, es niemandem zu sagen. Was tust du?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m5q5" value="0"> Versprechen, es geheim zu halten</label></li>
+<li><label><input type="radio" name="m5q5" value="1"> Ehrlich sagen, dass du fuer ihre Sicherheit sorgen musst</label></li>
+<li><label><input type="radio" name="m5q5" value="2"> Sofort die Mutter anrufen</label></li>
+<li><label><input type="radio" name="m5q5" value="3"> Den Stiefvater zur Rede stellen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m5q5',1,'Niemals Geheimhaltung versprechen bei Kindeswohlgefaehrdung. Aber ehrlich und transparent sein.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m5q5"></div>
+</div>
+</div>
+
+<div id="m5-t5" class="tab-content">
+<h3>Notfallnummern &amp; Ressourcen Luxemburg</h3>
+<div class="error-box"><strong>Bei akuter Lebensgefahr: 112</strong></div>
+
+<h4>112 — Notruf</h4><p>Rettung, Polizei, Feuerwehr — akute Lebensgefahr</p>
+<h4>113 — Police Grand-Ducale</h4><p>Straftaten, Gewalt, Bedrohung</p>
+<h4>45 45 45 — SOS Detresse</h4><p>Krisentelefon 24/7 — Suizidalitaet, psychische Krise</p>
+<h4>116 111 — Kanner-Jugendtelefon</h4><p>Fuer Kinder und Jugendliche — anonym und kostenlos</p>
+<h4>8002 1234 — BEE SECURE / RESPECT.lu</h4><p>Online-Sicherheit, Cybermobbing, Radikalisierung</p>
+<h4>247-73100 — ONE</h4><p>Kinderschutz, Pflichtmeldung bei Missbrauch/Vernachlaessigung</p>
+<h4>+352 29 77 89-1 — OMEGA 90</h4><p>Trauer- und Palliativberatung</p>
+
+<hr>
+<h4>Wann welche Nummer?</h4>
+<table>
+<tr><th>Situation</th><th>Nummer</th></tr>
+<tr><td>Jugendlicher will sich JETZT etwas antun</td><td><strong>112</strong></td></tr>
+<tr><td>Suizidgedanken (nicht akut)</td><td><strong>45 45 45</strong></td></tr>
+<tr><td>Kind offenbart Missbrauch</td><td><strong>247-73100</strong> (ONE)</td></tr>
+<tr><td>Cybermobbing</td><td><strong>8002 1234</strong></td></tr>
+<tr><td>Jugendlicher braucht Gespraechspartner</td><td><strong>116 111</strong></td></tr>
+<tr><td>Verdacht auf Radikalisierung</td><td><strong>8002 1234</strong></td></tr>
+<tr><td>Trauerfall</td><td><strong>+352 29 77 89-1</strong></td></tr>
+</table>
+</div>
+
+</div><!-- END MODUL 5 -->
+<!-- MODULE 6: ELTERNARBEIT -->
+<div id="mod-m6" class="module">
+<h2>Modul 6: Elternarbeit &amp; Systemisches Arbeiten</h2>
+<p><em>Elterngespraeche, Lehrerberatung, das Luxemburger Hilfsnetzwerk und Pflichtmeldungen.</em></p>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(this,'m6-t1')">Elterngespraeche</button>
+  <button class="tab-btn" onclick="showTab(this,'m6-t2')">Lehrerberatung</button>
+  <button class="tab-btn" onclick="showTab(this,'m6-t3')">Netzwerk Luxemburg</button>
+  <button class="tab-btn" onclick="showTab(this,'m6-t4')">Pflichtmeldung</button>
+  <button class="tab-btn" onclick="showTab(this,'m6-t5')">Runde Tische</button>
+</div>
+
+<div id="m6-t1" class="tab-content active">
+<h3>Elterngespraeche fuehren</h3>
+<h4>8 Grundprinzipien</h4>
+<ul>
+<li><strong>Positiv beginnen:</strong> Immer zuerst etwas Gutes ueber das Kind</li>
+<li><strong>Verstaendnis zeigen:</strong> "Ich kann mir vorstellen, dass das schwierig ist."</li>
+<li><strong>Sprache anpassen:</strong> Keine Fachbegriffe</li>
+<li><strong>Partnerschaftlich:</strong> "Wir arbeiten gemeinsam fuer Ihr Kind."</li>
+<li><strong>Vertraulichkeit respektieren</strong></li>
+<li><strong>Kulturelle Sensibilitaet:</strong> Luxemburg ist multikulturell</li>
+<li><strong>Dolmetscher nutzen</strong> bei Sprachbarrieren</li>
+<li><strong>Dokumentieren</strong></li>
+</ul>
+
+<h4>Dialogsimulationen</h4>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Dialog: Eltern erfahren von Selbstverletzung</button><div class="acc-body">
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Psycholog:in:</span> "Frau und Herr Mueller, danke dass Sie gekommen sind. Lisa ist ein engagiertes Maedchen, das in der Klasse geschaetzt wird."</div>
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Psycholog:in:</span> "Ich habe Sie eingeladen, weil mir etwas aufgefallen ist, das mir Sorgen macht. Lisa hat sich an den Armen geritzt."</div>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Mutter:</span> "Was?! Das kann nicht sein!"</div>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Vater:</span> "Ist das nicht so ein Aufmerksamkeitsding?"</div>
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Psycholog:in:</span> "Ich verstehe Ihren Schock. Nein — SVV bedeutet NICHT, dass Sie als Eltern versagt haben. Und es ist kein Aufmerksamkeitsding. Es ist eine Art, mit ueberwaeltigenden Gefuehlen umzugehen."</div>
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Psycholog:in:</span> "Was Lisa jetzt braucht: Keine Vorwuerfe, kein Panik. Sondern: Wir sind da. Wir lieben dich. Und wir finden gemeinsam Hilfe."</div>
+<div class="info-box"><strong>Kernsaetze fuer Eltern bei SVV:</strong><br>- SVV ist NICHT gleich Suizid<br>- SVV ist eine (dysfunktionale) Bewaeltigungsstrategie<br>- Nicht die Schuldfrage — sondern: Was braucht das Kind JETZT?<br>- Professionelle Hilfe suchen</div>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Dialog: Schulverweigerung besprechen</button><div class="acc-body">
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Psycholog:in:</span> "Tom ist ein kluger Junge. In den letzten 4 Wochen hat er aber 8 Tage gefehlt."</div>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Mutter:</span> "Er hat immer Bauchschmerzen. Der Arzt findet nichts."</div>
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Psycholog:in:</span> "Die Bauchschmerzen sind real — Toms Koerper reagiert auf etwas Psychisches. Zwingen verstaerkt den Druck. Zu Hause lassen verstaerkt die Vermeidung. Wir schauen gemeinsam, was Tom stresst."</div>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Dialog: Aggressives Verhalten</button><div class="acc-body">
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Psycholog:in:</span> "Lukas hat eine Staerke: einen starken Gerechtigkeitssinn."</div>
+<div class="dialog-line dialog-neutral"><span class="dialog-speaker">Vater:</span> "Das hoeren wir selten. Meistens hoeren wir, was er falsch macht."</div>
+<div class="dialog-line dialog-good"><span class="dialog-speaker">Psycholog:in:</span> "Aggression ist fast immer ein Zeichen fuer ein unerfuelltes Beduerfnis. Nicht: Was ist falsch mit Lukas? Sondern: Was fehlt ihm gerade?"</div>
+<div class="info-box"><strong>Reframing bei Aggression:</strong><br>Nicht: "Ihr Kind ist aggressiv."<br>Sondern: "Ihr Kind zeigt uns durch sein Verhalten, dass es etwas braucht, das es gerade nicht bekommt."</div>
+</div></div>
+
+<div class="quiz" id="quiz_m6q1">
+<p class="quiz-question">Wie beginnst du ein schwieriges Elterngespraech?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m6q1" value="0"> Direkt mit dem Problem</label></li>
+<li><label><input type="radio" name="m6q1" value="1"> Mit etwas Positivem ueber das Kind</label></li>
+<li><label><input type="radio" name="m6q1" value="2"> Mit einer Diagnose</label></li>
+<li><label><input type="radio" name="m6q1" value="3"> Mit Vorwuerfen an die Eltern</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m6q1',1,'Immer zuerst etwas Positives. Das oeffnet die Eltern und zeigt: Ich sehe Ihr Kind als Ganzes.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m6q1"></div>
+</div>
+</div>
+
+<div id="m6-t2" class="tab-content">
+<h3>Lehrerberatung</h3>
+<h4>Was Lehrer:innen wissen DUERFEN vs. NICHT DUERFEN</h4>
+<div class="cols">
+<div class="green-box"><strong>Duerfen wissen:</strong><br>- Dass du das Kind begleitest<br>- Allgemeine Handlungsempfehlungen<br>- Warnsignale, auf die sie achten koennen<br>- Ob akute Gefaehrdung besteht</div>
+<div class="red-flag"><strong>NICHT duerfen wissen:</strong><br>- Diagnosen oder Verdachtsdiagnosen<br>- Inhalte der Beratungsgespraeche<br>- Familiensituationen im Detail<br>- Persoenliche Informationen<br>- Traumadetails</div>
+</div>
+
+<h4>Info-Blaetter fuer Lehrer:innen</h4>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Angst im Klassenzimmer</button><div class="acc-body">
+<div class="cols">
+<div><strong>Was Sie beobachten:</strong><ul><li>Haeufige Toilettengaenge</li><li>Vermeidung von Praesentationen</li><li>Extrem stilles Verhalten</li><li>Koerperliche Beschwerden vor Tests</li></ul></div>
+<div><strong>Was hilft:</strong><ul><li>Vorhersagbare Struktur</li><li>Nicht vor der Klasse blosstellen</li><li>Alternative Pruefungsformen</li><li>Graduiert fordern</li><li>Positives Feedback</li></ul></div>
+</div>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">ADHS im Klassenzimmer</button><div class="acc-body">
+<div class="cols">
+<div><strong>Was Sie beobachten:</strong><ul><li>Zappeln, aufstehen</li><li>Reinrufen</li><li>Verliert Materialien</li><li>Emotionale Ausbrueche</li></ul></div>
+<div><strong>Was hilft:</strong><ul><li>Klare, kurze Anweisungen</li><li>Sitzplatz vorne</li><li>Bewegungspausen</li><li>Timer und visuelle Hilfen</li><li>Staerken foerdern</li></ul></div>
+</div>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Trauma-sensibles Klassenzimmer</button><div class="acc-body">
+<div class="cols">
+<div><strong>Zeichen von Trauma:</strong><ul><li>Schreckhaftigkeit</li><li>"Wegdriften" (Dissoziation)</li><li>Ueberreaktion auf Kleinigkeiten</li><li>Sitzt am Ausgang</li></ul></div>
+<div><strong>Was hilft:</strong><ul><li>Vorhersagbarkeit und Routine</li><li>NICHT erzwingen: Augenkontakt, lautes Vorlesen</li><li>Warnung VOR lauten Geraueschen</li><li>Sicheren Rueckzugsort anbieten</li></ul></div>
+</div>
+<div class="red-flag"><strong>Bei Dissoziation:</strong> NICHT schuetteln. Sanft: "[Name], du bist in der Klasse. Du bist sicher."</div>
+</div></div>
+
+<div class="quiz" id="quiz_m6q2">
+<p class="quiz-question">Darf ein Lehrer wissen, WARUM ein Schueler in Beratung ist?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m6q2" value="0"> Ja, vollstaendige Transparenz</label></li>
+<li><label><input type="radio" name="m6q2" value="1"> Nein — nur dass Beratung stattfindet und allgemeine Empfehlungen</label></li>
+<li><label><input type="radio" name="m6q2" value="2"> Ja, aber nur muendlich</label></li>
+<li><label><input type="radio" name="m6q2" value="3"> Nur wenn die Eltern zustimmen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m6q2',1,'Vertraulichkeit schuetzt den Jugendlichen. Lehrer erfahren: Beratung findet statt + was sie tun koennen. Keine Diagnosen, keine Inhalte.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m6q2"></div>
+</div>
+</div>
+
+<div id="m6-t3" class="tab-content">
+<h3>Das Luxemburger Hilfsnetzwerk</h3>
+<table>
+<tr><th>Institution</th><th>Telefon</th><th>Zustaendigkeit</th></tr>
+<tr><td><strong>ONE</strong></td><td>247-73100</td><td>Kinderschutz, Pflichtmeldungen</td></tr>
+<tr><td><strong>SePAS / CePAS / CPOS</strong></td><td>Schulintern</td><td>Schulpsychologische Dienste</td></tr>
+<tr><td><strong>CHL Jugendpsychiatrie</strong></td><td>+352 44 11 1</td><td>Stationaer und ambulant</td></tr>
+<tr><td><strong>SOS Detresse</strong></td><td>45 45 45</td><td>24/7 Krisentelefon</td></tr>
+<tr><td><strong>Kanner-Jugendtelefon</strong></td><td>116 111</td><td>Anonym, kostenlos</td></tr>
+<tr><td><strong>BEE SECURE</strong></td><td>8002 1234</td><td>Online-Sicherheit, Cybermobbing</td></tr>
+<tr><td><strong>RESPECT.lu</strong></td><td>8002 1234</td><td>Radikalisierungspraevention</td></tr>
+<tr><td><strong>Planning Familial</strong></td><td>+352 48 59 76</td><td>Sexualitaet, Verhuetung</td></tr>
+<tr><td><strong>Croix-Rouge</strong></td><td>+352 27 55 1</td><td>Soziale Hilfe, Notunterbringung</td></tr>
+<tr><td><strong>Caritas</strong></td><td>+352 40 21 31 1</td><td>Sozialberatung, Migration</td></tr>
+<tr><td><strong>Femmes en Detresse</strong></td><td>+352 40 20 40</td><td>Gewalt gegen Frauen/Maedchen</td></tr>
+<tr><td><strong>OMEGA 90</strong></td><td>+352 29 77 89-1</td><td>Trauerbegleitung</td></tr>
+<tr><td><strong>Ligue HMC</strong></td><td>+352 49 04 54 1</td><td>Psychische Gesundheitsfoerderung</td></tr>
+</table>
+
+<h4>Wohin verweise ich?</h4>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">14-Jaehrige wird online beleidigt und bedroht</button><div class="acc-body"><p><strong>BEE SECURE (8002 1234)</strong> — Fuer Cybermobbing. Bei Straftat auch: Police 113.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">16-Jaehriger mit akuter Suizidalitaet</button><div class="acc-body"><p><strong>112</strong> (bei akuter Gefahr) oder <strong>SOS Detresse (45 45 45)</strong> + CHL Jugendpsychiatrie.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">12-Jaehrige zeigt blaue Flecken</button><div class="acc-body"><p><strong>ONE (247-73100) — Pflichtmeldung!</strong> Du musst nicht sicher sein — der Verdacht reicht.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">17-Jaehrige mit Essstoerung</button><div class="acc-body"><p><strong>CHL + Hausarzt</strong> — Medizinische UND psychologische Behandlung noetig.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">15-Jaehriger radikalisiert sich</button><div class="acc-body"><p><strong>RESPECT.lu (8002 1234)</strong> — Vertraulich, auch anonyme Beratung. Bei akuter Bedrohung: Police 113.</p></div></div>
+
+<div class="quiz" id="quiz_m6q3">
+<p class="quiz-question">Du vermutest Vernachlaessigung. Musst du warten, bis du sicher bist?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m6q3" value="0"> Ja, erst Beweise sammeln</label></li>
+<li><label><input type="radio" name="m6q3" value="1"> Nein — der Verdacht reicht fuer eine Pflichtmeldung an ONE</label></li>
+<li><label><input type="radio" name="m6q3" value="2"> Ja, erst mit Eltern sprechen</label></li>
+<li><label><input type="radio" name="m6q3" value="3"> Nein, aber erst mit Kollegium beraten</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m6q3',1,'Pflichtmeldung bei VERDACHT. Du musst nicht sicher sein. ONE kuemmert sich um die Aufklaerung.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m6q3"></div>
+</div>
+</div>
+
+<div id="m6-t4" class="tab-content">
+<h3>Pflichtmeldung — Wann und Wie</h3>
+<div class="error-box"><strong>Artikel 7 Jugendschutzgesetz Luxemburg:</strong> Wer Kenntnis von Kindesmisshandlung erlangt, ist zur Meldung verpflichtet. Schweigepflicht ist NACHRANGIG.</div>
+
+<h4>Wann melden?</h4>
+<ul>
+<li>Koerperliche Misshandlung</li>
+<li>Sexueller Missbrauch</li>
+<li>Vernachlaessigung</li>
+<li>Psychische Misshandlung</li>
+<li>Zeuge haeuslicher Gewalt</li>
+</ul>
+
+<h4>Wie melden?</h4>
+<p><strong>1. Anruf bei ONE:</strong> 247-73100</p>
+<p><strong>2. Schriftliche Meldung</strong> mit:</p>
+<ul>
+<li>Deine Daten (Name, Funktion, Institution)</li>
+<li>Daten des Kindes</li>
+<li>Daten der Sorgeberechtigten</li>
+<li>Daten des/der mutmasslichen Taeter:in</li>
+<li>Art der Gefaehrdung</li>
+<li>Konkrete Beobachtungen</li>
+<li>Aussagen des Kindes (WOERTLICH)</li>
+<li>Bisherige Massnahmen</li>
+<li>Dringlichkeit</li>
+</ul>
+
+<div class="quiz" id="quiz_m6q4">
+<p class="quiz-question">Wann MUSS die Schweigepflicht gebrochen werden?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m6q4" value="0"> Wenn Eltern es verlangen</label></li>
+<li><label><input type="radio" name="m6q4" value="1"> Bei Kindesmisshandlung oder -vernachlaessigung</label></li>
+<li><label><input type="radio" name="m6q4" value="2"> Wenn der Schulleiter fragt</label></li>
+<li><label><input type="radio" name="m6q4" value="3"> Nur bei Suizidalitaet</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m6q4',1,'Kinderschutz geht VOR Schweigepflicht. Art. 7 Jugendschutzgesetz.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m6q4"></div>
+</div>
+</div>
+
+<div id="m6-t5" class="tab-content">
+<h3>Runde Tische &amp; Fallkonferenzen</h3>
+<h4>8-Schritte-Protokoll</h4>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">1. Vorbereitung</button><div class="acc-body"><p>Anlass klaeren, Teilnehmer:innen einladen, Einverstaendnis einholen, Informationen zusammenstellen.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">2. Eroeffnung</button><div class="acc-body"><p>Begruessung, Vertraulichkeit, Regeln, Zeitrahmen.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">3. Sachstandsbericht</button><div class="acc-body"><p>Jede:r berichtet aus seiner/ihrer Perspektive. Keine Bewertungen.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">4. Gemeinsame Analyse</button><div class="acc-body"><p>Zentrale Frage? Wo einig? Wo nicht?</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">5. Zielsetzung (SMART)</button><div class="acc-body"><p><strong>S</strong>pezifisch, <strong>M</strong>essbar, <strong>A</strong>ttraktiv, <strong>R</strong>ealistisch, <strong>T</strong>erminiert</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">6. Massnahmenplanung</button><div class="acc-body"><p>Wer macht was bis wann? Konkret und verbindlich.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">7. Dokumentation</button><div class="acc-body"><p>Protokoll mit Anwesenden, TOPs, Vereinbarungen.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">8. Folgetermin</button><div class="acc-body"><p>Wann treffen wir uns wieder? Wer evaluiert?</p></div></div>
+
+<div class="quiz" id="quiz_m6q5">
+<p class="quiz-question">Was bedeutet "SMART" bei Zielsetzungen?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m6q5" value="0"> Schnell, Mutig, Aktiv, Radikal, Toll</label></li>
+<li><label><input type="radio" name="m6q5" value="1"> Spezifisch, Messbar, Attraktiv, Realistisch, Terminiert</label></li>
+<li><label><input type="radio" name="m6q5" value="2"> Sicher, Methodisch, Angepasst, Regulaer, Transparent</label></li>
+<li><label><input type="radio" name="m6q5" value="3"> Systematisch, Multiprofessionell, Allgemein, Richtig, Teamorientiert</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m6q5',1,'SMART-Ziele sind konkret und ueberpruefbar. Tom besucht bis Ende Maerz an 4 von 5 Tagen den Unterricht — das ist SMART.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m6q5"></div>
+</div>
+</div>
+
+</div><!-- END MODUL 6 -->
+<!-- MODULE 7: DIAGNOSTIK & SELBSTFUERSORGE -->
+<div id="mod-m7" class="module">
+<h2>Modul 7: Diagnostik, Selbstfuersorge &amp; Spezialthemen</h2>
+<p><em>Screening-Instrumente, Burnout-Praevention und Spezialthemen wie Social Media, Hochbegabung und Trauer.</em></p>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(this,'m7-t1')">Screening-Instrumente</button>
+  <button class="tab-btn" onclick="showTab(this,'m7-t2')">ABC-Analyse</button>
+  <button class="tab-btn" onclick="showTab(this,'m7-t3')">Selbstfuersorge</button>
+  <button class="tab-btn" onclick="showTab(this,'m7-t4')">Ethische Dilemmata</button>
+  <button class="tab-btn" onclick="showTab(this,'m7-t5')">Spezialthemen</button>
+</div>
+
+<div id="m7-t1" class="tab-content active">
+<h3>Screening-Instrumente</h3>
+<div class="warning-box"><strong>Grundregel:</strong> Screening ist NICHT gleich Diagnose! Screening identifiziert Auffaelligkeiten. Diagnose ist Aufgabe von Fachaaerzt:innen.</div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">SDQ — Strengths and Difficulties Questionnaire</button><div class="acc-body">
+<p>25 Items, 5 Skalen. In vielen Sprachen verfuegbar (wichtig fuer Luxemburg!).</p>
+<table>
+<tr><th>Skala</th><th>Normal</th><th>Grenzwertig</th><th>Auffaellig</th></tr>
+<tr><td>Emotionale Probleme</td><td>0-3</td><td>4</td><td>5-10</td></tr>
+<tr><td>Verhaltensprobleme</td><td>0-2</td><td>3</td><td>4-10</td></tr>
+<tr><td>Hyperaktivitaet</td><td>0-5</td><td>6</td><td>7-10</td></tr>
+<tr><td>Peer-Probleme</td><td>0-2</td><td>3</td><td>4-10</td></tr>
+<tr><td>Prosoziales Verhalten</td><td>6-10</td><td>5</td><td>0-4 (umgekehrt!)</td></tr>
+<tr><td><strong>Gesamtproblemwert</strong></td><td><strong>0-13</strong></td><td><strong>14-16</strong></td><td><strong>17-40</strong></td></tr>
+</table>
+<p><strong>Wichtig:</strong> Prosozial ist UMGEKEHRT — niedrig = auffaellig!</p>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">PHQ-A — Depression-Screening</button><div class="acc-body">
+<p>9 Items zur Depressionserfassung.</p>
+<table>
+<tr><th>Score</th><th>Bedeutung</th><th>Aktion</th></tr>
+<tr><td>0-4</td><td>Minimal</td><td>Monitoring</td></tr>
+<tr><td>5-9</td><td>Leicht</td><td>Beratung, Monitoring</td></tr>
+<tr><td>10-14</td><td>Mittel</td><td>Beratung intensivieren</td></tr>
+<tr><td>15-19</td><td>Mittelschwer</td><td>Weiterverweisung</td></tr>
+<tr><td>20-27</td><td>Schwer</td><td>Dringende Weiterverweisung</td></tr>
+</table>
+<div class="red-flag"><strong>KRITISCH: Item 9</strong> fragt nach Suizidalitaet. JEDER Score &gt; 0 auf diesem Item erfordert ein direktes Gespraech!</div>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">GAD-7 — Angst-Screening</button><div class="acc-body">
+<table>
+<tr><th>Score</th><th>Bedeutung</th></tr>
+<tr><td>0-4</td><td>Minimal</td></tr>
+<tr><td>5-9</td><td>Leicht</td></tr>
+<tr><td>10-14</td><td>Mittel</td></tr>
+<tr><td>15-21</td><td>Schwer</td></tr>
+</table>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">SBQ-R — Suizidalitaets-Screening</button><div class="acc-body">
+<p>4 Items. <strong>Score &gt;= 7 = erhoehtes Risiko</strong> → Sofort direktes Gespraech fuehren.</p>
+<p>NIEMALS allein verwenden! Immer in Kombination mit klinischem Gespraech.</p>
+</div></div>
+
+<div class="quiz" id="quiz_m7q1">
+<p class="quiz-question">Item 9 des PHQ-A zeigt einen Score von 1. Was tust du?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m7q1" value="0"> Nichts — Score 1 ist niedrig</label></li>
+<li><label><input type="radio" name="m7q1" value="1"> Ein direktes Gespraech ueber Suizidgedanken fuehren</label></li>
+<li><label><input type="radio" name="m7q1" value="2"> Die Eltern informieren</label></li>
+<li><label><input type="radio" name="m7q1" value="3"> Den Fragebogen nochmal ausfuellen lassen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m7q1',1,'JEDER Score groesser 0 bei Item 9 erfordert ein direktes Gespraech. Auch selten oder an einzelnen Tagen muss ernst genommen werden.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m7q1"></div>
+</div>
+</div>
+
+<div id="m7-t2" class="tab-content">
+<h3>Verhaltensbeobachtung — ABC-Analyse</h3>
+<p><strong>A = Antecedent</strong> (Was passierte VORHER?)<br><strong>B = Behavior</strong> (Was hat der/die Jugendliche getan?)<br><strong>C = Consequence</strong> (Was passierte DANACH?)</p>
+
+<h4>5 Funktionen von Verhalten</h4>
+<table>
+<tr><th>Funktion</th><th>Beispiel</th><th>Dient dazu...</th></tr>
+<tr><td><strong>Aufmerksamkeit</strong></td><td>Reinrufen, Stoeren</td><td>Beachtung zu bekommen</td></tr>
+<tr><td><strong>Vermeidung</strong></td><td>Verweigerung, "Bauchschmerzen"</td><td>Situation zu entkommen</td></tr>
+<tr><td><strong>Kontrolle</strong></td><td>Wutanfall, Bestimmen</td><td>Kontrolle zu gewinnen</td></tr>
+<tr><td><strong>Stimulation</strong></td><td>Zappeln, Kippeln</td><td>Sensorische Beduerfnisse</td></tr>
+<tr><td><strong>Zugehoerigkeit</strong></td><td>Mitmachen bei Stoerern</td><td>Zur Gruppe zu gehoeren</td></tr>
+</table>
+
+<hr>
+<div class="case-study">
+<strong>Fallvignette: Marco (14) verweigert Vorlesen</strong><br><br>
+Im Deutschunterricht soll Marco laut vorlesen. Er sagt: "Nein, mach ich nicht." Als die Lehrerin insistiert, wirft er das Buch auf den Boden: "Scheiss Unterricht." Er wird vor die Tuer geschickt.
+</div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">ABC-Analyse</button><div class="acc-body">
+<p><strong>A (Antecedent):</strong> Aufforderung, vor der Klasse laut vorzulesen.<br>
+<strong>B (Behavior):</strong> Verweigerung, Buch werfen, verbale Aggression.<br>
+<strong>C (Consequence):</strong> Wird rausgeschickt → ENTKOMMT der Vorlese-Situation! Die Konsequenz VERSTAERKT das Verhalten.<br>
+<strong>Funktion:</strong> Vermeidung. Moeglich: Leseschwaeche, soziale Angst.</p>
+<p><strong>Intervention:</strong> NICHT strafen (verstaerkt Vermeidung), sondern: Warum will Marco nicht vorlesen? Leseschwaeche testen? Alternative anbieten?</p>
+</div></div>
+
+<div class="quiz" id="quiz_m7q2">
+<p class="quiz-question">Marco wird fuer sein Verhalten rausgeschickt. Was passiert dadurch?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m7q2" value="0"> Er lernt daraus</label></li>
+<li><label><input type="radio" name="m7q2" value="1"> Sein Verhalten wird VERSTAERKT, weil er der Situation entkommt</label></li>
+<li><label><input type="radio" name="m7q2" value="2"> Er beruhigt sich</label></li>
+<li><label><input type="radio" name="m7q2" value="3"> Die Klasse lernt, dass Stoeren Konsequenzen hat</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m7q2',1,'Wenn die Funktion VERMEIDUNG ist, verstaerkt Rausschicken das Verhalten! Marco hat sein Ziel erreicht.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m7q2"></div>
+</div>
+</div>
+
+<div id="m7-t3" class="tab-content">
+<h3>Selbstfuersorge &amp; Burnout-Praevention</h3>
+<p><em>Du kannst nur helfen, wenn es dir selbst gut geht.</em></p>
+
+<h4>Sekundaere Traumatisierung</h4>
+<p>Wenn du regelmaessig traumatische Geschichten hoerst, kann DEIN Nervensystem reagieren — als haettest du das Trauma selbst erlebt. Das ist <strong>keine Schwaeche</strong>, sondern eine natuerliche Reaktion empathischer Menschen.</p>
+
+<h4>Warnsignale in 5 Bereichen</h4>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Koerperlich</button><div class="acc-body"><p>Chronische Erschoepfung, haeufige Infekte, Kopfschmerzen, Magen-Darm, Muskelverspannungen, Schlafstoerungen</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Emotional</button><div class="acc-body"><p>Reizbarkeit, emotionale Taubheit, Zynismus gegenueber Jugendlichen, uebermaessige Sorge, Schuldgefuehle</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Kognitiv</button><div class="acc-body"><p>Konzentrationsprobleme, intrusive Bilder, kann nach Feierabend nicht abschalten, Albtraeume</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Verhalten</button><div class="acc-body"><p>Sozialer Rueckzug, mehr Alkohol, Workaholic ODER Arbeitsvermeidung, zynische Bemerkungen</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Existenziell</button><div class="acc-body"><p>Sinnverlust, Hoffnungslosigkeit, "Es aendert sich doch nichts", Freudlosigkeit</p></div></div>
+
+<h4>8 Selbstfuersorge-Strategien</h4>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Uebergangsrituale</button><div class="acc-body"><p>Bewusster Uebergang von Arbeit zu Privat. Kleidung wechseln, anderer Heimweg, Musik, 15 Min Pause. "Haende waschen" als symbolisches Loslassen.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Grenzen setzen</button><div class="acc-body"><p>Feste Arbeitszeiten. Keine E-Mails abends. Caseload begrenzen. NEIN sagen lernen.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Koerperliche Gesundheit</button><div class="acc-body"><p>3x/Woche Bewegung. 7-8h Schlaf. Regelmaessig essen.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Supervision</button><div class="acc-body"><p>Regelmaessig, nicht nur in der Krise. Keine Schwaeche, sondern professionelle Hygiene.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Natur</button><div class="acc-body"><p>Luxemburgs Natur nutzen: Muellerthal, Naturparks, Our-Tal.</p></div></div>
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Sinn pflegen</button><div class="acc-body"><p>Warum machst du diese Arbeit? Erfolgsgeschichten aufschreiben. "Danke-Ordner" anlegen.</p></div></div>
+
+<div class="quiz" id="quiz_m7q3">
+<p class="quiz-question">Was ist sekundaere Traumatisierung?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m7q3" value="0"> Burnout wegen zu viel Arbeit</label></li>
+<li><label><input type="radio" name="m7q3" value="1"> Traumareaktionen durch regelmaessiges Hoeren traumatischer Geschichten anderer</label></li>
+<li><label><input type="radio" name="m7q3" value="2"> Wenn man selbst traumatisiert wird</label></li>
+<li><label><input type="radio" name="m7q3" value="3"> Wenn Jugendliche ihre Traumata wiederholen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m7q3',1,'Sekundaere Traumatisierung entsteht durch empathische Teilhabe. Dein Nervensystem reagiert, als haettest du es selbst erlebt.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m7q3"></div>
+</div>
+</div>
+
+<div id="m7-t4" class="tab-content">
+<h3>Ethische Dilemmata</h3>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Schweigepflicht vs. Kinderschutz</button><div class="acc-body">
+<p><strong>Szenario:</strong> Eine 15-Jaehrige erzaehlt, dass ihr Vater sie schlaegt. Sie bittet: "Bitte sag niemandem etwas."</p>
+<p><strong>Antwort:</strong> Kinderschutz hat VORRANG. Du sagst: <em>"Ich verstehe deine Angst. Meine wichtigste Aufgabe ist, dass du sicher bist. Dafuer brauche ich Unterstuetzung."</em> Dann: ONE melden.</p>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Social Media — Freundschaftsanfrage</button><div class="acc-body">
+<p><strong>Szenario:</strong> Ein Schueler schickt dir eine Instagram-Anfrage.</p>
+<p><strong>Antwort:</strong> Ablehnen — freundlich aber klar. <em>"In der Schule bin ich immer fuer dich da."</em> Professionelle Grenzen sind Schutz.</p>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Multiple Rollen — Alle wollen etwas anderes</button><div class="acc-body">
+<p><strong>Szenario:</strong> Schueler vertraut an, dass er kifft. Eltern und Schulleiter wollen Infos.</p>
+<p><strong>Antwort:</strong> Deine Loyalitaet gehoert dem Jugendlichen. Schweigepflicht wahren, ausser bei akuter Gefaehrdung. Eltern: "Ich kann keine Inhalte mitteilen." Schulleiter: "Ich bin an die Schweigepflicht gebunden."</p>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Geschenke annehmen?</button><div class="acc-body">
+<p><strong>Szenario:</strong> Schuelerin bastelt dir ein Armband zum Abschied.</p>
+<p><strong>Antwort:</strong> Kleine selbstgemachte Geschenke: Annehmen und wertschaetzen. Teure Geschenke: Freundlich ablehnen.</p>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Koerperliche Beruehrung in der Krise</button><div class="acc-body">
+<p><strong>Szenario:</strong> Ein 11-Jaehriger weint und greift nach deiner Hand.</p>
+<p><strong>Antwort:</strong> Kontextabhaengig — hier: Zulassen. Das Kind initiiert den Kontakt, es dient dem Trost. Bei aelteren Jugendlichen: Verbaler Trost ist sicherer.</p>
+</div></div>
+
+<div class="quiz" id="quiz_m7q4">
+<p class="quiz-question">Ein Schueler bittet dich, seiner Mutter nichts vom Cannabiskonsum zu erzaehlen. Was tust du?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m7q4" value="0"> Sofort die Mutter anrufen</label></li>
+<li><label><input type="radio" name="m7q4" value="1"> Schweigepflicht wahren — es sei denn akute Gefaehrdung</label></li>
+<li><label><input type="radio" name="m7q4" value="2"> Dem Schulleiter melden</label></li>
+<li><label><input type="radio" name="m7q4" value="3"> Dem Schueler drohen</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m7q4',1,'Schweigepflicht gilt. Cannabiskonsum allein ist keine akute Gefaehrdung. Nutze MI fuer Motivationsarbeit.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m7q4"></div>
+</div>
+</div>
+
+<div id="m7-t5" class="tab-content">
+<h3>Spezialthemen</h3>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Social Media &amp; Gaming</button><div class="acc-body">
+<div class="cols">
+<div class="green-box"><strong>Gesund:</strong><br>- Sozial (mit Freunden)<br>- Kann aufhoeren<br>- Hat andere Hobbys<br>- Genuegend Schlaf<br>- Stabile Schulleistung<br>- Ehrlich ueber Nutzung</div>
+<div class="red-flag"><strong>Problematisch:</strong><br>- Zunehmend isoliert<br>- Kann nicht aufhoeren<br>- Einziges Interesse<br>- Schlaf gestoert<br>- Schulleistung faellt<br>- Luegt ueber Nutzung<br>- Aggressiv bei Unterbrechung</div>
+</div>
+<p><strong>15 Warnsignale:</strong></p>
+<ol>
+<li>Nutzung hat zugenommen</li>
+<li>Gereizt ohne Zugang</li>
+<li>Schlaf gestoert</li>
+<li>Schulnoten verschlechtern sich</li>
+<li>Fruehere Hobbys aufgegeben</li>
+<li>Reale Freundschaften vernachlaessigt</li>
+<li>Hygiene vernachlaessigt</li>
+<li>Luegt ueber Nutzung</li>
+<li>Gescheiterte Reduktionsversuche</li>
+<li>Nutzt Medien zur Flucht</li>
+<li>Geldausgaben fuer In-App-Kaeufe</li>
+<li>Koerperliche Symptome (Augen, Ruecken)</li>
+<li>Entzugserscheinungen</li>
+<li>Konflikte wegen Nutzung</li>
+<li>Heimliche Nutzung im Unterricht</li>
+</ol>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Hochbegabung &amp; Underachievement</button><div class="acc-body">
+<p><strong>IQ &gt;= 130</strong> (ca. 2%). Garantiert KEINEN Schulerfolg!</p>
+<div class="cols">
+<div><strong>Was du siehst:</strong><ul><li>Korrigiert Lehrer:innen</li><li>Weigert sich bei einfachen Aufgaben</li><li>Langeweile, Stoeren</li><li>Perfektionismus</li><li>Emotional intensiv</li><li>Keine Freunde in der Klasse</li></ul></div>
+<div><strong>Was dahinter steckt:</strong><ul><li>Genuines Wissen</li><li>Unterforderung</li><li>Fehlende Stimulation</li><li>Angst vor Unvollkommenheit</li><li>Dabrowski-Overexcitabilities</li><li>Sucht intellektuelle Peers</li></ul></div>
+</div>
+<p><strong>8 Ursachen fuer Underachievement:</strong></p>
+<ol>
+<li>Chronische Unterforderung — nie gelernt zu lernen</li>
+<li>Fehlende Lernstrategien</li>
+<li>Perfektionismus</li>
+<li>Soziale Anpassung — Faehigkeiten verstecken</li>
+<li>Emotionale Ueberlastung</li>
+<li>Fehldiagnose (ADHS statt Hochbegabung)</li>
+<li>Autoritaetskonflikte</li>
+<li>Twice-Exceptional (Hochbegabung + Lernschwaeche)</li>
+</ol>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Psychosomatik</button><div class="acc-body">
+<div class="warning-box"><strong>Regel Nr. 1:</strong> Immer ZUERST medizinische Ursachen ausschliessen!</div>
+<table>
+<tr><th>Symptom</th><th>Moegliche psychische Ursache</th><th>Gespraechseinstieg</th></tr>
+<tr><td>Kopfschmerzen</td><td>Leistungsdruck, Perfektionismus</td><td><em>"Wann genau kommen sie?"</em></td></tr>
+<tr><td>Bauchschmerzen</td><td>Angst, Trennungsangst</td><td><em>"Wenn dein Bauch sprechen koennte?"</em></td></tr>
+<tr><td>Rueckenschmerzen</td><td>Emotionale Last</td><td><em>"Was liegt dir auf den Schultern?"</em></td></tr>
+<tr><td>Schwindel</td><td>Dissoziation, Ueberforderung</td><td><em>"Dreht sich die Welt oder du?"</em></td></tr>
+<tr><td>Chronische Muedigkeit</td><td>Depression</td><td><em>"Muede oder innere Leere?"</em></td></tr>
+<tr><td>Herzrasen</td><td>Panikattacken, PTBS</td><td><em>"Was geht dir durch den Kopf?"</em></td></tr>
+</table>
+<div class="info-box"><strong>Wichtig:</strong> NIEMALS sagen: "Das ist nur psychisch" oder "Das bildest du dir ein." Die Schmerzen sind REAL.</div>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Trauer bei Jugendlichen</button><div class="acc-body">
+<p><strong>Intermittierende Trauer:</strong> Jugendliche koennen tief traurig sein und 5 Minuten spaeter lachen. Das ist KEIN Zeichen von Gefuehllosigkeit — die Psyche dosiert den Schmerz.</p>
+<div class="cols">
+<div class="green-box"><strong>Normale Trauer:</strong><br>- Schmerz nimmt ueber Wochen ab<br>- Kann am Alltag teilnehmen<br>- Gute und schlechte Tage<br>- Auch positive Erinnerungen<br>- Zukunft wird als moeglich erlebt</div>
+<div class="red-flag"><strong>Komplizierte Trauer:</strong><br>- Intensiver Schmerz nach 6+ Monaten<br>- Kann nicht zum Alltag zurueck<br>- Fast nur schlechte Tage<br>- Erinnerungen loesen nur Schmerz aus<br>- Zukunft fuehlt sich unmoeglich an</div>
+</div>
+<p><strong>10 Methoden der Trauerbegleitung:</strong></p>
+<ol>
+<li>Brief an den/die Verstorbene:n</li>
+<li>Erinnerungsbox</li>
+<li>Trauer-Playlist</li>
+<li>Erinnerungstimeline</li>
+<li>Vermaechtnis-Projekt</li>
+<li>Rituale (Jahrestage, Gedenkplatz)</li>
+<li>Kreativer Ausdruck</li>
+<li>Peer-Trauergruppe</li>
+<li>Koerperorientierte Methoden</li>
+<li>Psychoedukation</li>
+</ol>
+<div class="info-box"><strong>Bei komplizierter Trauer:</strong> OMEGA 90 (Tel: +352 29 77 89-1)</div>
+</div></div>
+
+<div class="accordion"><button class="acc-header" onclick="toggleAcc(this)">Radikalisierung</button><div class="acc-body">
+<p>Radikalisierung ist ein PROZESS, kein Ereignis.</p>
+<h4>Warnsignale:</h4>
+<p><strong>Verhaltensaenderungen:</strong> Ploetzlicher Bruch mit bisherigem Lebensstil, drastische Veraenderung, neuer Medienkonsum, neue unbekannte Kontakte.</p>
+<p><strong>Soziale Veraenderungen:</strong> Rueckzug aus altem Freundeskreis, neue exklusive Bezugsgruppe, Geheimhaltung.</p>
+<p><strong>Ideologische Zeichen:</strong> Schwarz-Weiss-Denken, entmenschlichende Sprache, Verherrlichung von Gewalt.</p>
+<div class="error-box"><strong>Bei akuter Bedrohung (Gewalt, Waffen):</strong> Sofort Police (113)!<br><strong>Bei Verdacht:</strong> RESPECT.lu (8002 1234) — vertraulich, anonym.</div>
+</div></div>
+
+<div class="quiz" id="quiz_m7q5">
+<p class="quiz-question">Ein Schueler aendert ploetzlich sein Auftreten, hat neue Kontakte und verwendet Schwarz-Weiss-Sprache. Warnsignale fuer?</p>
+<ul class="quiz-options">
+<li><label><input type="radio" name="m7q5" value="0"> Normale Pubertaet</label></li>
+<li><label><input type="radio" name="m7q5" value="1"> Depression</label></li>
+<li><label><input type="radio" name="m7q5" value="2"> Moegliche Radikalisierung</label></li>
+<li><label><input type="radio" name="m7q5" value="3"> ADHS</label></li>
+</ul>
+<button class="quiz-check" onclick="checkQuiz('m7q5',2,'Ploetzliche Aenderungen in Verhalten, sozialen Kontakten UND Sprache (Schwarz-Weiss, Feindbilder) koennen auf Radikalisierung hindeuten. RESPECT.lu kontaktieren.')">Antwort pruefen</button>
+<div class="quiz-result" id="result_m7q5"></div>
+</div>
+</div>
+
+</div><!-- END MODUL 7 -->
+
+</div><!-- END main -->
+
+<script>
+// STATE
+let quizTotal=0,quizCorrect=0;
+
+// NAVIGATION
+function showModule(id,btn){
+  document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const mod=document.getElementById('mod-'+id);
+  if(mod){mod.classList.add('active');mod.style.display='block'}
+  if(btn)btn.classList.add('active');
+  // reset tabs to first
+  const tabs=mod?mod.querySelectorAll('.tab-content'):[];
+  const btns=mod?mod.querySelectorAll('.tab-btn'):[];
+  tabs.forEach(t=>{t.classList.remove('active');t.style.display='none'});
+  btns.forEach(b=>b.classList.remove('active'));
+  if(tabs[0]){tabs[0].classList.add('active');tabs[0].style.display='block'}
+  if(btns[0])btns[0].classList.add('active');
+  // close mobile sidebar
+  document.querySelector('.sidebar').classList.remove('open');
+  window.scrollTo(0,0);
+}
+
+// TABS
+function showTab(btn,tabId){
+  const parent=btn.closest('.module');
+  parent.querySelectorAll('.tab-content').forEach(t=>{t.classList.remove('active');t.style.display='none'});
+  parent.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const tab=document.getElementById(tabId);
+  if(tab){tab.classList.add('active');tab.style.display='block'}
+}
+
+// ACCORDION
+function toggleAcc(header){
+  header.classList.toggle('open');
+  const body=header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// QUIZ
+function checkQuiz(name,correctIdx,explanation){
+  const selected=document.querySelector('input[name="'+name+'"]:checked');
+  const result=document.getElementById('result_'+name);
+  if(!selected){result.style.display='block';result.className='quiz-result quiz-wrong';result.innerHTML='Bitte waehle eine Antwort aus.';return}
+  const val=parseInt(selected.value);
+  result.style.display='block';
+  if(val===correctIdx){
+    result.className='quiz-result quiz-correct';
+    result.innerHTML='<strong>Richtig!</strong> '+explanation;
+    if(!result.dataset.counted){quizCorrect++;quizTotal++;result.dataset.counted='1'}
+  }else{
+    result.className='quiz-result quiz-wrong';
+    const options=document.querySelectorAll('input[name="'+name+'"]');
+    let correctText='';
+    options.forEach(o=>{if(parseInt(o.value)===correctIdx)correctText=o.parentElement.textContent.trim()});
+    result.innerHTML='<strong>Nicht ganz.</strong> Die richtige Antwort ist: <strong>'+correctText+'</strong><br>'+explanation;
+    if(!result.dataset.counted){quizTotal++;result.dataset.counted='1'}
+  }
+  updateScore();
+}
+
+function updateScore(){
+  const el=document.getElementById('quizScoreDisplay');
+  if(quizTotal>0)el.textContent='Quiz-Score: '+quizCorrect+'/'+quizTotal;
+  const pct=quizTotal>0?Math.round(quizCorrect/quizTotal*100):0;
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct;
+}
+
+// INIT: hide all modules except home
+document.querySelectorAll('.module').forEach(m=>{
+  if(!m.classList.contains('active')){m.style.display='none'}
+});
+// Init tabs: hide non-active
+document.querySelectorAll('.tab-content').forEach(t=>{
+  if(!t.classList.contains('active'))t.style.display='none';
+});
+</script>
+</body>
+</html>
